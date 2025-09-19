@@ -15,13 +15,35 @@
     </properties>
     
     <dependencies>
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-web-api</artifactId>
-            <version>7.0</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
+    <!-- Para Servlets, JSPs, etc. (proporcionado por Tomcat) -->
+    <dependency>
+        <groupId>javax</groupId>
+        <artifactId>javaee-web-api</artifactId>
+        <version>7.0</version>
+        <scope>provided</scope>
+    </dependency>
+
+    <!-- ======== REEMPLAZO PARA JSTL ======== -->
+    <!-- API de JSTL (las interfaces) -->
+    <dependency>
+        <groupId>jakarta.servlet.jsp.jstl</groupId>
+        <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+        <version>2.0.0</version>
+    </dependency>
+    <!-- Implementación de JSTL (el código que hace el trabajo) -->
+    <dependency>
+        <groupId>org.glassfish.web</groupId>
+        <artifactId>jakarta.servlet.jsp.jstl</artifactId>
+        <version>2.0.0</version>
+    </dependency>
+    
+    <!-- Driver de PostgreSQL -->
+    <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>42.2.24</version>
+    </dependency>
+</dependencies>
 
     <build>
         <plugins>
