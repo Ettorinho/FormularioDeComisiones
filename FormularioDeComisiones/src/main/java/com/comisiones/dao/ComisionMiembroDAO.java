@@ -44,6 +44,29 @@ public class ComisionMiembroDAO {
         return result;
     }
     
+    public List<ComisionMiembro> findByMiembroId(Long miembroId) throws SQLException {
+    List<ComisionMiembro> result = new ArrayList<>();
+    String sql = "SELECT cm.*, c.nombre, c.fecha_constitucion, c.fecha_fin FROM comision_miembros cm JOIN comisiones c ON cm.comision_id = c.id WHERE cm.miembro_id = ?";
+    try (Connection conn = DBUtil.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setLong(1, miembroId);
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Comision comision = new Comision();
+                comision.setId(rs.getLong("comision_id"));
+                comision.setNombre(rs.getString("nombre"));
+                comision.setFechaConstitucion(rs.getDate("fecha_constitucion"));
+                comision.setFechaFin(rs.getDate("fecha_fin"));
+                ComisionMiembro comisionMiembro = new ComisionMiembro();
+                comisionMiembro.setComision(comision);
+                comisionMiembro.setCargo(ComisionMiembro.Cargo.valueOf(rs.getString("cargo")));
+                comisionMiembro.setFechaIncorporacion(rs.getDate("fecha_incorporacion"));
+                result.add(comisionMiembro);
+            }
+        }
+    }
+    return result;
+}
     private ComisionMiembro extractComisionMiembroWithMiembroFromResultSet(ResultSet rs) throws SQLException {
         Miembro miembro = new Miembro();
         miembro.setId(rs.getLong("miembro_id"));

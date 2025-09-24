@@ -10,6 +10,7 @@ public class ComisionDAO {
     // Tu código de ComisionDAO es correcto, solo asegúrate de que el package sea com.comisiones.dao
     // y los imports apunten a com.comisiones.model
     public void save(Comision comision) throws SQLException {
+        System.out.println("===> [DEBUG] ComisionDAO.save: " + comision.getNombre());
         String sql = "INSERT INTO comisiones (nombre, fecha_constitucion, fecha_fin) VALUES (?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -52,7 +53,19 @@ public class ComisionDAO {
         }
         return comisiones;
     }
-
+    public List<Comision> findByNombreLike(String nombre) throws SQLException {
+        List<Comision> comisiones = new ArrayList<>();
+        String sql = "SELECT * FROM comisiones WHERE LOWER(nombre) LIKE LOWER(?) ORDER BY nombre";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, "%" + nombre + "%");
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    comisiones.add(extractComisionFromResultSet(rs));
+                }
+            }
+        }
+        return comisiones;
+    }
     public boolean exists(String nombre) throws SQLException {
         String sql = "SELECT COUNT(*) FROM comisiones WHERE nombre = ?";
         try (Connection conn = DBUtil.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
