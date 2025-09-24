@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.HashSet;
+import java.util.ArrayList;
 
 public class ComisionController extends HttpServlet {
 
@@ -49,6 +50,8 @@ public class ComisionController extends HttpServlet {
                 viewComision(request, response);
             } else if (pathInfo.startsWith("/addMember/")) {
                 showAddMemberForm(request, response);
+            } else if (pathInfo.startsWith("/bajaMiembros/")) {
+                showBajaMiembrosForm(request, response);
             } else {
                 switch (pathInfo) {
                     case "/new":
@@ -75,6 +78,8 @@ public class ComisionController extends HttpServlet {
                 buscarComisionPorNombre(request, response);
             } else if (pathInfo != null && pathInfo.startsWith("/addMember/")) {
                 saveMemberInComision(request, response);
+            } else if (pathInfo != null && pathInfo.startsWith("/bajaMiembro/")) {
+                bajaMiembro(request, response);
             } else {
                 saveComision(request, response);
             }
@@ -96,20 +101,54 @@ public class ComisionController extends HttpServlet {
     }
 
     private void viewComision(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
-        Long id = Long.parseLong(request.getPathInfo().substring(6));
+        String pathInfo = request.getPathInfo();
+        String idStr = pathInfo.substring(6);
+
+        // Log para depuración
+        System.out.println("DEBUG: pathInfo = " + pathInfo);
+        System.out.println("DEBUG: id a parsear = '" + idStr + "'");
+
+        Long id;
+        try {
+            // Elimina cualquier carácter no numérico (opcional, si solo aceptas números)
+            id = Long.parseLong(idStr.replaceAll("[^0-9]", ""));
+        } catch (NumberFormatException e) {
+            // Opcional: muestra un error amigable
+            request.setAttribute("error", "ID de comisión no válido en la URL: " + idStr);
+            request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+            return;
+        }
+
         Comision comision = comisionDAO.findById(id);
         List<ComisionMiembro> miembros = comisionMiembroDAO.findByComisionId(id);
         request.setAttribute("comision", comision);
         request.setAttribute("miembros", miembros);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/comisiones/view.jsp");
         dispatcher.forward(request, response);
-    }
+}
 
     private void showAddMemberForm(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
         Long comisionId = Long.parseLong(request.getPathInfo().substring(11));
         Comision comision = comisionDAO.findById(comisionId);
         request.setAttribute("comision", comision);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/comisiones/addMember.jsp");
+        dispatcher.forward(request, response);
+    }
+
+    private void showBajaMiembrosForm(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
+        Long comisionId = Long.parseLong(request.getPathInfo().substring(14));
+        Comision comision = comisionDAO.findById(comisionId);
+        List<ComisionMiembro> miembros = comisionMiembroDAO.findByComisionId(comisionId);
+        // Filtra solo miembros activos
+        List<ComisionMiembro> miembrosActivos = new ArrayList<>();
+        for (ComisionMiembro cm : miembros) {
+            if (cm.getFechaBaja() == null) {
+                miembrosActivos.add(cm);
+            }
+        }
+        request.setAttribute("comision", comision);
+        request.setAttribute("miembros", miembrosActivos);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/comisiones/bajaMiembros.jsp");
         dispatcher.forward(request, response);
     }
 
@@ -199,4 +238,18 @@ public class ComisionController extends HttpServlet {
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/comisiones/buscarComision.jsp");
         dispatcher.forward(request, response);
     }
+
+    // --- Baja lógica de miembro ---
+   private void bajaMiembro(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ParseException {
+    String[] parts = request.getPathInfo().split("/");
+    Long comisionId = Long.parseLong(parts[2]);
+    Long miembroId = Long.parseLong(parts[3]);
+    String fechaBajaStr = request.getParameter("fechaBaja");
+    System.out.println("[bajaMiembro] comisionId=" + comisionId + ", miembroId=" + miembroId + ", fechaBajaStr=" + fechaBajaStr);
+    Date fechaBajaUtil = new SimpleDateFormat("yyyy-MM-dd").parse(fechaBajaStr);
+    java.sql.Date fechaBaja = new java.sql.Date(fechaBajaUtil.getTime());
+    comisionMiembroDAO.darDeBaja(comisionId, miembroId, fechaBaja);
+    System.out.println("[bajaMiembro] Redirecting to: " + request.getContextPath() + "/comisiones/view/" + comisionId);
+    response.sendRedirect(request.getContextPath() + "/comisiones/view/" + comisionId);
+ }
 }

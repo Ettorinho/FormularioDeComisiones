@@ -43,7 +43,12 @@
             <hr/>
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4>Miembros</h4>
-                <a href="${pageContext.request.contextPath}/comisiones/addMember/${comision.id}" class="btn btn-primary">Añadir Miembro</a>
+                <c:if test="${empty comision.fechaFin || comision.fechaFin > now}">
+                    <div>
+                        <a href="${pageContext.request.contextPath}/comisiones/addMember/${comision.id}" class="btn btn-primary me-2">Añadir Miembro</a>
+                        <a href="${pageContext.request.contextPath}/comisiones/bajaMiembros/${comision.id}" class="btn btn-warning">Dar de baja a Miembros</a>
+                    </div>
+                </c:if>
             </div>
             
             <c:if test="${empty miembros}">
@@ -58,6 +63,7 @@
                             <th>Email</th>
                             <th>Cargo</th>
                             <th>Incorporación</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,6 +74,16 @@
                                 <td>${cm.miembro.email}</td>
                                 <td>${cm.cargo}</td>
                                 <td><fmt:formatDate value="${cm.fechaIncorporacion}" pattern="dd/MM/yyyy" /></td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${empty cm.fechaBaja}">
+                                            <!-- No mostrar botón de baja aquí, solo mostrarlo en bajaMiembros.jsp -->
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="badge bg-secondary">Baja: <fmt:formatDate value="${cm.fechaBaja}" pattern="dd/MM/yyyy"/></span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
                             </tr>
                         </c:forEach>
                     </tbody>
