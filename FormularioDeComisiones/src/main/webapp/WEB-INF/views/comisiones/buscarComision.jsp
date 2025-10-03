@@ -56,6 +56,7 @@
                                             <th>Email</th>
                                             <th>Cargo</th>
                                             <th>Fecha Incorporación</th>
+                                            <th>Fecha de Baja</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -66,6 +67,14 @@
                                                 <td>${cm.miembro.email}</td>
                                                 <td>${cm.cargo}</td>
                                                 <td><fmt:formatDate value="${cm.fechaIncorporacion}" pattern="dd/MM/yyyy"/></td>
+                                                <td>
+                                                    <c:if test ="${not empty cm.fechaBaja}">
+                                                        <fmt:formatDate value ="${cm.fechaBaja}" pattern="dd/MM/yyyy"/>
+                                                    </c:if>
+                                                    <c:if test="{empty cm.fechaBaja}">
+                                                        -
+                                                    </c:if>    
+                                                </td>
                                             </tr>
                                         </c:forEach>
                                     </tbody>
