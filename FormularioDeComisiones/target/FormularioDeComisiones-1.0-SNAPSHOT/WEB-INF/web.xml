@@ -10,7 +10,7 @@
     <!-- Ajusta valores: ldap.url, ldap.baseDn, ldap.bindDn, ldap.dniAttr -->
     <context-param>
         <param-name>ldap.url</param-name>
-        <param-value>ldap://172.25.107.130:636</param-value>
+        <param-value>ldap://172.25.107.130:389</param-value>
     </context-param>
     <context-param>
         <param-name>ldap.baseDn</param-name>

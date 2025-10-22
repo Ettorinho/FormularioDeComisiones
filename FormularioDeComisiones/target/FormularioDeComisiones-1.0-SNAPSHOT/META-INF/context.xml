@@ -1,4 +1,2 @@
-<Context>
-    <!-- Environment entry que se accede desde java:comp/env/ldap/bindPassword -->
-    <Environment name="ldap/bindPassword" value="miPasswordSeguroEnServidor" type="java.lang.String" override="false"/>
-</Context>
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path=""/>

@@ -4,19 +4,16 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.Attribute;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
-
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Hashtable;
@@ -137,11 +134,7 @@ public class LdapLookupServlet extends HttpServlet {
                 SearchResult sr = results.next();
                 Attributes attributes = sr.getAttributes();
                 Map<String,String> map = new HashMap<>();
-                String given = getAttr(attributes, "givenName", "");
-                String sn = getAttr(attributes, "sn", "");
-                String cn = getAttr(attributes, "cn", "");
-                String fullName = (cn != null && !cn.isEmpty()) ? cn : ( (given + " " + sn).trim() );
-                map.put("nombreApellidos", fullName);
+                map.put("nombreApellidos", getAttr(attributes, "cn", (getAttr(attributes, "givenName", "") + " " + getAttr(attributes, "sn", "")).trim()));
                 map.put("email", getAttr(attributes, "mail", ""));
                 map.put("telefono", getAttr(attributes, "telephoneNumber", ""));
                 map.put("uid", getAttr(attributes, "uid", ""));
