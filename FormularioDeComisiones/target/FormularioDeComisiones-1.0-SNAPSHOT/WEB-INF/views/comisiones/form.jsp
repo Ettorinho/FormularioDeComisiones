@@ -22,7 +22,7 @@
                 <input type="date" class="form-control" id="fechaConstitucion" name="fechaConstitucion" required>
             </div>
             <div class="mb-3">
-                <label for="fechaFin" class="form-label">Fecha de Disolución (opcional)</label>
+                <label for="fechaFin" class="form-label">Fecha de Disolución</label>
                 <input type="date" class="form-control" id="fechaFin" name="fechaFin">
             </div>
             <button type="submit" class="btn btn-primary">Guardar</button>

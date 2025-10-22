@@ -6,6 +6,36 @@
 
     <display-name>Formulario Comisiones</display-name>
 
+    <!-- === Parámetros de configuración LDAP (context params) === -->
+    <!-- Ajusta valores: ldap.url, ldap.baseDn, ldap.bindDn, ldap.dniAttr -->
+    <context-param>
+        <param-name>ldap.url</param-name>
+        <param-value>ldap://172.25.107.130:636</param-value>
+    </context-param>
+    <context-param>
+        <param-name>ldap.baseDn</param-name>
+        <param-value>dc=miempresa,dc=es</param-value>
+    </context-param>
+    <context-param>
+        <param-name>ldap.bindDn</param-name>
+        <param-value>cn=svc_user,ou=svc,dc=miempresa,dc=es</param-value>
+    </context-param>
+    <!-- ldap.bindPassword REMOVIDO del web.xml por seguridad -->
+    <context-param>
+        <param-name>ldap.dniAttr</param-name>
+        <param-value>documentNumber</param-value>
+    </context-param>
+
+    <!-- === Declaración del servlet de lookup LDAP === -->
+    <servlet>
+        <servlet-name>LdapLookupServlet</servlet-name>
+        <servlet-class>com.comisiones.ldap.LdapLookupServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LdapLookupServlet</servlet-name>
+        <url-pattern>/comisiones/ldapLookup</url-pattern>
+    </servlet-mapping>
+
     <!-- Declaración explícita del ComisionController -->
     <servlet>
         <servlet-name>ComisionController</servlet-name>
@@ -17,10 +47,10 @@
         <servlet-name>ComisionController</servlet-name>
         <url-pattern>/comisiones/*</url-pattern>
     </servlet-mapping>
-    
+
     <!-- Página de bienvenida -->
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
-    
+
 </web-app>

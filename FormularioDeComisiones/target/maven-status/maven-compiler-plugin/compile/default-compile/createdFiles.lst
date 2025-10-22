@@ -9,5 +9,6 @@ com\comisiones\controller\ComisionController.class
 com\comisiones\model\Miembro.class
 com\comisiones\dao\ComisionDAO.class
 com\comisiones\dao\ComisionMiembroDAO.class
+com\comisiones\ldap\LdapLookupServlet.class
 com\comisiones\service\ComisionService.class
 com\comisiones\model\ComisionMiembro.class

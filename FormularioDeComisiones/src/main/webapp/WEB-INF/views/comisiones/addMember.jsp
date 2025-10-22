@@ -19,7 +19,7 @@
                     <div class="alert alert-danger">${error}</div>
                 </c:if>
                 
-                <form action="${pageContext.request.contextPath}/comisiones/addMember/${comision.id}" method="POST">
+                <form id="addMemberForm" action="${pageContext.request.contextPath}/comisiones/addMember/${comision.id}" method="POST">
                     <div class="form-group mb-3">
                         <label for="nombreApellidos">Nombre y apellidos *</label>
                         <input type="text" class="form-control" id="nombreApellidos" name="nombreApellidos" required>
@@ -27,7 +27,11 @@
                     
                     <div class="form-group mb-3">
                         <label for="dni">DNI/NIF *</label>
-                        <input type="text" class="form-control" id="dni" name="dni" required>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="dni" name="dni" required>
+                            <button type="button" id="buscarDniBtn" class="btn btn-outline-secondary">Buscar</button>
+                        </div>
+                        <small id="dniHelp" class="form-text text-muted">Pulsa "Buscar" para rellenar nombre / email desde LDAP (si está disponible).</small>
                     </div>
                     
                     <div class="form-group mb-3">
@@ -62,7 +66,52 @@
             </div>
         </div>
     </div>
-    
+
+<script>
+document.getElementById('buscarDniBtn').addEventListener('click', function () {
+    const dni = document.getElementById('dni').value.trim();
+    if (!dni) {
+        alert('Introduce un DNI antes de buscar.');
+        return;
+    }
+    const btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Buscando...';
+
+    fetch('${pageContext.request.contextPath}/comisiones/ldapLookup?dni=' + encodeURIComponent(dni), {
+        method: 'GET',
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(json => {
+        btn.disabled = false;
+        btn.textContent = 'Buscar';
+        if (json.error) {
+            alert('Error: ' + json.error);
+            return;
+        }
+        if (!json.found) {
+            alert('No se encontró la persona en LDAP');
+            return;
+        }
+        // Rellenar campos (comprueba los nombres de campos que devolviste desde el servlet)
+        if (json.nombreApellidos) {
+            document.getElementById('nombreApellidos').value = json.nombreApellidos;
+        }
+        if (json.email) {
+            document.getElementById('email').value = json.email;
+        }
+        // puedes mapear más campos si quieres (telefono, etc.)
+    })
+    .catch(err => {
+        console.error(err);
+        btn.disabled = false;
+        btn.textContent = 'Buscar';
+        alert('Error al consultar el LDAP');
+    });
+});
+</script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

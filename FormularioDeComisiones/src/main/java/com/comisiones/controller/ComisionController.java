@@ -104,19 +104,19 @@ public class ComisionController extends HttpServlet {
         String pathInfo = request.getPathInfo();
         String idStr = pathInfo.substring(6);
 
-        // Log para depuración
+        // Logs para depuración
         System.out.println("DEBUG: pathInfo = " + pathInfo);
         System.out.println("DEBUG: id a parsear = '" + idStr + "'");
 
         Long id;
         try {
-            // Elimina cualquier carácter no numérico (opcional, si solo aceptas números)
-            id = Long.parseLong(idStr.replaceAll("[^0-9]", ""));
+            // Extrae solo los dígitos del id (protege contra llaves u otros caracteres)
+            id = Long.parseLong(idStr.replaceAll("[^\\d]", ""));
         } catch (NumberFormatException e) {
-            // Opcional: muestra un error amigable
+            // Muestra un error amigable si hay fallo de parseo
             request.setAttribute("error", "ID de comisión no válido en la URL: " + idStr);
             request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
-            return;
+        return;
         }
 
         Comision comision = comisionDAO.findById(id);
@@ -125,7 +125,7 @@ public class ComisionController extends HttpServlet {
         request.setAttribute("miembros", miembros);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/comisiones/view.jsp");
         dispatcher.forward(request, response);
-}
+    }
 
     private void showAddMemberForm(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
         Long comisionId = Long.parseLong(request.getPathInfo().substring(11));
