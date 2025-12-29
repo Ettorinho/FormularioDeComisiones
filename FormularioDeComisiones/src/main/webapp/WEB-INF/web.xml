@@ -1,48 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<web-app xmlns="http://xmlns.jcp. org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3. org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
 
     <display-name>Formulario Comisiones</display-name>
 
-    <!-- === Parámetros de configuración LDAP (context params) === -->
-    <!-- Ajusta valores: ldap.url, ldap.baseDn, ldap.bindDn, ldap.dniAttr -->
+    <!-- Parámetros de configuración LDAP -->
     <context-param>
         <param-name>ldap.url</param-name>
         <param-value>ldap://172.25.107.130:389</param-value>
     </context-param>
+    
     <context-param>
         <param-name>ldap.baseDn</param-name>
-        <param-value>dc=miempresa,dc=es</param-value>
+        <param-value>OU=Salud,DC=salud,DC=dga,DC=es</param-value>
     </context-param>
+    
     <context-param>
         <param-name>ldap.bindDn</param-name>
-        <param-value>cn=svc_user,ou=svc,dc=miempresa,dc=es</param-value>
+        <param-value>CN=Hector Lisa Elvira,OU=Barbastro,OU=Administradores de Nivel 2,DC=salud,DC=dga,DC=es</param-value>
     </context-param>
-    <!-- ldap.bindPassword REMOVIDO del web.xml por seguridad -->
+    
     <context-param>
         <param-name>ldap.dniAttr</param-name>
-        <param-value>documentNumber</param-value>
+        <param-value>cn</param-value>
     </context-param>
-
-    <!-- === Declaración del servlet de lookup LDAP === -->
+        
+    <!-- Servlet LDAP Lookup -->
     <servlet>
         <servlet-name>LdapLookupServlet</servlet-name>
         <servlet-class>com.comisiones.ldap.LdapLookupServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
     </servlet>
+    
     <servlet-mapping>
         <servlet-name>LdapLookupServlet</servlet-name>
-        <url-pattern>/comisiones/ldapLookup</url-pattern>
+        <url-pattern>/ldapLookup</url-pattern>
     </servlet-mapping>
 
-    <!-- Declaración explícita del ComisionController -->
+    <!-- Servlet ComisionController -->
     <servlet>
         <servlet-name>ComisionController</servlet-name>
         <servlet-class>com.comisiones.controller.ComisionController</servlet-class>
     </servlet>
 
-    <!-- Mapeo de URL para el ComisionController -->
     <servlet-mapping>
         <servlet-name>ComisionController</servlet-name>
         <url-pattern>/comisiones/*</url-pattern>

@@ -5,8 +5,10 @@ com\comisiones\controller\TestServlet.class
 com\comisiones\util\DBUtil.class
 com\comisiones\controller\MiembroController.class
 com\comisiones\dao\MiembroDAO.class
+com\comisiones\model\Comision$Tipo.class
 com\comisiones\controller\ComisionController.class
 com\comisiones\model\Miembro.class
+com\comisiones\model\Comision$Area.class
 com\comisiones\dao\ComisionDAO.class
 com\comisiones\dao\ComisionMiembroDAO.class
 com\comisiones\ldap\LdapLookupServlet.class
