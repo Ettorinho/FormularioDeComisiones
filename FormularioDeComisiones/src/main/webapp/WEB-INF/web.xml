@@ -50,6 +50,17 @@
         <url-pattern>/comisiones/*</url-pattern>
     </servlet-mapping>
 
+        <!-- Servlet ActaController -->
+    <servlet>
+        <servlet-name>ActaController</servlet-name>
+        <servlet-class>com.comisiones.controller.ActaController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>ActaController</servlet-name>
+        <url-pattern>/actas/*</url-pattern>
+    </servlet-mapping>
+
     <!-- Página de bienvenida -->
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
