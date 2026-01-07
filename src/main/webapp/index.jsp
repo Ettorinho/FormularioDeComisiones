@@ -18,7 +18,7 @@
             <h1 class="display-5 fw-bold">Sistema de Gestión de Comisiones</h1>
             <div class="col-lg-6 mx-auto">
                 <p class="lead mb-4">Bienvenido a la aplicación para la gestión de comisiones y grupos de trabajo. Utilice los botones a continuación para navegar.</p>
-                <div class="d-grid gap-3 col-lg-6 mx-auto">
+                <div class="d-grid gap-3">
                     <!-- Este botón te llevará a la lista de comisiones -->
                     <a href="${pageContext.request.contextPath}/comisiones" class="btn btn-primary btn-lg">Crear Comisión o Grupo de Trabajo</a>
                     <a href="${pageContext.request.contextPath}/comisiones/buscarPorDni" class="btn btn-primary btn-lg">Buscar Miembros</a>
