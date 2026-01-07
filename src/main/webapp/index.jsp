@@ -18,14 +18,14 @@
             <h1 class="display-5 fw-bold">Sistema de Gestión de Comisiones</h1>
             <div class="col-lg-6 mx-auto">
                 <p class="lead mb-4">Bienvenido a la aplicación para la gestión de comisiones y grupos de trabajo. Utilice los botones a continuación para navegar.</p>
-                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <div class="d-grid gap-3 col-lg-6 mx-auto">
                     <!-- Este botón te llevará a la lista de comisiones -->
-                    <a href="${pageContext.request.contextPath}/comisiones" class="btn btn-primary btn-lg px-4 gap-3">Crear Comisión o Grupo de Trabajo</a>
-                    <a href="${pageContext.request.contextPath}/comisiones/buscarPorDni" class="btn btn-primary btn-lg px-2">Buscar Miembros</a>
-                    <a href="${pageContext.request.contextPath}/comisiones/buscarComision" class="btn btn-primary btn-lg px-4 gap-3">Buscar Comisión o Grupo de Trabajo</a>
-                    <a href="${pageContext.request.contextPath}/actas/new" class="btn btn-primary btn-lg px-2">📝 Crear Acta de Reunión</a>                    
+                    <a href="${pageContext.request.contextPath}/comisiones" class="btn btn-primary btn-lg">Crear Comisión o Grupo de Trabajo</a>
+                    <a href="${pageContext.request.contextPath}/comisiones/buscarPorDni" class="btn btn-primary btn-lg">Buscar Miembros</a>
+                    <a href="${pageContext.request.contextPath}/comisiones/buscarComision" class="btn btn-primary btn-lg">Buscar Comisión o Grupo de Trabajo</a>
+                    <a href="${pageContext.request.contextPath}/actas/new" class="btn btn-primary btn-lg">📝 Crear Acta de Reunión</a>                    
                     <!-- Este botón te llevará a la lista de miembros -->
-                    <%-- <a href="${pageContext.request.contextPath}/miembros" class="btn btn-outline-secondary btn-lg px-4">Ver Miembros</a> --%>
+                    <%-- <a href="${pageContext.request.contextPath}/miembros" class="btn btn-outline-secondary btn-lg">Ver Miembros</a> --%>
                 </div>
             </div>
         </div>
