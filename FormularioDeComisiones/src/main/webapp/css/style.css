@@ -138,3 +138,64 @@ body {
 .mt-3 {
     margin-top: 1rem;
 }
+
+/* Styles from form.jsp */
+.hidden {
+    display: none;
+}
+
+.section-header {
+    background-color: #f8f9fa;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-left: 4px solid #0d6efd;
+}
+
+.card-custom {
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+/* Styles from addMember.jsp */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.15em;
+}
+
+.ldap-info {
+    font-size: 0.875rem;
+    color: #28a745;
+    margin-top: 0.5rem;
+}
+
+.ldap-error {
+    font-size: 0.875rem;
+    color: #dc3545;
+    margin-top: 0.5rem;
+}
+
+.debug-info {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+    font-family: monospace;
+}
+
+/* Styles from buscarPorDni.jsp */
+.badge-activa {
+    background-color: #28a745 !important;
+}
+
+.badge-finalizada {
+    background-color: #6c757d !important;
+}
+
+.row-inactive {
+    opacity: 0.6;
+    background-color: #f8f9fa;
+}
+
+.oculto {
+    display: none !important;
+}

@@ -4,32 +4,10 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Añadir Miembro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/style.css">
-    <style>
-        .spinner-border-sm {
-            width: 1rem;
-            height: 1rem;
-            border-width:  0.15em;
-        }
-        .ldap-info {
-            font-size: 0.875rem;
-            color: #28a745;
-            margin-top: 0.5rem;
-        }
-        .ldap-error {
-            font-size: 0.875rem;
-            color: #dc3545;
-            margin-top: 0.5rem;
-        }
-        .debug-info {
-            font-size: 0.75rem;
-            color: #6c757d;
-            margin-top: 0.25rem;
-            font-family: monospace;
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
     <div class="container">
