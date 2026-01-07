@@ -1,34 +1,15 @@
-<%-- 
-    Document   : buscarPorDni
-    Created on : 22 sept. 2025, 11:04:09
-    Author     : hlisa-admin
---%>
-
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <jsp:useBean id="now" class="java.util.Date" />
-<! DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscar Comisiones por DNI</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .badge-activa {
-            background-color:  #28a745 !important;
-        }
-        .badge-finalizada {
-            background-color:  #6c757d !important;
-        }
-        .row-inactive {
-            opacity: 0.6;
-            background-color: #f8f9fa;
-        }
-        .oculto {
-            display: none ! important;
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
 <div class="container mt-4">
