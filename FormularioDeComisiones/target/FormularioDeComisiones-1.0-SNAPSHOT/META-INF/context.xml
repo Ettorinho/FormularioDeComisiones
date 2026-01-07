@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Context path="/FormularioDeComisiones">
-  <!-- Password del LDAP (sensible, no debe estar en web.xml) -->
-  <Environment name="ldap/bindPassword" type="java.lang.String" value="kmyppdtc14+H" override="false"/>
-</Context>
