@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<jsp:useBean id="now" class="java.util.Date" />
 <!DOCTYPE html>
 <html>
 <head>
@@ -24,7 +25,7 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
+                 <tbody>
                     <c:forEach items="${comisiones}" var="comision">
                         <tr>
                             <td><c:out value="${comision.nombre}"/></td>
@@ -32,6 +33,9 @@
                             <td>
                                 <c:choose>
                                     <c:when test="${empty comision.fechaFin}">
+                                        <span class="badge bg-success">Activa</span>
+                                    </c:when>
+                                    <c:when test="${comision.fechaFin > now}">
                                         <span class="badge bg-success">Activa</span>
                                     </c:when>
                                     <c:otherwise>

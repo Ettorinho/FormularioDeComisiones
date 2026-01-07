@@ -20,10 +20,12 @@
                 <p class="lead mb-4">Bienvenido a la aplicación para la gestión de comisiones y grupos de trabajo. Utilice los botones a continuación para navegar.</p>
                 <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
                     <!-- Este botón te llevará a la lista de comisiones -->
-                    <a href="${pageContext.request.contextPath}/comisiones" class="btn btn-primary btn-lg px-4 gap-3">Ver Comisiones</a>
-                    
+                    <a href="${pageContext.request.contextPath}/comisiones" class="btn btn-primary btn-lg px-4 gap-3">Crear Comisión o Grupo de Trabajo</a>
+                    <a href="${pageContext.request.contextPath}/comisiones/buscarPorDni" class="btn btn-primary btn-lg px-4 gap-3">Buscar Miembros</a>
+                    <a href="${pageContext.request.contextPath}/comisiones/buscarComision" class="btn btn-primary btn-lg px-4 gap-3">Buscar Comisión o Grupo de Trabajo</a>
+                    <a href="${pageContext.request.contextPath}/actas/new" class="btn btn-primary btn-lg px-4 gap-3">📝 Crear Acta de Reunión</a>                    
                     <!-- Este botón te llevará a la lista de miembros -->
-                    <a href="${pageContext.request.contextPath}/miembros" class="btn btn-outline-secondary btn-lg px-4">Ver Miembros</a>
+                    <%-- <a href="${pageContext.request.contextPath}/miembros" class="btn btn-outline-secondary btn-lg px-4">Ver Miembros</a> --%>
                 </div>
             </div>
         </div>

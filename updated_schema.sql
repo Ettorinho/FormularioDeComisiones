@@ -35,3 +35,5 @@ CREATE TABLE comision_miembros (
 -- Índices para mejorar el rendimiento
 CREATE INDEX idx_comisiones_nombre ON comisiones (nombre);
 CREATE INDEX idx_miembros_dni ON miembros (dni_nif);
+
+ALTER TABLE comision_miembros ADD COLUMN fecha_baja DATE;
