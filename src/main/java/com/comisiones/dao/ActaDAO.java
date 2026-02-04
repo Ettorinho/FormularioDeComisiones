@@ -55,7 +55,7 @@ public class ActaDAO {
         System.out.println("    Asistió: " + asistencia.isAsistio());
         System.out.println("    Justificación: " + (asistencia.getJustificacion() != null ? "'" + asistencia.getJustificacion() + "'" : "NULL"));
         
-        String sql = "INSERT INTO asistencia_acta (acta_id, miembro_id, asistio, justificacion, fecha_creacion) " +
+        String sql = "INSERT INTO asistencias_acta (acta_id, miembro_id, asistio, justificacion, fecha_creacion) " +
                      "VALUES (?, ?, ?, ?, ?)";
         
         System.out.println("    SQL: " + sql);
@@ -128,7 +128,7 @@ public class ActaDAO {
         
         String sql = "SELECT aa.id, aa.acta_id, aa.miembro_id, aa.asistio, aa.justificacion, aa.fecha_creacion, " +
                      "m.nombre_apellidos, m.dni_nif, m.correo_electronico " +
-                     "FROM asistencia_acta aa " +
+                     "FROM asistencias_acta aa " +
                      "INNER JOIN miembros m ON aa.miembro_id = m.id " +
                      "WHERE aa.acta_id = ? " +
                      "ORDER BY m.nombre_apellidos";
