@@ -1,23 +1,35 @@
 package com.comisiones.model;
 
-import java.io.Serializable;
+import java.util.Date;
 
-public class AsistenciaActa implements Serializable {
-    
+public class AsistenciaActa {
     private Long id;
     private Acta acta;
     private Miembro miembro;
     private boolean asistio;
+    private String justificacion;  // ⭐ NUEVO CAMPO
+    private Date fechaCreacion;
     
-    public AsistenciaActa() {}
+    public AsistenciaActa() {
+        this.fechaCreacion = new Date();
+    }
     
     public AsistenciaActa(Acta acta, Miembro miembro, boolean asistio) {
         this.acta = acta;
         this.miembro = miembro;
         this.asistio = asistio;
+        this.fechaCreacion = new Date();
     }
     
-    // Getters y setters
+    public AsistenciaActa(Acta acta, Miembro miembro, boolean asistio, String justificacion) {
+        this.acta = acta;
+        this.miembro = miembro;
+        this.asistio = asistio;
+        this.justificacion = justificacion;
+        this.fechaCreacion = new Date();
+    }
+    
+    // Getters y Setters
     public Long getId() {
         return id;
     }
@@ -50,12 +62,19 @@ public class AsistenciaActa implements Serializable {
         this.asistio = asistio;
     }
     
-    @Override
-    public String toString() {
-        return "AsistenciaActa{" +
-                "id=" + id +
-                ", miembro=" + (miembro != null ? miembro. getNombreApellidos() : "null") +
-                ", asistio=" + asistio +
-                '}';
+    public String getJustificacion() {
+        return justificacion;
+    }
+    
+    public void setJustificacion(String justificacion) {
+        this.justificacion = justificacion;
+    }
+    
+    public Date getFechaCreacion() {
+        return fechaCreacion;
+    }
+    
+    public void setFechaCreacion(Date fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
     }
 }

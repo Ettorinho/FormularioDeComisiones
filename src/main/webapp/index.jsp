@@ -23,7 +23,7 @@
                     <a href="${pageContext.request.contextPath}/comisiones" class="btn btn-primary btn-lg">Crear Comisión o Grupo de Trabajo</a>
                     <a href="${pageContext.request.contextPath}/comisiones/buscarPorDni" class="btn btn-primary btn-lg">Buscar Miembros</a>
                     <a href="${pageContext.request.contextPath}/comisiones/buscarComision" class="btn btn-primary btn-lg">Buscar Comisión o Grupo de Trabajo</a>
-                    <a href="${pageContext.request.contextPath}/actas/new" class="btn btn-primary btn-lg">📝 Crear Acta de Reunión</a>                    
+                    <a href="${pageContext.request.contextPath}/actas/new" class="btn btn-primary btn-lg">Crear Acta de Reunión</a>                    
                     <!-- Este botón te llevará a la lista de miembros -->
                     <%-- <a href="${pageContext.request.contextPath}/miembros" class="btn btn-outline-secondary btn-lg">Ver Miembros</a> --%>
                 </div>

@@ -20,6 +20,7 @@ public class Acta implements Serializable {
         this.comision = comision;
         this.fechaReunion = fechaReunion;
         this.observaciones = observaciones;
+        this.fechaCreacion = new Date();   
     }
     
     // Getters y setters

@@ -2,90 +2,66 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <c:if test="${empty miembros}">
-    <p class="text-warning text-center py-3">
-        ⚠️ Esta comisión no tiene miembros activos
-    </p>
+    <p class="text-warning text-center py-3">⚠️ Esta comisión no tiene miembros activos</p>
 </c:if>
 
 <c:if test="${not empty miembros}">
-    <div class="row mb-2 fw-bold border-bottom pb-2">
-        <div class="col-1 text-center">Asistió</div>
-        <div class="col-4">Nombre</div>
-        <div class="col-2">DNI</div>
-        <div class="col-3">Email</div>
-        <div class="col-2">Cargo</div>
-    </div>
-    
-    <c:forEach var="cm" items="${miembros}">
-        <div class="miembro-row">
-            <div class="row align-items-center">
-                <div class="col-1 text-center">
-                    <input type="checkbox" 
-                           class="form-check-input" 
-                           name="asistio" 
-                           value="${cm.miembro.id}"
-                           id="asistio_${cm.miembro.id}">
-                </div>
-                <div class="col-4">
-                    <label for="asistio_${cm.miembro.id} "class="form-check-label">
-                        <strong>${cm.miembro.nombreApellidos}</strong>
-                    </label>
-                </div>
-                <div class="col-2">
-                    <small class="text-muted">${cm.miembro. dniNif}</small>
-                </div>
-                <div class="col-3">
-                    <small class="text-muted">${cm.miembro.email}</small>
-                </div>
-                <div class="col-2">
-                    <c:choose>
-                        <c:when test="${cm.cargo == 'PRESIDENTE'}">
-                            <span class="badge bg-danger cargo-badge">Presidente</span>
-                        </c:when>
-                        <c:when test="${cm.cargo == 'SECRETARIO'}">
-                            <span class="badge bg-warning text-dark cargo-badge">Secretario</span>
-                        </c:when>
-                        <c:when test="${cm.cargo == 'RESPONSABLE'}">
-                            <span class="badge bg-primary cargo-badge">Responsable</span>
-                        </c:when>
-                        <c:when test="${cm.cargo == 'REFERENTE'}">
-                            <span class="badge bg-secondary cargo-badge">Referente</span>
-                        </c:when>
-                        <c:when test="${cm.cargo == 'INVESTIGADOR_PRINCIPAL'}">
-                            <span class="badge bg-dark cargo-badge">Inv. Principal</span>
-                        </c:when>
-                        <c:when test="${cm.cargo == 'INVESTIGADOR_COLABORADOR'}">
-                            <span class="badge bg-dark cargo-badge">Inv.  Colaborador</span>
-                        </c:when>
-                        <c:when test="${cm. cargo == 'PARTICIPANTE'}">
-                            <span class="badge bg-light text-dark cargo-badge">Participante</span>
-                        </c:when>
-                        <c:otherwise>
-                            <span class="badge bg-secondary cargo-badge">${cm.cargo}</span>
-                        </c:otherwise>
-                    </c:choose>
-                </div>
-            </div>
-        </div>
-    </c:forEach>
-    
-    <div class="mt-3 d-flex justify-content-between align-items-center">
-        <small class="text-muted">Total de miembros: ${miembros.size()}</small>
+    <table class="table table-hover table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th style="width:25%; text-align:center;">Asistencia</th>
+                <th style="width:40%;">Nombre</th>
+                <th style="width:20%;">DNI</th>
+                <th style="width:15%;">Cargo</th>
+            </tr>
+        </thead>
+        <tbody>
+            <c:forEach var="cm" items="${miembros}" varStatus="loop">
+                <tr>
+                    <td style="text-align:center;">
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div>
+                                <input type="radio" name="asistencia_${cm.miembro.id}" value="ASISTIO" id="si_${loop.index}" onchange="toggleJustificacion(${cm.miembro.id}, false)">
+                                <label for="si_${loop.index}" style="margin-left:5px; cursor:pointer;">✅ Asistió</label>
+                            </div>
+                            <div>
+                                <input type="radio" name="asistencia_${cm.miembro.id}" value="NO_ASISTIO" id="no_${loop.index}" onchange="toggleJustificacion(${cm.miembro.id}, true)">
+                                <label for="no_${loop.index}" style="margin-left:5px; cursor:pointer;">❌ No asistió</label>
+                            </div>
+                        </div>
+                        <input type="hidden" name="miembroId" value="${cm.miembro.id}">
+                    </td>
+                    <td><strong>${cm.miembro.nombreApellidos}</strong></td>
+                    <td><small>${cm.miembro.dniNif}</small></td>
+                    <td>
+                        <c:choose>
+                            <c:when test="${cm.cargo == 'PRESIDENTE'}"><span class="badge bg-danger">Presidente</span></c:when>
+                            <c:when test="${cm.cargo == 'SECRETARIO'}"><span class="badge bg-warning text-dark">Secretario</span></c:when>
+                            <c:when test="${cm.cargo == 'RESPONSABLE'}"><span class="badge bg-primary">Responsable</span></c:when>
+                            <c:when test="${cm.cargo == 'REFERENTE'}"><span class="badge bg-secondary">Referente</span></c:when>
+                            <c:when test="${cm.cargo == 'INVESTIGADOR_PRINCIPAL'}"><span class="badge bg-dark">Inv. Principal</span></c:when>
+                            <c:when test="${cm.cargo == 'INVESTIGADOR_COLABORADOR'}"><span class="badge bg-dark">Inv. Colaborador</span></c:when>
+                            <c:when test="${cm.cargo == 'PARTICIPANTE'}"><span class="badge bg-light text-dark">Participante</span></c:when>
+                            <c:otherwise><span class="badge bg-secondary">${cm.cargo}</span></c:otherwise>
+                        </c:choose>
+                    </td>
+                </tr>
+                <tr id="justificacion_${cm.miembro.id}" style="display:none;">
+                    <td colspan="4" style="background-color:#fff3cd; padding:15px;">
+                        <label style="font-weight:bold; margin-bottom:5px;">📝 Justificación de ausencia para ${cm.miembro.nombreApellidos}:</label>
+                        <textarea name="justificacion_${cm.miembro.id}" class="form-control" rows="2" placeholder="Escriba el motivo de la ausencia (ej: baja médica, permiso, vacaciones, etc.)"></textarea>
+                        <small class="text-muted">Campo opcional - puede dejarse vacío si no hay justificación</small>
+                    </td>
+                </tr>
+            </c:forEach>
+        </tbody>
+    </table>
+    <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
+        <small style="color:#6c757d;">Total de miembros: ${miembros.size()}</small>
         <div>
-            <button type="button" class="btn btn-sm btn-outline-primary" onclick="marcarTodos(true)">
-                ✓ Marcar Todos
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="marcarTodos(false)">
-                ✗ Desmarcar Todos
-            </button>
+            <button type="button" class="btn btn-sm btn-success" onclick="marcarTodos('ASISTIO')">✅ Todos Asistieron</button>
+            <button type="button" class="btn btn-sm btn-danger" onclick="marcarTodos('NO_ASISTIO')">❌ Marcar Ausencias</button>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="limpiarTodo()">🔄 Limpiar Todo</button>
         </div>
     </div>
 </c:if>
-
-<script>
-function marcarTodos(marcar) {
-    const checkboxes = document.querySelectorAll('input[name="asistio"]');
-    checkboxes.forEach(cb => cb.checked = marcar);
-    console.log('Marcados:', marcar ?  'todos' : 'ninguno');
-}
-</script>

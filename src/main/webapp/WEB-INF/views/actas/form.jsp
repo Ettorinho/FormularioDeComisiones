@@ -47,9 +47,9 @@
                         <option value="">-- Seleccione una comisión activa --</option>
                         <c:forEach var="comision" items="${comisiones}">
                             <option value="${comision.id}">
-                                ${comision. nombre}
+                                ${comision.nombre}
                                 <c:if test="${not empty comision.area}">
-                                    - ${comision.area == 'ATENCION_ESPECIALIZADA' ? 'At. Especializada' : 'At.  Primaria'}
+                                    - ${comision.area == 'ATENCION_ESPECIALIZADA' ? 'At. Especializada' : 'At. Primaria'}
                                 </c:if>
                                 <c:if test="${not empty comision.tipo}">
                                     (${comision.tipo == 'COMISION' ? 'Comisión' : comision.tipo == 'GRUPO_TRABAJO' ? 'Grupo de Trabajo' : 'Grupo de Mejora'})
@@ -67,7 +67,7 @@
                 </div>
                 
                 <!-- Lista de Miembros (se carga dinámicamente) -->
-                <div class="mb-4" id="divMiembros" style="display:  none;">
+                <div class="mb-4" id="divMiembros" style="display:none;">
                     <label class="form-label fw-bold">Asistencia de Miembros</label>
                     <div class="card">
                         <div class="card-body" id="listaMiembros">
@@ -91,7 +91,7 @@
                     <button type="submit" class="btn btn-success btn-lg" id="btnGuardar">
                         💾 Guardar Acta
                     </button>
-                    <a href="${pageContext. request.contextPath}/" class="btn btn-secondary btn-lg">
+                    <a href="${pageContext.request.contextPath}/" class="btn btn-secondary btn-lg">
                         ❌ Cancelar
                     </a>
                 </div>
@@ -112,18 +112,18 @@ document.addEventListener('DOMContentLoaded', function() {
 document.getElementById('comisionId').addEventListener('change', function() {
     const comisionId = this.value;
     const divMiembros = document.getElementById('divMiembros');
-    const listaMiembros = document. getElementById('listaMiembros');
+    const listaMiembros = document.getElementById('listaMiembros');
     
     console.log('Comisión seleccionada:', comisionId);
     
-    if (! comisionId) {
+    if (!comisionId) {
         divMiembros.style.display = 'none';
         listaMiembros.innerHTML = '<p class="text-muted text-center">Seleccione una comisión para ver los miembros</p>';
         return;
     }
     
     // Mostrar loading
-    listaMiembros.innerHTML = '<div class="text-center py-4"><div class="spinner-border spinner-border-custom text-primary" role="status"><span class="visually-hidden">Cargando... </span></div><p class="mt-2 text-muted">Cargando miembros...</p></div>';
+    listaMiembros.innerHTML = '<div class="text-center py-4"><div class="spinner-border spinner-border-custom text-primary" role="status"><span class="visually-hidden">Cargando...</span></div><p class="mt-2 text-muted">Cargando miembros...</p></div>';
     divMiembros.style.display = 'block';
     
     // Cargar miembros via AJAX
@@ -144,7 +144,7 @@ document.getElementById('comisionId').addEventListener('change', function() {
         })
         .catch(error => {
             console.error('Error:', error);
-            listaMiembros.innerHTML = '<div class="alert alert-danger">Error al cargar los miembros:  ' + error.message + '</div>';
+            listaMiembros.innerHTML = '<div class="alert alert-danger">Error al cargar los miembros: ' + error.message + '</div>';
         });
 });
 
@@ -153,26 +153,95 @@ document.getElementById('formActa').addEventListener('submit', function(e) {
     const comisionId = document.getElementById('comisionId').value;
     const fechaReunion = document.getElementById('fechaReunion').value;
     
-    if (!comisionId || ! fechaReunion) {
+    if (!comisionId || !fechaReunion) {
         e.preventDefault();
         alert('Por favor, complete los campos obligatorios (Comisión y Fecha de Reunión)');
         return false;
     }
     
-    const checkboxes = document.querySelectorAll('input[name="asistio"]:checked');
-    if (checkboxes.length === 0) {
-        if (! confirm('No ha marcado ninguna asistencia.  ¿Desea continuar?')) {
+    // Contar cuántos radio buttons están seleccionados
+    const radiosSeleccionados = document.querySelectorAll('input[type="radio"]:checked');
+    const miembrosIds = document.querySelectorAll('input[name="miembroId"]');
+    
+    console.log('Total de miembros:', miembrosIds.length);
+    console.log('Asistencias marcadas:', radiosSeleccionados.length);
+    
+    if (radiosSeleccionados.length === 0) {
+        if (!confirm('No ha marcado ninguna asistencia. ¿Desea continuar de todas formas?')) {
             e.preventDefault();
             return false;
         }
     }
     
+    // Contar asistieron vs no asistieron
+    let asistieron = 0;
+    let noAsistieron = 0;
+    
+    radiosSeleccionados.forEach(radio => {
+        if (radio.value === 'ASISTIO') {
+            asistieron++;
+        } else if (radio.value === 'NO_ASISTIO') {
+            noAsistieron++;
+        }
+    });
+    
     console.log('Formulario enviado:', {
         comisionId: comisionId,
         fechaReunion: fechaReunion,
-        asistencias: checkboxes.length
+        totalMiembros: miembrosIds.length,
+        asistenciasRegistradas: radiosSeleccionados.length,
+        asistieron: asistieron,
+        noAsistieron: noAsistieron
     });
+    
+    // Permitir el envío
+    return true;
 });
+// Función para mostrar/ocultar justificación
+function toggleJustificacion(miembroId, mostrar) {
+    console.log('toggleJustificacion llamada:', miembroId, mostrar);
+    const fila = document.getElementById('justificacion_' + miembroId);
+    console.log('Fila encontrada:', fila);
+    
+    if (fila) {
+        fila.style.display = mostrar ? 'table-row' : 'none';
+        
+        // Limpiar textarea si se oculta
+        if (!mostrar) {
+            const textarea = fila.querySelector('textarea');
+            if (textarea) {
+                textarea.value = '';
+                console.log('Textarea limpiado');
+            }
+        } else {
+            console.log('Mostrando justificación para miembro:', miembroId);
+        }
+    } else {
+        console.error('No se encontró la fila de justificación para miembro:', miembroId);
+    }
+}
+
+// Función para marcar todos
+function marcarTodos(tipo) {
+    console.log('Marcando todos como:', tipo);
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        if (radio.value === tipo) {
+            radio.checked = true;
+            const miembroId = radio.name.replace('asistencia_', '');
+            toggleJustificacion(miembroId, tipo === 'NO_ASISTIO');
+        }
+    });
+}
+
+// Función para limpiar todo
+function limpiarTodo() {
+    console.log('Limpiando todas las selecciones');
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.checked = false;
+        const miembroId = radio.name.replace('asistencia_', '');
+        toggleJustificacion(miembroId, false);
+    });
+}
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
