@@ -6,10 +6,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acta de Reunión</title>
+    <title>Acta de Reunión - Gobierno de Aragón</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+    <style>
+        .justificacion-box {
+            margin-top: 8px;
+            margin-left: 25px;
+            padding: 10px 15px;
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+        }
+        .justificacion-label {
+            font-weight: bold;
+            color: #856404;
+            font-size: 0.85em;
+            margin-bottom: 4px;
+        }
+        .justificacion-text {
+            color: #664d03;
+            font-style: italic;
+            font-size: 0.9em;
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -49,12 +70,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="${pageContext.request. contextPath}/actas/new">
+                        <a class="nav-link active" href="${pageContext.request.contextPath}/actas/new">
                             <i class="bi bi-file-earmark-plus"></i> Actas
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="${pageContext. request.contextPath}/comisiones/buscarPorDni">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/comisiones/buscarPorDni">
                             <i class="bi bi-search"></i> Buscar Miembros
                         </a>
                     </li>
@@ -69,8 +90,8 @@
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb" class="no-print">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="${pageContext. request.contextPath}/">Inicio</a></li>
-                <li class="breadcrumb-item"><a href="${pageContext.request. contextPath}/actas/new">Actas</a></li>
+                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/actas/new">Actas</a></li>
                 <li class="breadcrumb-item active">Ver Acta #${acta.id}</li>
             </ol>
         </nav>
@@ -86,7 +107,7 @@
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h3 class="mb-0">
-                        <i class="bi bi-file-earmark-text"></i> Acta de Reunión #${acta. id}
+                        <i class="bi bi-file-earmark-text"></i> Acta de Reunión #${acta.id}
                     </h3>
                     <div class="no-print">
                         <button onclick="window.print()" class="btn btn-light btn-sm me-2">
@@ -111,7 +132,7 @@
                                     <p class="mb-2">
                                         <strong><i class="bi bi-diagram-3"></i> Área: </strong>
                                         <span class="badge bg-info ms-2">
-                                            ${acta. comision.area == 'ATENCION_ESPECIALIZADA' ? 'Atención Especializada' : 'Atención Primaria'}
+                                            ${acta.comision.area == 'ATENCION_ESPECIALIZADA' ? 'Atención Especializada' : 'Atención Primaria'}
                                         </span>
                                     </p>
                                 </c:if>
@@ -136,32 +157,42 @@
                     <!-- Estadísticas de Asistencia -->
                     <c:set var="contadorAsistieron" value="0"/>
                     <c:set var="contadorNoAsistieron" value="0"/>
+                    <c:set var="contadorConJustificacion" value="0"/>
                     <c:forEach var="asistencia" items="${asistencias}">
-                        <c:if test="${asistencia. asistio}">
+                        <c:if test="${asistencia.asistio}">
                             <c:set var="contadorAsistieron" value="${contadorAsistieron + 1}"/>
                         </c:if>
-                        <c:if test="${! asistencia.asistio}">
+                        <c:if test="${!asistencia.asistio}">
                             <c:set var="contadorNoAsistieron" value="${contadorNoAsistieron + 1}"/>
+                            <c:if test="${not empty asistencia.justificacion}">
+                                <c:set var="contadorConJustificacion" value="${contadorConJustificacion + 1}"/>
+                            </c:if>
                         </c:if>
                     </c:forEach>
 
                     <div class="row mb-4 no-print">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="stats-box" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                                 <h3>${contadorAsistieron + contadorNoAsistieron}</h3>
                                 <p>Total Miembros</p>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="stats-box" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
                                 <h3>${contadorAsistieron}</h3>
                                 <p>Asistieron</p>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="stats-box" style="background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);">
                                 <h3>${contadorNoAsistieron}</h3>
                                 <p>No Asistieron</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-box" style="background: linear-gradient(135deg, #ffc107 0%, #ff8800 100%);">
+                                <h3>${contadorConJustificacion}</h3>
+                                <p>Con Justificación</p>
                             </div>
                         </div>
                     </div>
@@ -179,14 +210,14 @@
                                 <ul class="asistencia-lista">
                                     <c:set var="hayAsistentes" value="false"/>
                                     <c:forEach var="asistencia" items="${asistencias}">
-                                        <c:if test="${asistencia. asistio}">
+                                        <c:if test="${asistencia.asistio}">
                                             <c:set var="hayAsistentes" value="true"/>
                                             <li class="asistio">
                                                 <i class="bi bi-person-fill text-success"></i>
-                                                <strong>${asistencia.miembro. nombreApellidos}</strong>
+                                                <strong>${asistencia.miembro.nombreApellidos}</strong>
                                                 <br>
                                                 <small class="text-muted ms-3">
-                                                    <i class="bi bi-card-text"></i> ${asistencia. miembro. dniNif}
+                                                    <i class="bi bi-card-text"></i> ${asistencia.miembro.dniNif}
                                                 </small>
                                             </li>
                                         </c:if>
@@ -205,15 +236,28 @@
                                 <ul class="asistencia-lista">
                                     <c:set var="hayAusentes" value="false"/>
                                     <c:forEach var="asistencia" items="${asistencias}">
-                                        <c:if test="${! asistencia.asistio}">
+                                        <c:if test="${!asistencia.asistio}">
                                             <c:set var="hayAusentes" value="true"/>
                                             <li class="no-asistio">
                                                 <i class="bi bi-person text-danger"></i>
-                                                <strong>${asistencia. miembro.nombreApellidos}</strong>
+                                                <strong>${asistencia.miembro.nombreApellidos}</strong>
                                                 <br>
                                                 <small class="text-muted ms-3">
-                                                    <i class="bi bi-card-text"></i> ${asistencia. miembro.dniNif}
+                                                    <i class="bi bi-card-text"></i> ${asistencia.miembro.dniNif}
                                                 </small>
+                                                
+                                                <!-- ⭐ MOSTRAR JUSTIFICACIÓN ⭐ -->
+                                                <c:if test="${not empty asistencia.justificacion}">
+                                                    <div class="justificacion-box">
+                                                        <div class="justificacion-label">
+                                                            <i class="bi bi-file-earmark-text"></i> Justificación:
+                                                        </div>
+                                                        <div class="justificacion-text">
+                                                            "${asistencia.justificacion}"
+                                                        </div>
+                                                    </div>
+                                                </c:if>
+                                                
                                             </li>
                                         </c:if>
                                     </c:forEach>
@@ -273,7 +317,7 @@
         <div class="container text-center">
             <p class="mb-0">
                 &copy; <fmt:formatDate value="<%= new java.util.Date() %>" pattern="yyyy" /> 
-                Actas de Reunión
+                Gobierno de Aragón - Departamento de Sanidad
             </p>
         </div>
     </footer>
