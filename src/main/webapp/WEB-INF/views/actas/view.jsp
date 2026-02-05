@@ -30,6 +30,15 @@
             font-style: italic;
             font-size: 0.9em;
         }
+        .pdf-card {
+            border: 2px dashed #dc3545;
+            background-color: #fff5f5;
+            transition: all 0.3s ease;
+        }
+        .pdf-card:hover {
+            border-color: #bb2d3b;
+            box-shadow: 0 0.125rem 0.25rem rgba(220, 53, 69, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -246,7 +255,7 @@
                                                     <i class="bi bi-card-text"></i> ${asistencia.miembro.dniNif}
                                                 </small>
                                                 
-                                                <!-- ⭐ MOSTRAR JUSTIFICACIÓN ⭐ -->
+                                                <!-- MOSTRAR JUSTIFICACIÓN -->
                                                 <c:if test="${not empty asistencia.justificacion}">
                                                     <div class="justificacion-box">
                                                         <div class="justificacion-label">
@@ -289,6 +298,45 @@
                             </c:otherwise>
                         </c:choose>
                     </div>
+
+                    <!-- NUEVO: Documento PDF adjunto -->
+                    <c:if test="${acta.tienePdf()}">
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-file-earmark-pdf text-danger"></i> Documento Adjunto
+                            </h5>
+                            <div class="card pdf-card">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-file-earmark-pdf-fill fs-1 text-danger me-3"></i>
+                                                <div>
+                                                    <h6 class="mb-1">
+                                                        <strong><i class="bi bi-paperclip"></i> ${acta.pdfNombre}</strong>
+                                                    </h6>
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-filetype-pdf"></i> Documento PDF adjunto a esta acta
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <a href="${pageContext.request.contextPath}/actas/view-pdf?id=${acta.id}" 
+                                               class="btn btn-outline-primary btn-sm me-2" target="_blank" 
+                                               title="Abrir PDF en nueva pestaña">
+                                                <i class="bi bi-eye"></i> Ver
+                                            </a>
+                                            <a href="${pageContext.request.contextPath}/actas/download-pdf?id=${acta.id}" 
+                                               class="btn btn-danger btn-sm" title="Descargar PDF">
+                                                <i class="bi bi-download"></i> Descargar
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </c:if>
 
                 </div>
                 

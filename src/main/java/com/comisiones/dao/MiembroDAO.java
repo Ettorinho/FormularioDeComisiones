@@ -69,6 +69,64 @@ public class MiembroDAO {
         return miembros;
     }
     
+    /**
+     * NUEVO MÉTODO: Busca todos los miembros de una comisión específica
+     */
+public List<Miembro> findMiembrosByComisionId(Long comisionId) throws SQLException {
+    List<Miembro> miembros = new ArrayList<>();
+    
+    String sql = "SELECT m.id, m.nombre_apellidos, m.dni_nif, m.correo_electronico " +
+                 "FROM miembros m " +
+                 "INNER JOIN comision_miembros cm ON m.id = cm.miembro_id " +
+                 "WHERE cm.comision_id = ? " +
+                 "ORDER BY m.nombre_apellidos";
+    
+    System.out.println("\n=== DEBUG findMiembrosByComisionId ===");
+    System.out.println("SQL: " + sql);
+    System.out.println("Parámetro comisionId: " + comisionId);
+    
+    try (Connection conn = DBUtil.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        stmt.setLong(1, comisionId);
+        
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                // DEBUG: Ver los valores del ResultSet ANTES de crear el objeto
+                Long id = rs.getLong("id");
+                String nombreApellidos = rs.getString("nombre_apellidos");
+                String dniNif = rs.getString("dni_nif");
+                String email = rs.getString("correo_electronico");
+                
+                System.out.println("--- ResultSet valores ---");
+                System.out.println("  id (Long): " + id);
+                System.out.println("  nombre_apellidos: " + nombreApellidos);
+                System.out.println("  dni_nif: " + dniNif);
+                System.out.println("  correo_electronico: " + email);
+                
+                Miembro miembro = new Miembro();
+                miembro.setId(id);
+                miembro.setNombreApellidos(nombreApellidos);
+                miembro.setDniNif(dniNif);
+                miembro.setEmail(email);
+                
+                System.out.println("--- Miembro después de setters ---");
+                System.out.println("  miembro.getId(): " + miembro.getId());
+                System.out.println("  miembro.getNombreApellidos(): " + miembro.getNombreApellidos());
+                System.out.println("  miembro.getDniNif(): " + miembro.getDniNif());
+                System.out.println("  miembro object: " + miembro);
+                
+                miembros.add(miembro);
+            }
+        }
+    }
+    
+    System.out.println("Total miembros añadidos a la lista: " + miembros.size());
+    System.out.println("=== FIN DEBUG ===\n");
+    
+    return miembros;
+}
+    
     private Miembro extractMiembroFromResultSet(ResultSet rs) throws SQLException {
         Miembro miembro = new Miembro();
         miembro.setId(rs.getLong("id"));
