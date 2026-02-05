@@ -66,7 +66,8 @@ CREATE TABLE public.actas (
     fecha_modificacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     pdf_nombre character varying(255),
     pdf_contenido bytea,
-    pdf_tipo_mime character varying(100)
+    pdf_tipo_mime character varying(100),
+    CONSTRAINT check_fecha_reunion CHECK (fecha_reunion <= CURRENT_DATE)
 );
 
 
@@ -116,45 +117,47 @@ ALTER SEQUENCE public.actas_id_seq OWNED BY public.actas.id;
 
 --
 -- TOC entry 225 (class 1259 OID 17160)
--- Name: asistencias_acta; Type: TABLE; Schema: public; Owner: postgres
+-- Name: asistencias_actas; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.asistencias_acta (
+CREATE TABLE public.asistencias_actas (
     id bigint NOT NULL,
     acta_id bigint NOT NULL,
     miembro_id bigint NOT NULL,
     asistio boolean DEFAULT false NOT NULL,
     justificacion text,
-    fecha_creacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+    fecha_creacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    fecha_modificacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
 
 
-ALTER TABLE public.asistencias_acta OWNER TO postgres;
+ALTER TABLE public.asistencias_actas OWNER TO postgres;
 
 --
 -- TOC entry 4871 (class 0 OID 0)
 -- Dependencies: 225
--- Name: TABLE asistencias_acta; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: TABLE asistencias_actas; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON TABLE public.asistencias_acta IS 'Registro de asistencia de miembros a reuniones';
+COMMENT ON TABLE public.asistencias_actas IS 'Registro de asistencia de miembros a reuniones';
 
 
 --
 -- TOC entry 4872 (class 0 OID 0)
 -- Dependencies: 225
--- Name: COLUMN asistencias_acta.asistio; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: COLUMN asistencias_actas.asistio; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.asistencias_acta.asistio IS 'true = asistió, false = no asistió';
+COMMENT ON COLUMN public.asistencias_actas.asistio IS 'true = asistió, false = no asistió';
 
 
 --
 -- TOC entry 224 (class 1259 OID 17159)
--- Name: asistencias_acta_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: asistencias_actas_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.asistencias_acta_id_seq
+CREATE SEQUENCE public.asistencias_actas_id_seq
+    AS bigint
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -162,15 +165,15 @@ CREATE SEQUENCE public.asistencias_acta_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.asistencias_acta_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.asistencias_actas_id_seq OWNER TO postgres;
 
 --
 -- TOC entry 4873 (class 0 OID 0)
 -- Dependencies: 224
--- Name: asistencias_acta_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: asistencias_actas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.asistencias_acta_id_seq OWNED BY public.asistencias_acta.id;
+ALTER SEQUENCE public.asistencias_actas_id_seq OWNED BY public.asistencias_actas.id;
 
 
 --
@@ -179,11 +182,14 @@ ALTER SEQUENCE public.asistencias_acta_id_seq OWNED BY public.asistencias_acta.i
 --
 
 CREATE TABLE public.comision_miembros (
-    comision_id integer NOT NULL,
-    miembro_id integer NOT NULL,
+    comision_id bigint NOT NULL,
+    miembro_id bigint NOT NULL,
     cargo character varying(20) NOT NULL,
     fecha_incorporacion date NOT NULL,
-    fecha_baja date
+    fecha_baja date,
+    fecha_creacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    fecha_modificacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT check_cargo CHECK (cargo IN ('REFERENTE', 'RESPONSABLE', 'PRESIDENTE', 'MIEMBRO', 'SECRETARIO', 'PARTICIPANTE', 'INVESTIGADOR_PRINCIPAL', 'INVESTIGADOR_COLABORADOR'))
 );
 
 
@@ -195,7 +201,7 @@ ALTER TABLE public.comision_miembros OWNER TO postgres;
 --
 
 CREATE TABLE public.comisiones (
-    id integer NOT NULL,
+    id bigint NOT NULL,
     nombre character varying(100) NOT NULL,
     fecha_constitucion date NOT NULL,
     fecha_fin date,
@@ -215,7 +221,7 @@ ALTER TABLE public.comisiones OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.comisiones_id_seq
-    AS integer
+    AS bigint
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -240,12 +246,13 @@ ALTER SEQUENCE public.comisiones_id_seq OWNED BY public.comisiones.id;
 --
 
 CREATE TABLE public.miembros (
-    id integer NOT NULL,
+    id bigint NOT NULL,
     nombre_apellidos character varying(100) NOT NULL,
-    dni_nif character varying(10) NOT NULL,
+    dni_nif character varying(15) NOT NULL,
     correo_electronico character varying(100) NOT NULL,
     fecha_creacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    fecha_modificacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+    fecha_modificacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT check_email CHECK (correo_electronico ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
 );
 
 
@@ -257,7 +264,7 @@ ALTER TABLE public.miembros OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.miembros_id_seq
-    AS integer
+    AS bigint
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -286,10 +293,10 @@ ALTER TABLE ONLY public.actas ALTER COLUMN id SET DEFAULT nextval('public.actas_
 
 --
 -- TOC entry 4675 (class 2604 OID 17163)
--- Name: asistencias_acta id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: asistencias_actas id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.asistencias_acta ALTER COLUMN id SET DEFAULT nextval('public.asistencias_acta_id_seq'::regclass);
+ALTER TABLE ONLY public.asistencias_actas ALTER COLUMN id SET DEFAULT nextval('public.asistencias_actas_id_seq'::regclass);
 
 
 --
@@ -353,24 +360,24 @@ COPY public.actas (id, comision_id, fecha_reunion, observaciones, fecha_creacion
 -- Data for Name: asistencias_acta; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.asistencias_acta (id, acta_id, miembro_id, asistio, justificacion, fecha_creacion) FROM stdin;
-1	1	2	t	\N	2026-02-04 14:08:21.77369
-2	7	2	t	\N	2026-02-04 14:08:21.77369
-3	8	2	f	\N	2026-02-04 14:08:21.77369
-4	9	2	t	\N	2026-02-04 14:08:21.77369
-5	10	2	t	\N	2026-02-04 14:08:21.77369
-6	11	2	f	\N	2026-02-04 14:08:21.77369
-7	19	2	t	\N	2026-02-04 12:17:26.748
-8	20	2	t	\N	2026-02-04 12:21:12.082
-9	21	2	f	\N	2026-02-04 12:21:21.708
-10	22	2	f	Visita medica	2026-02-04 12:25:51.436
-11	23	2	f	Prueba media	2026-02-04 12:27:26.211
-12	24	2	f	Visita medica	2026-02-04 12:38:11.125
-13	25	2	f	visita medica	2026-02-04 13:12:31.089
-14	26	2	f	visita medica	2026-02-04 13:14:06.931
-15	27	2	t	\N	2026-02-04 14:13:12.319
-16	28	2	t	\N	2026-02-05 09:49:58.119
-17	29	2	f	permiso laboral	2026-02-05 11:04:12.669
+COPY public.asistencias_actas (id, acta_id, miembro_id, asistio, justificacion, fecha_creacion, fecha_modificacion) FROM stdin;
+1	1	2	t	\N	2026-02-04 14:08:21.77369	2026-02-04 14:08:21.77369
+2	7	2	t	\N	2026-02-04 14:08:21.77369	2026-02-04 14:08:21.77369
+3	8	2	f	\N	2026-02-04 14:08:21.77369	2026-02-04 14:08:21.77369
+4	9	2	t	\N	2026-02-04 14:08:21.77369	2026-02-04 14:08:21.77369
+5	10	2	t	\N	2026-02-04 14:08:21.77369	2026-02-04 14:08:21.77369
+6	11	2	f	\N	2026-02-04 14:08:21.77369	2026-02-04 14:08:21.77369
+7	19	2	t	\N	2026-02-04 12:17:26.748	2026-02-04 12:17:26.748
+8	20	2	t	\N	2026-02-04 12:21:12.082	2026-02-04 12:21:12.082
+9	21	2	f	\N	2026-02-04 12:21:21.708	2026-02-04 12:21:21.708
+10	22	2	f	Visita medica	2026-02-04 12:25:51.436	2026-02-04 12:25:51.436
+11	23	2	f	Prueba media	2026-02-04 12:27:26.211	2026-02-04 12:27:26.211
+12	24	2	f	Visita medica	2026-02-04 12:38:11.125	2026-02-04 12:38:11.125
+13	25	2	f	visita medica	2026-02-04 13:12:31.089	2026-02-04 13:12:31.089
+14	26	2	f	visita medica	2026-02-04 13:14:06.931	2026-02-04 13:14:06.931
+15	27	2	t	\N	2026-02-04 14:13:12.319	2026-02-04 14:13:12.319
+16	28	2	t	\N	2026-02-05 09:49:58.119	2026-02-05 09:49:58.119
+17	29	2	f	permiso laboral	2026-02-05 11:04:12.669	2026-02-05 11:04:12.669
 \.
 
 
@@ -380,9 +387,9 @@ COPY public.asistencias_acta (id, acta_id, miembro_id, asistio, justificacion, f
 -- Data for Name: comision_miembros; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.comision_miembros (comision_id, miembro_id, cargo, fecha_incorporacion, fecha_baja) FROM stdin;
-1	2	PARTICIPANTE	2025-09-22	2025-09-24
-3	2	PARTICIPANTE	2025-12-11	\N
+COPY public.comision_miembros (comision_id, miembro_id, cargo, fecha_incorporacion, fecha_baja, fecha_creacion, fecha_modificacion) FROM stdin;
+1	2	PARTICIPANTE	2025-09-22	2025-09-24	2026-02-05 00:00:00.000000	2026-02-05 00:00:00.000000
+3	2	PARTICIPANTE	2025-12-11	\N	2026-02-05 00:00:00.000000	2026-02-05 00:00:00.000000
 \.
 
 
@@ -422,10 +429,10 @@ SELECT pg_catalog.setval('public.actas_id_seq', 29, true);
 --
 -- TOC entry 4877 (class 0 OID 0)
 -- Dependencies: 224
--- Name: asistencias_acta_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: asistencias_actas_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.asistencias_acta_id_seq', 17, true);
+SELECT pg_catalog.setval('public.asistencias_actas_id_seq', 17, true);
 
 
 --
@@ -446,6 +453,75 @@ SELECT pg_catalog.setval('public.comisiones_id_seq', 3, true);
 SELECT pg_catalog.setval('public.miembros_id_seq', 2, true);
 
 
+
+-- ========================================
+-- TRIGGER FUNCTION AND TRIGGERS
+-- ========================================
+
+--
+-- Name: actualizar_fecha_modificacion(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE OR REPLACE FUNCTION public.actualizar_fecha_modificacion()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.fecha_modificacion = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+ALTER FUNCTION public.actualizar_fecha_modificacion() OWNER TO postgres;
+
+--
+-- Name: trigger_comisiones_modificacion; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+DROP TRIGGER IF EXISTS trigger_comisiones_modificacion ON public.comisiones;
+CREATE TRIGGER trigger_comisiones_modificacion
+    BEFORE UPDATE ON public.comisiones
+    FOR EACH ROW
+    EXECUTE FUNCTION public.actualizar_fecha_modificacion();
+
+--
+-- Name: trigger_miembros_modificacion; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+DROP TRIGGER IF EXISTS trigger_miembros_modificacion ON public.miembros;
+CREATE TRIGGER trigger_miembros_modificacion
+    BEFORE UPDATE ON public.miembros
+    FOR EACH ROW
+    EXECUTE FUNCTION public.actualizar_fecha_modificacion();
+
+--
+-- Name: trigger_actas_modificacion; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+DROP TRIGGER IF EXISTS trigger_actas_modificacion ON public.actas;
+CREATE TRIGGER trigger_actas_modificacion
+    BEFORE UPDATE ON public.actas
+    FOR EACH ROW
+    EXECUTE FUNCTION public.actualizar_fecha_modificacion();
+
+--
+-- Name: trigger_comision_miembros_modificacion; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+DROP TRIGGER IF EXISTS trigger_comision_miembros_modificacion ON public.comision_miembros;
+CREATE TRIGGER trigger_comision_miembros_modificacion
+    BEFORE UPDATE ON public.comision_miembros
+    FOR EACH ROW
+    EXECUTE FUNCTION public.actualizar_fecha_modificacion();
+
+--
+-- Name: trigger_asistencias_modificacion; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+DROP TRIGGER IF EXISTS trigger_asistencias_modificacion ON public.asistencias_actas;
+CREATE TRIGGER trigger_asistencias_modificacion
+    BEFORE UPDATE ON public.asistencias_actas
+    FOR EACH ROW
+    EXECUTE FUNCTION public.actualizar_fecha_modificacion();
+
 --
 -- TOC entry 4693 (class 2606 OID 17153)
 -- Name: actas actas_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
@@ -457,20 +533,20 @@ ALTER TABLE ONLY public.actas
 
 --
 -- TOC entry 4699 (class 2606 OID 17168)
--- Name: asistencias_acta asistencia_unica; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: asistencias_actas asistencia_unica; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.asistencias_acta
+ALTER TABLE ONLY public.asistencias_actas
     ADD CONSTRAINT asistencia_unica UNIQUE (acta_id, miembro_id);
 
 
 --
 -- TOC entry 4701 (class 2606 OID 17166)
--- Name: asistencias_acta asistencias_acta_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: asistencias_actas asistencias_actas_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.asistencias_acta
-    ADD CONSTRAINT asistencias_acta_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.asistencias_actas
+    ADD CONSTRAINT asistencias_actas_pkey PRIMARY KEY (id);
 
 
 --
@@ -555,7 +631,7 @@ CREATE INDEX idx_actas_fecha ON public.actas USING btree (fecha_reunion DESC);
 -- Name: idx_asistencias_acta; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX idx_asistencias_acta ON public.asistencias_acta USING btree (acta_id);
+CREATE INDEX idx_asistencias_actas ON public.asistencias_actas USING btree (acta_id);
 
 
 --
@@ -563,7 +639,7 @@ CREATE INDEX idx_asistencias_acta ON public.asistencias_acta USING btree (acta_i
 -- Name: idx_asistencias_miembro; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX idx_asistencias_miembro ON public.asistencias_acta USING btree (miembro_id);
+CREATE INDEX idx_asistencias_miembro ON public.asistencias_actas USING btree (miembro_id);
 
 
 --
@@ -619,19 +695,19 @@ ALTER TABLE ONLY public.actas
 
 --
 -- TOC entry 4707 (class 2606 OID 17169)
--- Name: asistencias_acta fk_asistencia_acta; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: asistencias_actas fk_asistencia_acta; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.asistencias_acta
+ALTER TABLE ONLY public.asistencias_actas
     ADD CONSTRAINT fk_asistencia_acta FOREIGN KEY (acta_id) REFERENCES public.actas(id) ON DELETE CASCADE;
 
 
 --
 -- TOC entry 4708 (class 2606 OID 17174)
--- Name: asistencias_acta fk_asistencia_miembro; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: asistencias_actas fk_asistencia_miembro; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.asistencias_acta
+ALTER TABLE ONLY public.asistencias_actas
     ADD CONSTRAINT fk_asistencia_miembro FOREIGN KEY (miembro_id) REFERENCES public.miembros(id) ON DELETE CASCADE;
 
 
