@@ -5,10 +5,12 @@ import com.comisiones.model.AsistenciaActa;
 import com.comisiones.model.Comision;
 import com.comisiones.model.Miembro;
 import com.comisiones.util.DBUtil;
+import com.comisiones.util.AppLogger;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ActaDAO {
     
@@ -20,14 +22,7 @@ public class ActaDAO {
                      "pdf_nombre, pdf_contenido, pdf_tipo_mime) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id";
         
-        System.out.println("\n>>> ActaDAO.save() INICIADO");
-        System.out.println("    Comisión ID: " + acta.getComision().getId());
-        System.out.println("    Fecha reunión: " + acta.getFechaReunion());
-        System.out.println("    Tiene PDF: " + acta.tienePdf());
-        if (acta.tienePdf()) {
-            System.out.println("    PDF nombre: " + acta.getPdfNombre());
-            System.out.println("    PDF tamaño: " + acta.getPdfContenido().length + " bytes");
-        }
+        AppLogger.debug("Guardando acta");
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -45,15 +40,127 @@ public class ActaDAO {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 Long generatedId = rs.getLong("id");
-                System.out.println("    ✅ Acta guardada con ID: " + generatedId);
-                System.out.println(">>> ActaDAO.save() COMPLETADO\n");
+                AppLogger.debug("Acta guardada con ID: " + generatedId);
                 return generatedId;
             }
         }
         
-        System.out.println("    ❌ Error: No se generó ID");
-        System.out.println(">>> ActaDAO.save() FALLIDO\n");
         return null;
+    }
+    
+    /**
+     * Guarda el acta y retorna el ID generado
+     * @param conn Conexión existente (para transacciones)
+     */
+    private Long saveActa(Connection conn, Acta acta) throws SQLException {
+        String sql = "INSERT INTO actas (comision_id, fecha_reunion, observaciones, fecha_creacion, " +
+                     "pdf_nombre, pdf_contenido, pdf_tipo_mime) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setLong(1, acta.getComision().getId());
+            stmt.setDate(2, new java.sql.Date(acta.getFechaReunion().getTime()));
+            stmt.setString(3, acta.getObservaciones());
+            stmt.setTimestamp(4, new Timestamp(acta.getFechaCreacion().getTime()));
+            stmt.setString(5, acta.getPdfNombre());
+            stmt.setBytes(6, acta.getPdfContenido());
+            stmt.setString(7, acta.getPdfTipoMime());
+            
+            stmt.executeUpdate();
+            
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Guarda una asistencia usando una conexión existente
+     */
+    private Long saveAsistencia(Connection conn, Long actaId, Long miembroId, 
+                               boolean asistio, String justificacion) throws SQLException {
+        String sql = "INSERT INTO asistencias_acta (acta_id, miembro_id, asistio, justificacion, fecha_creacion) " +
+                     "VALUES (?, ?, ?, ?, ?)";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setLong(1, actaId);
+            stmt.setLong(2, miembroId);
+            stmt.setBoolean(3, asistio);
+            stmt.setString(4, justificacion);
+            stmt.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
+            
+            stmt.executeUpdate();
+            
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Guarda el acta con todas sus asistencias en una transacción atómica
+     */
+    public Long saveActaConAsistencias(Acta acta, Map<Long, Boolean> asistencias, 
+                                       Map<Long, String> justificaciones) throws SQLException {
+        
+        Connection conn = null;
+        try {
+            conn = DBUtil.getConnection();
+            conn.setAutoCommit(false);
+            
+            // 1. Guardar acta
+            Long actaId = saveActa(conn, acta);
+            
+            if (actaId == null) {
+                throw new SQLException("No se pudo generar ID para el acta");
+            }
+            
+            AppLogger.debug("Acta guardada con ID: " + actaId);
+            
+            // 2. Guardar asistencias
+            int guardadas = 0;
+            for (Map.Entry<Long, Boolean> entry : asistencias.entrySet()) {
+                Long miembroId = entry.getKey();
+                Boolean asistio = entry.getValue();
+                String justificacion = justificaciones.get(miembroId);
+                
+                saveAsistencia(conn, actaId, miembroId, asistio, justificacion);
+                guardadas++;
+            }
+            
+            AppLogger.debug("Asistencias guardadas: " + guardadas);
+            
+            conn.commit();
+            AppLogger.info("Acta y asistencias guardadas correctamente");
+            
+            return actaId;
+            
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                    AppLogger.error("Transacción revertida debido a error", e);
+                } catch (SQLException ex) {
+                    AppLogger.error("Error al hacer rollback", ex);
+                }
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    AppLogger.error("Error al cerrar conexión", e);
+                }
+            }
+        }
     }
     
     /**
@@ -65,11 +172,7 @@ public class ActaDAO {
         String sql = "INSERT INTO asistencias_acta (acta_id, miembro_id, asistio, justificacion, fecha_creacion) " +
                      "VALUES (?, ?, ?, ?, ?)";
         
-        System.out.println(">>> ActaDAO.saveAsistencia() INICIADO");
-        System.out.println("    Acta ID: " + actaId);
-        System.out.println("    Miembro ID: " + miembroId);
-        System.out.println("    Asistió: " + asistio);
-        System.out.println("    Justificación: " + (justificacion != null ? "'" + justificacion + "'" : "NULL"));
+        AppLogger.debug("Guardando asistencia para miembro ID: " + miembroId);
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -81,7 +184,6 @@ public class ActaDAO {
             stmt.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
             
             int affectedRows = stmt.executeUpdate();
-            System.out.println("    Filas insertadas: " + affectedRows);
             
             if (affectedRows == 0) {
                 throw new SQLException("No se pudo guardar la asistencia");
@@ -90,16 +192,14 @@ public class ActaDAO {
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     Long generatedId = generatedKeys.getLong(1);
-                    System.out.println("    ✅ ID generado: " + generatedId);
-                    System.out.println(">>> ActaDAO.saveAsistencia() COMPLETADO\n");
+                    AppLogger.debug("Asistencia guardada con ID: " + generatedId);
                     return generatedId;
                 } else {
                     throw new SQLException("No se pudo obtener el ID generado");
                 }
             }
         } catch (SQLException e) {
-            System.out.println("    ❌ ERROR SQL: " + e.getMessage());
-            System.out.println(">>> ActaDAO.saveAsistencia() FALLIDO\n");
+            AppLogger.error("Error al guardar asistencia", e);
             throw e;
         }
     }

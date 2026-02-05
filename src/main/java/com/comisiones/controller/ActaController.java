@@ -7,6 +7,8 @@ import com.comisiones.model.Acta;
 import com.comisiones.model.AsistenciaActa;
 import com.comisiones.model.Comision;
 import com.comisiones.model.Miembro;
+import com.comisiones.util.AppConstants;
+import com.comisiones.util.AppLogger;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -26,9 +28,9 @@ import java.util.*;
 
 @WebServlet("/actas/*")
 @MultipartConfig(
-    maxFileSize = 5 * 1024 * 1024,      // 5MB máximo por archivo
-    maxRequestSize = 10 * 1024 * 1024,  // 10MB máximo request
-    fileSizeThreshold = 1024 * 1024     // 1MB threshold para memoria
+    maxFileSize = (int) AppConstants.MAX_PDF_SIZE,
+    maxRequestSize = (int) AppConstants.MAX_REQUEST_SIZE,
+    fileSizeThreshold = (int) AppConstants.FILE_SIZE_THRESHOLD
 )
 public class ActaController extends HttpServlet {
     
@@ -42,7 +44,7 @@ public class ActaController extends HttpServlet {
         actaDAO = new ActaDAO();
         comisionDAO = new ComisionDAO();
         miembroDAO = new MiembroDAO();
-        System.out.println("--- ActaController INICIALIZADO ---");
+        AppLogger.info("ActaController inicializado");
     }
     
     @Override
@@ -99,12 +101,9 @@ public class ActaController extends HttpServlet {
     private void loadMiembrosComision(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
         
-        System.out.println("========================================");
-        System.out.println("===> loadMiembrosComision INICIADO");
-        System.out.println("========================================");
+        AppLogger.debug("loadMiembrosComision iniciado");
         
         String comisionIdParam = request.getParameter("comisionId");
-        System.out.println("===> Parámetro comisionId: " + comisionIdParam);
         
         if (comisionIdParam == null || comisionIdParam.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -112,39 +111,13 @@ public class ActaController extends HttpServlet {
         }
         
         Long comisionId = Long.parseLong(comisionIdParam);
-        System.out.println("===> ComisionId parseado: " + comisionId);
+        List<Miembro> miembros = miembroDAO.findMiembrosByComisionId(comisionId);
         
-        // Usar el método que tengas disponible en MiembroDAO
-        // Intenta primero con findMiembrosByComisionId
-        List<Miembro> miembros = null;
-        
-        try {
-            miembros = miembroDAO.findMiembrosByComisionId(comisionId);
-        } catch (Exception e) {
-            System.out.println("⚠️ Método findMiembrosByComisionId no disponible");
-            // Si no existe ese método, devuelve lista vacía
-            miembros = new ArrayList<>();
-        }
-        
-        System.out.println("===> Total miembros encontrados: " + (miembros != null ? miembros.size() : 0));
-        
-        if (miembros != null) {
-            for (Miembro m : miembros) {
-                System.out.println("===>   - Miembro: " + m.getNombreApellidos());
-            }
-        }
+        AppLogger.debug("Miembros cargados: " + (miembros != null ? miembros.size() : 0));
         
         request.setAttribute("miembros", miembros);
-        
-        String jspPath = "/WEB-INF/views/actas/miembros-fragment.jsp";
-        System.out.println("===> Ruta del JSP: " + jspPath);
-        System.out.println("===> Forwarding a: " + jspPath);
-        
-        RequestDispatcher dispatcher = request.getRequestDispatcher(jspPath);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/actas/miembros-fragment.jsp");
         dispatcher.forward(request, response);
-        
-        System.out.println("===> Forward completado");
-        System.out.println("========================================\n");
     }
     
     private void saveActa(HttpServletRequest request, HttpServletResponse response)
@@ -152,19 +125,7 @@ public class ActaController extends HttpServlet {
         
         request.setCharacterEncoding("UTF-8");
         
-        System.out.println("\n========================================");
-        System.out.println("===> GUARDANDO ACTA - DEBUG COMPLETO");
-        System.out.println("========================================\n");
-        
-        // Debug: Mostrar TODOS los parámetros
-        System.out.println("=== TODOS LOS PARÁMETROS RECIBIDOS ===");
-        Enumeration<String> paramNames = request.getParameterNames();
-        while (paramNames.hasMoreElements()) {
-            String paramName = paramNames.nextElement();
-            String paramValue = request.getParameter(paramName);
-            System.out.println("  " + paramName + " = " + paramValue);
-        }
-        System.out.println("=====================================\n");
+        AppLogger.debug("Guardando acta");
         
         // Obtener parámetros principales
         String comisionIdStr = request.getParameter("comisionId");
@@ -184,54 +145,37 @@ public class ActaController extends HttpServlet {
                 pdfNombre = getFileName(pdfPart);
                 pdfTipoMime = pdfPart.getContentType();
                 
-                System.out.println("=== ARCHIVO PDF DETECTADO ===");
-                System.out.println("  Nombre: " + pdfNombre);
-                System.out.println("  Tipo MIME: " + pdfTipoMime);
-                System.out.println("  Tamaño: " + pdfPart.getSize() + " bytes");
+                AppLogger.debug("Archivo PDF detectado: " + pdfNombre);
                 
                 // Validar que sea PDF
-                if (pdfTipoMime != null && pdfTipoMime.equals("application/pdf")) {
-                    // Validar tamaño (5MB máximo)
-                    if (pdfPart.getSize() <= 5 * 1024 * 1024) {
+                if (pdfTipoMime != null && pdfTipoMime.equals(AppConstants.PDF_MIME_TYPE)) {
+                    // Validar tamaño
+                    if (pdfPart.getSize() <= AppConstants.MAX_PDF_SIZE) {
                         try (InputStream inputStream = pdfPart.getInputStream()) {
                             pdfContenido = inputStream.readAllBytes();
-                            System.out.println("  ✅ PDF leído correctamente: " + pdfContenido.length + " bytes");
+                            AppLogger.debug("PDF leído correctamente: " + pdfContenido.length + " bytes");
                         }
                     } else {
-                        System.out.println("  ⚠️ Archivo demasiado grande: " + pdfPart.getSize() + " bytes (máximo 5MB)");
+                        AppLogger.info(AppConstants.ERROR_PDF_TOO_LARGE);
                         pdfNombre = null;
                         pdfTipoMime = null;
                     }
                 } else {
-                    System.out.println("  ⚠️ Tipo de archivo no válido (debe ser PDF): " + pdfTipoMime);
+                    AppLogger.info(AppConstants.ERROR_INVALID_PDF);
                     pdfNombre = null;
                     pdfTipoMime = null;
                 }
-                System.out.println("=============================\n");
-            } else {
-                System.out.println("=== NO SE ADJUNTÓ PDF ===\n");
             }
         } catch (Exception e) {
-            System.out.println("  ⚠️ Error al procesar PDF: " + e.getMessage());
+            AppLogger.error("Error al procesar PDF", e);
         }
         
         String[] miembroIds = request.getParameterValues("miembroId");
         
-        System.out.println("=== PARÁMETROS PRINCIPALES ===");
-        System.out.println("Comisión ID: " + comisionIdStr);
-        System.out.println("Fecha reunión: " + fechaReunionStr);
-        System.out.println("Observaciones: " + (observaciones != null ? observaciones : "(vacío)"));
-        System.out.println("PDF adjunto: " + (pdfNombre != null ? "SÍ - " + pdfNombre : "NO"));
-        System.out.println("Número de miembros: " + (miembroIds != null ? miembroIds.length : 0));
-        if (miembroIds != null) {
-            System.out.println("IDs de miembros: " + Arrays.toString(miembroIds));
-        }
-        System.out.println("==============================\n");
-        
         // Validar parámetros
         if (comisionIdStr == null || fechaReunionStr == null || miembroIds == null) {
-            System.out.println("❌ ERROR: Faltan parámetros obligatorios");
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Faltan datos obligatorios");
+            AppLogger.error(AppConstants.ERROR_MISSING_PARAMS, null);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, AppConstants.ERROR_MISSING_PARAMS);
             return;
         }
         
@@ -240,21 +184,19 @@ public class ActaController extends HttpServlet {
         // Buscar comisión
         Comision comision = comisionDAO.findById(comisionId);
         if (comision == null) {
-            System.out.println("❌ ERROR: Comisión no encontrada con ID: " + comisionId);
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Comisión no encontrada");
+            AppLogger.error(AppConstants.ERROR_COMISION_NOT_FOUND, null);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, AppConstants.ERROR_COMISION_NOT_FOUND);
             return;
         }
-        System.out.println("✅ Comisión encontrada: " + comision.getNombre());
         
         // Parsear fecha
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat sdf = new SimpleDateFormat(AppConstants.DATE_FORMAT);
         Date fechaReunion;
         try {
             fechaReunion = sdf.parse(fechaReunionStr);
-            System.out.println("✅ Fecha parseada: " + fechaReunion);
         } catch (ParseException e) {
-            System.out.println("❌ ERROR: Formato de fecha inválido: " + fechaReunionStr);
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Formato de fecha inválido");
+            AppLogger.error(AppConstants.ERROR_INVALID_DATE, null);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, AppConstants.ERROR_INVALID_DATE);
             return;
         }
         
@@ -273,33 +215,21 @@ public class ActaController extends HttpServlet {
         Long actaId = actaDAO.save(acta);
         
         if (actaId == null) {
-            System.out.println("❌ ERROR: No se pudo guardar el acta");
+            AppLogger.error("No se pudo guardar el acta", null);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al guardar el acta");
             return;
         }
         
-        System.out.println("\n✅ ACTA GUARDADA CON ID: " + actaId);
+        AppLogger.info("Acta guardada con ID: " + actaId);
         
         // Guardar asistencias
-        System.out.println("\n=== GUARDANDO ASISTENCIAS ===\n");
-        
-        int totalProcesados = 0;
-        int totalGuardados = 0;
-        int totalAsistieron = 0;
-        int totalNoAsistieron = 0;
-        int totalConJustificacion = 0;
+        AppLogger.debug("Guardando asistencias");
         
         for (String miembroIdStr : miembroIds) {
-            totalProcesados++;
             Long miembroId = Long.parseLong(miembroIdStr);
-            
-            System.out.println("--- Miembro ID: " + miembroId + " ---");
             
             String asistenciaParam = request.getParameter("asistencia_" + miembroId);
             String justificacion = request.getParameter("justificacion_" + miembroId);
-            
-            System.out.println("  Radio seleccionado: " + asistenciaParam);
-            System.out.println("  Justificación recibida: " + (justificacion != null ? "'" + justificacion + "'" : "null"));
             
             boolean asistio = "ASISTIO".equals(asistenciaParam);
             
@@ -314,45 +244,12 @@ public class ActaController extends HttpServlet {
             // Si asistió, la justificación debe ser null
             if (asistio) {
                 justificacion = null;
-                totalAsistieron++;
-                System.out.println("  ✅ ASISTIÓ - justificación = null");
-            } else {
-                totalNoAsistieron++;
-                if (justificacion != null && !justificacion.isEmpty()) {
-                    totalConJustificacion++;
-                    System.out.println("  ❌ NO ASISTIÓ - con justificación: '" + justificacion + "'");
-                } else {
-                    System.out.println("  ❌ NO ASISTIÓ - sin justificación");
-                }
             }
             
-            System.out.println("  Guardando en BD:");
-            System.out.println("    - acta_id: " + actaId);
-            System.out.println("    - miembro_id: " + miembroId);
-            System.out.println("    - asistio: " + asistio);
-            System.out.println("    - justificacion: " + (justificacion != null ? "'" + justificacion + "'" : "null"));
-            
-            Long asistenciaId = actaDAO.saveAsistencia(actaId, miembroId, asistio, justificacion);
-            
-            if (asistenciaId != null) {
-                totalGuardados++;
-                System.out.println("  ✅ Asistencia guardada correctamente con ID: " + asistenciaId + "\n");
-            } else {
-                System.out.println("  ❌ Error al guardar asistencia\n");
-            }
+            actaDAO.saveAsistencia(actaId, miembroId, asistio, justificacion);
         }
         
-        System.out.println("=== RESUMEN DE ASISTENCIAS ===");
-        System.out.println("Total procesados: " + totalProcesados);
-        System.out.println("Guardadas en BD: " + totalGuardados);
-        System.out.println("Asistieron: " + totalAsistieron);
-        System.out.println("No asistieron: " + totalNoAsistieron);
-        System.out.println("Con justificación: " + totalConJustificacion);
-        System.out.println("==============================\n");
-        
-        System.out.println("========================================");
-        System.out.println("===> ✅ PROCESO COMPLETADO");
-        System.out.println("========================================\n\n");
+        AppLogger.info("Proceso completado correctamente");
         
         // Redirigir a la vista del acta
         response.sendRedirect(request.getContextPath() + "/actas/view?id=" + actaId);
@@ -361,72 +258,43 @@ public class ActaController extends HttpServlet {
     private void viewActa(HttpServletRequest request, HttpServletResponse response) 
             throws SQLException, ServletException, IOException {
         
-        System.out.println("\n========================================");
-        System.out.println("===> VIEW ACTA INICIADO");
-        System.out.println("========================================");
+        AppLogger.debug("View acta iniciado");
         
         String idStr = request.getParameter("id");
-        System.out.println("ID del acta solicitada: " + idStr);
         
         if (idStr == null) {
-            System.out.println("ERROR: ID es null");
+            AppLogger.error("ID es null", null);
             request.setAttribute("error", "ID de acta no especificado");
             response.sendRedirect(request.getContextPath() + "/");
             return;
         }
         
         Long id = Long.parseLong(idStr);
-        System.out.println("ID parseado: " + id);
         
         // Buscar acta
         Acta acta = actaDAO.findById(id);
-        System.out.println("Acta encontrada: " + (acta != null ? "SÍ" : "NO"));
         
         if (acta == null) {
-            System.out.println("ERROR: Acta no encontrada con ID " + id);
+            AppLogger.error("Acta no encontrada con ID " + id, null);
             request.setAttribute("error", "Acta no encontrada");
             response.sendRedirect(request.getContextPath() + "/");
             return;
         }
         
-        System.out.println("Comisión: " + acta.getComision().getNombre());
-        System.out.println("Fecha reunión: " + acta.getFechaReunion());
-        System.out.println("Tiene PDF: " + acta.tienePdf());
-        if (acta.tienePdf()) {
-            System.out.println("PDF nombre: " + acta.getPdfNombre());
-        }
+        AppLogger.debug("Acta encontrada: " + acta.getComision().getNombre());
         
         // Buscar asistencias
-        System.out.println("\n--- Buscando asistencias para acta ID: " + id);
         List<AsistenciaActa> asistencias = actaDAO.findAsistenciasByActaId(id);
         
-        System.out.println("Asistencias encontradas: " + (asistencias != null ? asistencias.size() : "NULL"));
-        
-        if (asistencias != null && !asistencias.isEmpty()) {
-            System.out.println("\n=== DETALLE DE ASISTENCIAS ===");
-            for (int i = 0; i < asistencias.size(); i++) {
-                AsistenciaActa a = asistencias.get(i);
-                System.out.println((i+1) + ". " + a.getMiembro().getNombreApellidos());
-                System.out.println("   - Asistió: " + a.isAsistio());
-                System.out.println("   - Justificación: " + (a.getJustificacion() != null ? "'" + a.getJustificacion() + "'" : "NULL"));
-            }
-            System.out.println("==============================\n");
-        }
+        AppLogger.debug("Asistencias encontradas: " + (asistencias != null ? asistencias.size() : 0));
         
         // Establecer atributos
         request.setAttribute("acta", acta);
         request.setAttribute("asistencias", asistencias);
         
         // Forward a la vista
-        String jspPath = "/WEB-INF/views/actas/view.jsp";
-        System.out.println("\nForwarding a: " + jspPath);
-        
-        RequestDispatcher dispatcher = request.getRequestDispatcher(jspPath);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/actas/view.jsp");
         dispatcher.forward(request, response);
-        
-        System.out.println("========================================");
-        System.out.println("===> VIEW ACTA COMPLETADO");
-        System.out.println("========================================\n");
     }
     
     /**
@@ -456,7 +324,7 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        response.setContentType("application/pdf");
+        response.setContentType(AppConstants.PDF_MIME_TYPE);
         response.setHeader("Content-Disposition", "attachment; filename=\"" + acta.getPdfNombre() + "\"");
         response.setContentLength(pdfContenido.length);
         
@@ -495,7 +363,7 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        response.setContentType("application/pdf");
+        response.setContentType(AppConstants.PDF_MIME_TYPE);
         response.setHeader("Content-Disposition", "inline; filename=\"" + acta.getPdfNombre() + "\"");
         response.setContentLength(pdfContenido.length);
         
@@ -504,7 +372,7 @@ public class ActaController extends HttpServlet {
             out.flush();
         }
         
-        System.out.println("PDF visualizado: " + acta.getPdfNombre() + " (" + pdfContenido.length + " bytes)");
+        AppLogger.debug("PDF visualizado: " + acta.getPdfNombre());
     }
     
     /**
