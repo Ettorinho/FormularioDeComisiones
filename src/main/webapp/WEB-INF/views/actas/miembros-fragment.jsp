@@ -40,8 +40,7 @@
                     <c:forEach var="miembro" items="${miembros}" varStatus="loop">
                         <tr>
                             <td>
-                                <input type="hidden" name="miembroId" value="${miembro.id}">
-                                <input type="hidden" id="miembroId_${loop.index}" value="${miembro.id}">
+                                <input type="hidden" name="miembroId" value="${miembro.id}" />
                                 <strong>${miembro.nombreApellidos}</strong>
                                 <br>
                                 <small class="text-muted">
@@ -55,7 +54,7 @@
                                        name="asistencia_${miembro.id}" 
                                        value="ASISTIO"
                                        data-index="${loop.index}"
-                                       onchange="toggleJustificacion(${loop.index})">
+                                       onchange="toggleJustificacion(${loop.index})" />
                             </td>
                             <td class="text-center">
                                 <input type="radio" 
@@ -64,7 +63,7 @@
                                        name="asistencia_${miembro.id}" 
                                        value="NO_ASISTIO"
                                        data-index="${loop.index}"
-                                       onchange="toggleJustificacion(${loop.index})">
+                                       onchange="toggleJustificacion(${loop.index})" />
                             </td>
                             <td></td>
                         </tr>
