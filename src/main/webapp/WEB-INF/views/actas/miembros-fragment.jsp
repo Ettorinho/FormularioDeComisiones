@@ -40,7 +40,7 @@
                     <c:forEach var="miembro" items="${miembros}" varStatus="loop">
                         <tr>
                             <td>
-                                <input type="hidden" name="miembroId_${loop.index}" value="${miembro.id}" />
+                                <input type="hidden" name="miembroId" value="${miembro.id}" />
                                 <strong>${miembro.nombreApellidos}</strong>
                                 <br>
                                 <small class="text-muted">
