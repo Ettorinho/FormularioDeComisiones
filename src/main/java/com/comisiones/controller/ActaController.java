@@ -212,7 +212,27 @@ public class ActaController extends HttpServlet {
         acta.setPdfContenido(pdfContenido);
         acta.setPdfTipoMime(pdfTipoMime);
         
-        Long actaId = actaDAO.save(acta);
+        // Preparar datos de asistencia
+        Map<Long, Boolean> asistencias = new HashMap<>();
+        Map<Long, String> justificaciones = new HashMap<>();
+        
+        for (String miembroIdStr : miembroIds) {
+            Long miembroId = Long.parseLong(miembroIdStr);
+            String asistenciaParam = request.getParameter("asistencia_" + miembroId);
+            String justificacion = request.getParameter("justificacion_" + miembroId);
+            
+            boolean asistio = "ASISTIO".equals(asistenciaParam);
+            
+            asistencias.put(miembroId, asistio);
+            if (!asistio && justificacion != null && !justificacion.trim().isEmpty()) {
+                justificaciones.put(miembroId, justificacion.trim());
+            } else {
+                justificaciones.put(miembroId, null);
+            }
+        }
+        
+        // Guardar con transacción
+        Long actaId = actaDAO.saveActaConAsistencias(acta, asistencias, justificaciones);
         
         if (actaId == null) {
             AppLogger.error("No se pudo guardar el acta", null);
@@ -221,35 +241,6 @@ public class ActaController extends HttpServlet {
         }
         
         AppLogger.info("Acta guardada con ID: " + actaId);
-        
-        // Guardar asistencias
-        AppLogger.debug("Guardando asistencias");
-        
-        for (String miembroIdStr : miembroIds) {
-            Long miembroId = Long.parseLong(miembroIdStr);
-            
-            String asistenciaParam = request.getParameter("asistencia_" + miembroId);
-            String justificacion = request.getParameter("justificacion_" + miembroId);
-            
-            boolean asistio = "ASISTIO".equals(asistenciaParam);
-            
-            // Limpiar justificación
-            if (justificacion != null) {
-                justificacion = justificacion.trim();
-                if (justificacion.isEmpty()) {
-                    justificacion = null;
-                }
-            }
-            
-            // Si asistió, la justificación debe ser null
-            if (asistio) {
-                justificacion = null;
-            }
-            
-            actaDAO.saveAsistencia(actaId, miembroId, asistio, justificacion);
-        }
-        
-        AppLogger.info("Proceso completado correctamente");
         
         // Redirigir a la vista del acta
         response.sendRedirect(request.getContextPath() + "/actas/view?id=" + actaId);
