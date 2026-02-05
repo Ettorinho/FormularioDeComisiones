@@ -7,7 +7,7 @@ import java.sql.SQLException;
 public class DBUtil {
     // --- IMPORTANTE ---
     // URL de conexión a tu base de datos PostgreSQL.
-    private static final String URL = "jdbc:postgresql://localhost:5432/comisiones";
+    private static final String URL = "jdbc:postgresql://localhost:5432/comisiones_test";
     
     // Usuario de la base de datos.
     private static final String USUARIO = "postgres";
