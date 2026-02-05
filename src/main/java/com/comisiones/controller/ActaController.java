@@ -324,7 +324,7 @@ public class ActaController extends HttpServlet {
             out.flush();
         }
         
-        System.out.println("PDF descargado: " + acta.getPdfNombre() + " (" + pdfContenido.length + " bytes)");
+        AppLogger.debug("PDF descargado: " + acta.getPdfNombre());
     }
     
     /**
