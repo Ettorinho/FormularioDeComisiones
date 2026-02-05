@@ -71,13 +71,13 @@
                     
                     <div class="mb-3">
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="opcionCreacion" id="opcionExistente" value="existente" checked>
+                            <input class="form-check-input" type="radio" name="opcionCreacion" id="opcionExistente" value="existente" checked />
                             <label class="form-check-label fw-bold" for="opcionExistente">
                                 Agregar miembros a una existente
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="opcionCreacion" id="opcionNueva" value="nueva">
+                            <input class="form-check-input" type="radio" name="opcionCreacion" id="opcionNueva" value="nueva" />
                             <label class="form-check-label fw-bold" for="opcionNueva">
                                 Crear nueva
                             </label>
@@ -99,17 +99,17 @@
                             <div class="col-md-12 mb-3">
                                 <label for="nombre" class="form-label">Nombre *</label>
                                 <input type="text" class="form-control" id="nombre" name="nombre" 
-                                       placeholder="Ej: Comisión de Calidad Asistencial">
+                                       placeholder="Ej: Comisión de Calidad Asistencial" />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="fechaConstitucion" class="form-label">Fecha de Constitución *</label>
-                                <input type="date" class="form-control" id="fechaConstitucion" name="fechaConstitucion">
+                                <input type="date" class="form-control" id="fechaConstitucion" name="fechaConstitucion" />
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="fechaFin" class="form-label">Fecha de Disolución (Opcional)</label>
-                                <input type="date" class="form-control" id="fechaFin" name="fechaFin">
+                                <input type="date" class="form-control" id="fechaFin" name="fechaFin" />
                             </div>
                         </div>
                     </div>
@@ -126,7 +126,7 @@
                         <div class="col-md-9">
                             <label for="dniBusqueda" class="form-label fw-bold">Buscar en LDAP por DNI</label>
                             <input type="text" class="form-control" id="dniBusqueda" 
-                                   placeholder="Ej: 12345678A" maxlength="10">
+                                   placeholder="Ej: 12345678A" maxlength="10" />
                         </div>
                         <div class="col-md-3 d-flex align-items-end">
                             <button type="button" class="btn btn-info w-100" id="btnBuscarLDAP">
@@ -171,12 +171,12 @@
                         <div class="col-md-3 mb-2">
                             <label for="miembroDNI" class="form-label">DNI</label>
                             <input type="text" class="form-control" id="miembroDNI" 
-                                   placeholder="12345678A" maxlength="10">
+                                   placeholder="12345678A" maxlength="10" />
                         </div>
                         <div class="col-md-4 mb-2">
                             <label for="miembroNombre" class="form-label">Nombre y Apellidos</label>
                             <input type="text" class="form-control" id="miembroNombre" 
-                                   placeholder="Juan Pérez García">
+                                   placeholder="Juan Pérez García" />
                         </div>
                         <div class="col-md-3 mb-2">
                             <label for="miembroRol" class="form-label">Cargo</label>

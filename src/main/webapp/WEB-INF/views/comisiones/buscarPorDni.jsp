@@ -38,7 +38,7 @@
         <div class="row g-3 align-items-end">
             <div class="col-auto">
                 <label for="dni" class="form-label">DNI del miembro</label>
-                <input type="text" name="dni" id="dni" class="form-control" placeholder="Introduce DNI" required value="${dniBuscado != null ? dniBuscado : ''}">
+                <input type="text" name="dni" id="dni" class="form-control" placeholder="Introduce DNI" required value="${dniBuscado != null ? dniBuscado : ''}" />
             </div>
             <div class="col-auto">
                 <button type="submit" class="btn btn-primary">🔍 Buscar</button>
@@ -49,13 +49,13 @@
             <div class="mt-3">
                 <label class="form-label fw-bold">Filtrar por estado:</label>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="mostrarActivas" checked>
+                    <input class="form-check-input" type="checkbox" id="mostrarActivas" checked />
                     <label class="form-check-label" for="mostrarActivas">
                         <span class="badge badge-activa">Activas</span>
                     </label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="mostrarFinalizadas" checked>
+                    <input class="form-check-input" type="checkbox" id="mostrarFinalizadas" checked />
                     <label class="form-check-label" for="mostrarFinalizadas">
                         <span class="badge badge-finalizada">Finalizadas</span>
                     </label>

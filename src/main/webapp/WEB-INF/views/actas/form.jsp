@@ -139,7 +139,7 @@
                         <label for="pdfFile" class="form-label">
                             <i class="bi bi-file-pdf text-danger"></i> Adjuntar documento PDF (opcional)
                         </label>
-                        <input class="form-control" type="file" id="pdfFile" name="pdfFile" accept="application/pdf">
+                        <input class="form-control" type="file" id="pdfFile" name="pdfFile" accept="application/pdf" />
                         <div class="form-text">
                             <i class="bi bi-info-circle"></i> Tamaño máximo: 5MB. Solo archivos PDF (.pdf)
                         </div>
