@@ -82,7 +82,7 @@ public class ActaDAO {
      */
     private Long saveAsistencia(Connection conn, Long actaId, Long miembroId, 
                                boolean asistio, String justificacion) throws SQLException {
-        String sql = "INSERT INTO asistencias_acta (acta_id, miembro_id, asistio, justificacion, fecha_creacion) " +
+        String sql = "INSERT INTO asistencias_actas (acta_id, miembro_id, asistio, justificacion, fecha_creacion) " +
                      "VALUES (?, ?, ?, ?, ?)";
         
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -169,7 +169,7 @@ public class ActaDAO {
     public Long saveAsistencia(Long actaId, Long miembroId, boolean asistio, String justificacion) 
             throws SQLException {
         
-        String sql = "INSERT INTO asistencias_acta (acta_id, miembro_id, asistio, justificacion, fecha_creacion) " +
+        String sql = "INSERT INTO asistencias_actas (acta_id, miembro_id, asistio, justificacion, fecha_creacion) " +
                      "VALUES (?, ?, ?, ?, ?)";
         
         AppLogger.debug("Guardando asistencia para miembro ID: " + miembroId);
@@ -272,7 +272,7 @@ public class ActaDAO {
         
         String sql = "SELECT aa.id, aa.acta_id, aa.miembro_id, aa.asistio, aa.justificacion, aa.fecha_creacion, " +
                      "m.nombre_apellidos, m.dni_nif " +
-                     "FROM asistencias_acta aa " +
+                     "FROM asistencias_actas aa " +
                      "INNER JOIN miembros m ON aa.miembro_id = m.id " +
                      "WHERE aa.acta_id = ? " +
                      "ORDER BY m.nombre_apellidos";
