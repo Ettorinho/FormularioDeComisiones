@@ -104,12 +104,12 @@
                     </div>
 
                     <!-- Fecha de Reunión -->
-<div class="mb-3">
-    <label for="fechaReunion" class="form-label">
-        <i class="bi bi-calendar-event"></i> Fecha de la Reunión <span class="text-danger">*</span>
-    </label>
-    <input type="date" class="form-control" id="fechaReunion" name="fechaReunion" required>
-</div>
+                    <div class="mb-3">
+                        <label for="fechaReunion" class="form-label">
+                            <i class="bi bi-calendar-event"></i> Fecha de la Reunión <span class="text-danger">*</span>
+                        </label>
+                        <input type="date" class="form-control" id="fechaReunion" name="fechaReunion" required>
+                    </div>
 
                     <!-- Lista de Miembros (carga dinámica) -->
                     <div class="mb-4">
