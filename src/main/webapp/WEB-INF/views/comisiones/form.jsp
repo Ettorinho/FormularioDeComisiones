@@ -48,6 +48,7 @@
                                 <option value="">-- Seleccione un área --</option>
                                 <option value="ATENCION_ESPECIALIZADA">Atención Especializada</option>
                                 <option value="ATENCION_PRIMARIA">Atención Primaria</option>
+                                <option value="MIXTA">Mixta</option>
                             </select>
                         </div>
                         
