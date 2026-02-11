@@ -122,6 +122,9 @@
                                                     <c:when test="${cm.comision.area == 'ATENCION_PRIMARIA'}">
                                                         <span class="badge bg-success">Atención Primaria</span>
                                                     </c:when>
+                                                    <c:when test="${cm.comision.area == 'MIXTA'}">
+                                                        <span class="badge bg-warning text-dark">Mixta</span>
+                                                    </c:when>
                                                     <c:otherwise>
                                                         ${cm.comision.area}
                                                     </c:otherwise>
