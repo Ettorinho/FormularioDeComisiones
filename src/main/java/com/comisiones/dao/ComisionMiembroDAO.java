@@ -244,4 +244,62 @@ public class ComisionMiembroDAO {
         
         return cm;
     }
+    
+    /**
+     * Buscar un ComisionMiembro por clave compuesta (comision_id, miembro_id).
+     * 
+     * @param comisionId ID de la comisión
+     * @param miembroId ID del miembro
+     * @return ComisionMiembro encontrado, o null si no existe
+     */
+    public ComisionMiembro findByCompositeKey(Long comisionId, Long miembroId) throws SQLException {
+        String sql = "SELECT cm.cargo, cm.fecha_incorporacion, cm.fecha_baja, " +
+                     "cm.comision_id, cm.miembro_id, " +
+                     "m.dni_nif, m.nombre_apellidos, m.correo_electronico, " +
+                     "c.nombre as comision_nombre " +
+                     "FROM " + TABLE_NAME + " cm " +
+                     "INNER JOIN miembros m ON cm.miembro_id = m.id " +
+                     "INNER JOIN comisiones c ON cm.comision_id = c.id " +
+                     "WHERE cm.comision_id = ? AND cm.miembro_id = ?";
+        
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setLong(1, comisionId);
+            stmt.setLong(2, miembroId);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return extractComisionMiembroFromResultSet(rs);
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Cambia el cargo de un miembro en una comisión.
+     * El trigger registrará automáticamente el cambio en el historial.
+     * 
+     * @param comisionId ID de la comisión
+     * @param miembroId ID del miembro
+     * @param nuevoCargo Nuevo cargo a asignar
+     * @return true si se actualizó correctamente, false si no se encontró el registro
+     */
+    public boolean cambiarCargo(Long comisionId, Long miembroId, String nuevoCargo) throws SQLException {
+        String sql = "UPDATE " + TABLE_NAME + " SET cargo = ?::cargo_type " +
+                     "WHERE comision_id = ? AND miembro_id = ?";
+        
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, nuevoCargo);
+            stmt.setLong(2, comisionId);
+            stmt.setLong(3, miembroId);
+            
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println("[cambiarCargo] Filas afectadas: " + rowsAffected);
+            return rowsAffected > 0;
+        }
+    }
 }
