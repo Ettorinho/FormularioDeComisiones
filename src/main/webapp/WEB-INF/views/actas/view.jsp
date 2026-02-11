@@ -107,7 +107,7 @@
 
         <c:if test="${not empty error}">
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle"></i> <strong>Error:</strong> ${error}
+                <i class="bi bi-exclamation-triangle"></i> <strong>Error:</strong> <c:out value="${error}"/>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         </c:if>

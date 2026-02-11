@@ -14,7 +14,8 @@ import org.apache.poi.xwpf.usermodel.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 
@@ -24,13 +25,23 @@ import java.util.List;
 public class ActaGeneratorService {
     
     private static final String DATE_FORMAT = "dd/MM/yyyy";
-    private static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
     
     // Configuración de PDF
     private static final float MARGIN = 50;
     private static final float TITLE_FONT_SIZE = 18;
     private static final float SUBTITLE_FONT_SIZE = 14;
     private static final float NORMAL_FONT_SIZE = 12;
+    
+    /**
+     * Convierte un Date a String usando el formateador thread-safe.
+     */
+    private String formatDate(Date date) {
+        if (date == null) {
+            return "";
+        }
+        return dateFormatter.format(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+    }
     
     /**
      * Genera un PDF con la información del acta y asistencias.
@@ -84,7 +95,7 @@ public class ActaGeneratorService {
                 contentStream.beginText();
                 contentStream.setFont(PDType1Font.HELVETICA, NORMAL_FONT_SIZE);
                 contentStream.newLineAtOffset(MARGIN, yPosition);
-                contentStream.showText(sdf.format(acta.getFechaReunion()));
+                contentStream.showText(formatDate(acta.getFechaReunion()));
                 contentStream.endText();
                 yPosition -= 25;
                 
@@ -220,7 +231,7 @@ public class ActaGeneratorService {
                 contentStream.beginText();
                 contentStream.setFont(PDType1Font.HELVETICA, 10);
                 contentStream.newLineAtOffset(MARGIN, 50);
-                contentStream.showText("Documento generado el: " + sdf.format(new Date()));
+                contentStream.showText("Documento generado el: " + formatDate(new Date()));
                 contentStream.endText();
             }
             
@@ -271,7 +282,7 @@ public class ActaGeneratorService {
             fechaLabelRun.setFontSize(14);
             
             XWPFRun fechaValueRun = fechaParagraph.createRun();
-            fechaValueRun.setText(sdf.format(acta.getFechaReunion()));
+            fechaValueRun.setText(formatDate(acta.getFechaReunion()));
             fechaValueRun.setFontSize(12);
             
             // Observaciones
@@ -335,7 +346,7 @@ public class ActaGeneratorService {
             XWPFRun footerRun = footerParagraph.createRun();
             footerRun.addBreak();
             footerRun.addBreak();
-            footerRun.setText("Documento generado el: " + sdf.format(new Date()));
+            footerRun.setText("Documento generado el: " + formatDate(new Date()));
             footerRun.setFontSize(10);
             footerRun.setItalic(true);
             

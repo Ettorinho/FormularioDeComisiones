@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-# Configuración sensible
-src/main/webapp/META-INF/context.xml
-/target/
-=======
 # Maven build artifacts
 target/
 pom.xml.tag
@@ -26,7 +21,8 @@ buildNumber.properties
 # OS files
 .DS_Store
 Thumbs.db
->>>>>>> origin/main
-src/main/webapp/META-INF/context.xml 
+
+# Configuración sensible
 src/main/webapp/META-INF/context.xml 
 esquema.sql.backup
+
