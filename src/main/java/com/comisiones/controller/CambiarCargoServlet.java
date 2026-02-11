@@ -70,7 +70,7 @@ public class CambiarCargoServlet extends HttpServlet {
                    .forward(request, response);
             
         } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID inválido: " + e.getMessage());
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID inválido");
         } catch (SQLException e) {
             throw new ServletException("Error al obtener datos del miembro", e);
         }
@@ -142,7 +142,7 @@ public class CambiarCargoServlet extends HttpServlet {
             doGet(request, response);
             
         } catch (NumberFormatException e) {
-            request.setAttribute("error", "ID inválido: " + e.getMessage());
+            request.setAttribute("error", "ID inválido");
             doGet(request, response);
         } catch (SQLException e) {
             throw new ServletException("Error al cambiar el cargo", e);
