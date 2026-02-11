@@ -7,6 +7,7 @@ import com.comisiones.model.Acta;
 import com.comisiones.model.AsistenciaActa;
 import com.comisiones.model.Comision;
 import com.comisiones.model.Miembro;
+import com.comisiones.service.ActaGeneratorService;
 import com.comisiones.util.AppConstants;
 import com.comisiones.util.AppLogger;
 
@@ -63,6 +64,10 @@ public class ActaController extends HttpServlet {
                 downloadPdf(request, response);
             } else if (pathInfo.equals("/view-pdf")) {
                 viewPdf(request, response);
+            } else if (pathInfo.equals("/generate-pdf")) {
+                generatePdfActa(request, response);
+            } else if (pathInfo.equals("/generate-word")) {
+                generateWordActa(request, response);
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -377,5 +382,109 @@ public class ActaController extends HttpServlet {
             }
         }
         return null;
+    }
+    
+    /**
+     * Genera y descarga un PDF con la información del acta
+     */
+    private void generatePdfActa(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, IOException {
+        
+        String idStr = request.getParameter("id");
+        if (idStr == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID no especificado");
+            return;
+        }
+        
+        Long actaId = Long.parseLong(idStr);
+        
+        // Cargar acta
+        Acta acta = actaDAO.findById(actaId);
+        if (acta == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Acta no encontrada");
+            return;
+        }
+        
+        // Cargar asistencias
+        List<AsistenciaActa> asistencias = actaDAO.findAsistenciasByActaId(actaId);
+        
+        AppLogger.debug("Generando PDF para acta ID: " + actaId);
+        
+        // Instanciar el servicio generador
+        ActaGeneratorService generatorService = new ActaGeneratorService();
+        
+        try {
+            // Generar PDF
+            byte[] pdfBytes = generatorService.generarPdf(acta, asistencias);
+            
+            // Establecer headers HTTP
+            response.setContentType(AppConstants.PDF_MIME_TYPE);
+            response.setHeader("Content-Disposition", "attachment; filename=\"Acta_" + actaId + ".pdf\"");
+            response.setContentLength(pdfBytes.length);
+            
+            // Escribir bytes al OutputStream
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(pdfBytes);
+                out.flush();
+            }
+            
+            AppLogger.debug("PDF generado y descargado para acta ID: " + actaId);
+            
+        } catch (IOException e) {
+            AppLogger.error("Error al generar PDF para acta ID: " + actaId, e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al generar el PDF");
+        }
+    }
+    
+    /**
+     * Genera y descarga un documento Word con la información del acta
+     */
+    private void generateWordActa(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, IOException {
+        
+        String idStr = request.getParameter("id");
+        if (idStr == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID no especificado");
+            return;
+        }
+        
+        Long actaId = Long.parseLong(idStr);
+        
+        // Cargar acta
+        Acta acta = actaDAO.findById(actaId);
+        if (acta == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Acta no encontrada");
+            return;
+        }
+        
+        // Cargar asistencias
+        List<AsistenciaActa> asistencias = actaDAO.findAsistenciasByActaId(actaId);
+        
+        AppLogger.debug("Generando Word para acta ID: " + actaId);
+        
+        // Instanciar el servicio generador
+        ActaGeneratorService generatorService = new ActaGeneratorService();
+        
+        try {
+            // Generar Word
+            byte[] wordBytes = generatorService.generarWord(acta, asistencias);
+            
+            // Establecer headers HTTP
+            response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+            response.setHeader("Content-Disposition", "attachment; filename=\"Acta_" + actaId + ".docx\"");
+            response.setContentLength(wordBytes.length);
+            
+            // Escribir bytes al OutputStream
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(wordBytes);
+                out.flush();
+            }
+            
+            AppLogger.debug("Word generado y descargado para acta ID: " + actaId);
+            
+        } catch (IOException e) {
+            AppLogger.error("Error al generar Word para acta ID: " + actaId, e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al generar el documento Word");
+        }
     }
 }
