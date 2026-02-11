@@ -396,7 +396,13 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long actaId = Long.parseLong(idStr);
+        Long actaId;
+        try {
+            actaId = Long.parseLong(idStr);
+        } catch (NumberFormatException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID inválido");
+            return;
+        }
         
         // Cargar acta
         Acta acta = actaDAO.findById(actaId);
@@ -448,7 +454,13 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long actaId = Long.parseLong(idStr);
+        Long actaId;
+        try {
+            actaId = Long.parseLong(idStr);
+        } catch (NumberFormatException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID inválido");
+            return;
+        }
         
         // Cargar acta
         Acta acta = actaDAO.findById(actaId);

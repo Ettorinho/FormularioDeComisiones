@@ -54,7 +54,7 @@ public class ActaGeneratorService {
                 contentStream.beginText();
                 contentStream.setFont(PDType1Font.HELVETICA_BOLD, TITLE_FONT_SIZE);
                 contentStream.newLineAtOffset(MARGIN, yPosition);
-                contentStream.showText("ACTA DE REUNION #" + acta.getId());
+                contentStream.showText("ACTA DE REUNIÓN #" + acta.getId());
                 contentStream.endText();
                 yPosition -= 30;
                 
@@ -62,7 +62,7 @@ public class ActaGeneratorService {
                 contentStream.beginText();
                 contentStream.setFont(PDType1Font.HELVETICA_BOLD, SUBTITLE_FONT_SIZE);
                 contentStream.newLineAtOffset(MARGIN, yPosition);
-                contentStream.showText("Comision:");
+                contentStream.showText("Comisión:");
                 contentStream.endText();
                 yPosition -= 20;
                 
@@ -77,7 +77,7 @@ public class ActaGeneratorService {
                 contentStream.beginText();
                 contentStream.setFont(PDType1Font.HELVETICA_BOLD, SUBTITLE_FONT_SIZE);
                 contentStream.newLineAtOffset(MARGIN, yPosition);
-                contentStream.showText("Fecha de Reunion:");
+                contentStream.showText("Fecha de Reunión:");
                 contentStream.endText();
                 yPosition -= 20;
                 
@@ -159,7 +159,7 @@ public class ActaGeneratorService {
                 contentStream.beginText();
                 contentStream.setFont(PDType1Font.HELVETICA_BOLD, NORMAL_FONT_SIZE);
                 contentStream.newLineAtOffset(MARGIN + col1Width + col2Width + col3Width + 5, yPosition - 15);
-                contentStream.showText("Justificacion");
+                contentStream.showText("Justificación");
                 contentStream.endText();
                 
                 yPosition -= rowHeight;
@@ -212,16 +212,6 @@ public class ActaGeneratorService {
                         }
                         
                         yPosition -= rowHeight;
-                        
-                        // Si llegamos al final de la página, crear nueva página
-                        if (yPosition < 100) {
-                            contentStream.close();
-                            PDPage newPage = new PDPage(PDRectangle.A4);
-                            document.addPage(newPage);
-                            PDPageContentStream newContentStream = new PDPageContentStream(document, newPage);
-                            yPosition = newPage.getMediaBox().getHeight() - MARGIN;
-                            // Nota: Este es un caso simplificado, en producción necesitarías manejar esto mejor
-                        }
                     }
                 }
                 
