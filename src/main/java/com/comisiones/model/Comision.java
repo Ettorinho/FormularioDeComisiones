@@ -10,7 +10,8 @@ public class Comision implements Serializable {
     // Enums para Area y Tipo
     public enum Area {
         ATENCION_ESPECIALIZADA("Atención Especializada"),
-        ATENCION_PRIMARIA("Atención Primaria");
+        ATENCION_PRIMARIA("Atención Primaria"),
+        MIXTA("Mixta");
         
         private String descripcion;
         

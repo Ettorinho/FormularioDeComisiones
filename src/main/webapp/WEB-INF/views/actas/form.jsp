@@ -96,7 +96,12 @@
                                 <option value="${comision.id}">
                                     ${comision.nombre}
                                     <c:if test="${not empty comision.area}">
-                                        - ${comision.area == 'ATENCION_ESPECIALIZADA' ? 'Atención Especializada' : 'Atención Primaria'}
+                                        - <c:choose>
+                                            <c:when test="${comision.area == 'ATENCION_ESPECIALIZADA'}">Atención Especializada</c:when>
+                                            <c:when test="${comision.area == 'ATENCION_PRIMARIA'}">Atención Primaria</c:when>
+                                            <c:when test="${comision.area == 'MIXTA'}">Mixta</c:when>
+                                            <c:otherwise>${comision.area}</c:otherwise>
+                                        </c:choose>
                                     </c:if>
                                 </option>
                             </c:forEach>

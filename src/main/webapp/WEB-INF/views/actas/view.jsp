@@ -141,7 +141,12 @@
                                     <p class="mb-2">
                                         <strong><i class="bi bi-diagram-3"></i> Área: </strong>
                                         <span class="badge bg-info ms-2">
-                                            ${acta.comision.area == 'ATENCION_ESPECIALIZADA' ? 'Atención Especializada' : 'Atención Primaria'}
+                                            <c:choose>
+                                                <c:when test="${acta.comision.area == 'ATENCION_ESPECIALIZADA'}">Atención Especializada</c:when>
+                                                <c:when test="${acta.comision.area == 'ATENCION_PRIMARIA'}">Atención Primaria</c:when>
+                                                <c:when test="${acta.comision.area == 'MIXTA'}">Mixta</c:when>
+                                                <c:otherwise>${acta.comision.area}</c:otherwise>
+                                            </c:choose>
                                         </span>
                                     </p>
                                 </c:if>

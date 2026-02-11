@@ -48,6 +48,7 @@
                                 <option value="">-- Seleccione un área --</option>
                                 <option value="ATENCION_ESPECIALIZADA">Atención Especializada</option>
                                 <option value="ATENCION_PRIMARIA">Atención Primaria</option>
+                                <option value="MIXTA">Mixta</option>
                             </select>
                         </div>
                         
@@ -273,8 +274,8 @@
                 
                 console.log('Cargando comisiones para area=' + area + ', tipo=' + tipo);
                 
-                fetch(contextPath + '/comisiones/existentes? area=' + area + '&tipo=' + tipo)
-                    . then(response => response.json())
+                fetch(contextPath + '/comisiones/existentes?area=' + area + '&tipo=' + tipo)
+                    .then(response => response.json())
                     .then(data => {
                         console.log('Datos recibidos:', data);
                         selectExistente.innerHTML = '<option value="">-- Seleccione --</option>';
