@@ -273,7 +273,7 @@
                 
                 console.log('Cargando comisiones para area=' + area + ', tipo=' + tipo);
                 
-                fetch(contextPath + '/comisiones/existentes? area=' + area + '&tipo=' + tipo)
+                fetch(contextPath + '/comisiones/existentes?area=' + area + '&tipo=' + tipo)
                     . then(response => response.json())
                     .then(data => {
                         console.log('Datos recibidos:', data);
