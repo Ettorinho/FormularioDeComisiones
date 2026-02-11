@@ -195,7 +195,7 @@ public class ActaGeneratorService {
                         contentStream.beginText();
                         contentStream.setFont(PDType1Font.HELVETICA, NORMAL_FONT_SIZE);
                         contentStream.newLineAtOffset(MARGIN + col1Width + col2Width + 5, yPosition - 15);
-                        contentStream.showText(asistencia.isAsistio() ? "Si" : "No");
+                        contentStream.showText(asistencia.isAsistio() ? "Sí" : "No");
                         contentStream.endText();
                         
                         // Justificación

@@ -345,8 +345,8 @@ Esto forzará la descarga de todas las dependencias.
    float col2Width = tableWidth * 0.15f; // Reducir columna 2
    // ...
    ```
-2. Para muchas filas, el código ya incluye lógica de paginación básica
-3. Considera crear una nueva página cuando `yPosition < 100`
+2. Para muchas filas que exceden una página, se necesitará implementar paginación
+3. Una solución temporal es limitar el número de asistencias mostradas o usar un tamaño de fuente menor
 
 ## Activar/Desactivar la Funcionalidad
 
