@@ -8,6 +8,7 @@
     <meta charset="UTF-8">
     <title>Detalles de ${comision.nombre}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body>
 <div class="container mt-4">
@@ -77,7 +78,11 @@
                                 <td>
                                     <c:choose>
                                         <c:when test="${empty cm.fechaBaja}">
-                                            <!-- No mostrar botón de baja aquí, solo mostrarlo en bajaMiembros.jsp -->
+                                            <a href="${pageContext.request.contextPath}/comisiones/cambiarCargo?comisionId=${comision.id}&miembroId=${cm.miembro.id}" 
+                                               class="btn btn-warning btn-sm" 
+                                               title="Cambiar cargo del miembro">
+                                                <i class="bi bi-arrow-left-right"></i> Cambiar Cargo
+                                            </a>
                                         </c:when>
                                         <c:otherwise>
                                             <span class="badge bg-secondary">Baja: <fmt:formatDate value="${cm.fechaBaja}" pattern="dd/MM/yyyy"/></span>
