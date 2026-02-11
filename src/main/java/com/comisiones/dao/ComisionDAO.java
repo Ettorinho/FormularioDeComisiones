@@ -3,6 +3,7 @@ package com.comisiones.dao;
 import com.comisiones.model.Comision;
 import com.comisiones.model. Comision. Area;
 import com.comisiones.model.Comision. Tipo;
+import com.comisiones.util.AppLogger;
 import com.comisiones.util.DBUtil;
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.List;
 public class ComisionDAO {
     
     public void save(Comision comision) throws SQLException {
-        System.out.println("===> [DEBUG] ComisionDAO.save: " + comision.getNombre());
+        AppLogger.debug("ComisionDAO.save: " + comision.getNombre());
         String sql = "INSERT INTO comisiones (nombre, area, tipo, fecha_constitucion, fecha_fin) VALUES (?, ? ::area_type, ? ::tipo_type, ?, ?)";
         
         try (Connection conn = DBUtil.getConnection();
