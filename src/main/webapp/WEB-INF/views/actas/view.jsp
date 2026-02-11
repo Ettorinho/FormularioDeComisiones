@@ -304,6 +304,30 @@
                         </c:choose>
                     </div>
 
+                    <!-- Opciones de descarga generada -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <i class="bi bi-download"></i> Generar y Descargar Acta
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Genera el acta automáticamente en el formato deseado:</p>
+                                    <div class="btn-group" role="group">
+                                        <a href="${pageContext.request.contextPath}/actas/generate-pdf?id=${acta.id}" 
+                                           class="btn btn-danger" title="Generar PDF">
+                                            <i class="bi bi-file-pdf"></i> Generar PDF
+                                        </a>
+                                        <a href="${pageContext.request.contextPath}/actas/generate-word?id=${acta.id}" 
+                                           class="btn btn-primary" title="Generar Word">
+                                            <i class="bi bi-file-word"></i> Generar Word
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- NUEVO: Documento PDF adjunto -->
                     <c:if test="${acta.tienePdf()}">
                         <div class="mb-4">
