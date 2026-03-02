@@ -1,6 +1,6 @@
 package com.comisiones.model;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public class AsistenciaActa {
     private Long id;
@@ -8,17 +8,17 @@ public class AsistenciaActa {
     private Miembro miembro;
     private boolean asistio;
     private String justificacion;  // ⭐ NUEVO CAMPO
-    private Date fechaCreacion;
+    private LocalDateTime fechaCreacion;
     
     public AsistenciaActa() {
-        this.fechaCreacion = new Date();
+        this.fechaCreacion = LocalDateTime.now();
     }
     
     public AsistenciaActa(Acta acta, Miembro miembro, boolean asistio) {
         this.acta = acta;
         this.miembro = miembro;
         this.asistio = asistio;
-        this.fechaCreacion = new Date();
+        this.fechaCreacion = LocalDateTime.now();
     }
     
     public AsistenciaActa(Acta acta, Miembro miembro, boolean asistio, String justificacion) {
@@ -26,7 +26,7 @@ public class AsistenciaActa {
         this.miembro = miembro;
         this.asistio = asistio;
         this.justificacion = justificacion;
-        this.fechaCreacion = new Date();
+        this.fechaCreacion = LocalDateTime.now();
     }
     
     // Getters y Setters
@@ -70,11 +70,11 @@ public class AsistenciaActa {
         this.justificacion = justificacion;
     }
     
-    public Date getFechaCreacion() {
+    public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
     }
     
-    public void setFechaCreacion(Date fechaCreacion) {
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
     }
 }
