@@ -1,13 +1,14 @@
 package com.comisiones.model;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Acta {
     private Long id;
     private Comision comision;
-    private Date fechaReunion;
+    private LocalDate fechaReunion;
     private String observaciones;
-    private Date fechaCreacion;
+    private LocalDateTime fechaCreacion;
     
     // Campos para PDF adjunto
     private String pdfNombre;
@@ -35,11 +36,11 @@ public class Acta {
         this.comision = comision;
     }
     
-    public Date getFechaReunion() {
+    public LocalDate getFechaReunion() {
         return fechaReunion;
     }
     
-    public void setFechaReunion(Date fechaReunion) {
+    public void setFechaReunion(LocalDate fechaReunion) {
         this.fechaReunion = fechaReunion;
     }
     
@@ -51,11 +52,11 @@ public class Acta {
         this.observaciones = observaciones;
     }
     
-    public Date getFechaCreacion() {
+    public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
     }
     
-    public void setFechaCreacion(Date fechaCreacion) {
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
     }
     
