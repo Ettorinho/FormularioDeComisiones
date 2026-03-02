@@ -2,6 +2,21 @@
 
 Este directorio contiene los scripts de migración para la base de datos del Sistema de Gestión de Comisiones.
 
+## Migraciones de esquema base (V-numeradas)
+
+| Fichero | Descripción |
+|---|---|
+| `V1__esquema_inicial.sql` | Esquema inicial de la base de datos |
+| `V2__add_pdf_support.sql` | Añade soporte para almacenamiento de PDFs |
+| `V3__updated_schema.sql` | Actualizaciones del esquema |
+
+### Convención de nombres
+
+Los ficheros siguen el formato `V{número}__{descripción}.sql` para facilitar
+la aplicación ordenada de migraciones.
+
+---
+
 ## 📋 Migraciones Disponibles
 
 ### **001_mejoras_criticas.sql** - Mejoras Críticas y Correcciones

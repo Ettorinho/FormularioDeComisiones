@@ -14,9 +14,8 @@ import org.apache.poi.xwpf.usermodel.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.ZoneId;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -34,13 +33,13 @@ public class ActaGeneratorService {
     private static final float NORMAL_FONT_SIZE = 12;
     
     /**
-     * Convierte un Date a String usando el formateador thread-safe.
+     * Convierte un LocalDate a String usando el formateador thread-safe.
      */
-    private String formatDate(Date date) {
+    private String formatDate(LocalDate date) {
         if (date == null) {
             return "";
         }
-        return dateFormatter.format(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+        return dateFormatter.format(date);
     }
     
     /**
@@ -231,7 +230,7 @@ public class ActaGeneratorService {
                 contentStream.beginText();
                 contentStream.setFont(PDType1Font.HELVETICA, 10);
                 contentStream.newLineAtOffset(MARGIN, 50);
-                contentStream.showText("Documento generado el: " + formatDate(new Date()));
+                contentStream.showText("Documento generado el: " + formatDate(LocalDate.now()));
                 contentStream.endText();
             }
             
@@ -346,7 +345,7 @@ public class ActaGeneratorService {
             XWPFRun footerRun = footerParagraph.createRun();
             footerRun.addBreak();
             footerRun.addBreak();
-            footerRun.setText("Documento generado el: " + formatDate(new Date()));
+            footerRun.setText("Documento generado el: " + formatDate(LocalDate.now()));
             footerRun.setFontSize(10);
             footerRun.setItalic(true);
             

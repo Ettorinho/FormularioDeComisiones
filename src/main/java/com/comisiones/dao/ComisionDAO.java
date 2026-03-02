@@ -1,8 +1,8 @@
 package com.comisiones.dao;
 
 import com.comisiones.model.Comision;
-import com.comisiones.model. Comision. Area;
-import com.comisiones.model.Comision. Tipo;
+import com.comisiones.model.Comision.Area;
+import com.comisiones.model.Comision.Tipo;
 import com.comisiones.util.AppLogger;
 import com.comisiones.util.DBUtil;
 import java.sql.*;
@@ -24,7 +24,7 @@ public class ComisionDAO {
             stmt.setDate(4, new java.sql.Date(comision.getFechaConstitucion().getTime()));
             
             if (comision.getFechaFin() != null) {
-                stmt. setDate(5, new java. sql.Date(comision.getFechaFin().getTime()));
+                stmt.setDate(5, new java.sql.Date(comision.getFechaFin().getTime()));
             } else {
                 stmt.setNull(5, java.sql.Types.DATE);
             }
@@ -33,7 +33,7 @@ public class ComisionDAO {
             
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    comision. setId(generatedKeys.getLong(1));
+                    comision.setId(generatedKeys.getLong(1));
                 }
             }
         }

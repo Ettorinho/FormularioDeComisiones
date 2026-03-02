@@ -25,9 +25,9 @@ public class ActaDAO {
         
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setLong(1, acta.getComision().getId());
-            stmt.setDate(2, new java.sql.Date(acta.getFechaReunion().getTime()));
+            stmt.setDate(2, java.sql.Date.valueOf(acta.getFechaReunion()));
             stmt.setString(3, acta.getObservaciones());
-            stmt.setTimestamp(4, new Timestamp(acta.getFechaCreacion().getTime()));
+            stmt.setTimestamp(4, Timestamp.valueOf(acta.getFechaCreacion()));
             stmt.setString(5, acta.getPdfNombre());
             stmt.setBytes(6, acta.getPdfContenido());
             stmt.setString(7, acta.getPdfTipoMime());
@@ -190,9 +190,9 @@ public class ActaDAO {
             if (rs.next()) {
                 Acta acta = new Acta();
                 acta.setId(rs.getLong("id"));
-                acta.setFechaReunion(rs.getDate("fecha_reunion"));
+                acta.setFechaReunion(rs.getDate("fecha_reunion").toLocalDate());
                 acta.setObservaciones(rs.getString("observaciones"));
-                acta.setFechaCreacion(rs.getTimestamp("fecha_creacion"));
+                acta.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
                 
                 // Información del PDF (sin cargar el contenido)
                 acta.setPdfNombre(rs.getString("pdf_nombre"));
