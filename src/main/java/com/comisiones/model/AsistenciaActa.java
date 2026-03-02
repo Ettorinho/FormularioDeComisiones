@@ -3,6 +3,9 @@ package com.comisiones.model;
 import java.time.LocalDateTime;
 
 public class AsistenciaActa {
+    private static final java.time.format.DateTimeFormatter FECHA_FORMATTER =
+        java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    
     private Long id;
     private Acta acta;
     private Miembro miembro;
@@ -76,5 +79,14 @@ public class AsistenciaActa {
     
     public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
+    }
+    
+    /**
+     * Devuelve la fecha de creación formateada como String para uso en vistas JSP.
+     * Alternativa a <fmt:formatDate> que no es compatible con LocalDateTime.
+     */
+    public String getFechaCreacionFormateada() {
+        if (fechaCreacion == null) return "";
+        return fechaCreacion.format(FECHA_FORMATTER);
     }
 }
