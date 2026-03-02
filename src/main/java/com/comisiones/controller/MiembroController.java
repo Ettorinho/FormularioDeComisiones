@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import com.comisiones.util.AppLogger;
 
 // La anotación define la URL para este servlet.
 @WebServlet("/miembros")
@@ -41,7 +42,7 @@ public class MiembroController extends HttpServlet {
 
         } catch (SQLException e) {
             // Si hay un error de base de datos, lo mostramos en la página de error.
-            e.printStackTrace();
+            AppLogger.error("Error al cargar miembros", e);
             request.setAttribute("error", "Error al cargar miembros: " + e.getMessage());
             RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/error.jsp");
             dispatcher.forward(request, response);
