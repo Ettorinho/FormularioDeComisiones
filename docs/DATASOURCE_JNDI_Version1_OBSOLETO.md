@@ -1,3 +1,5 @@
+> ⚠️ **OBSOLETO**: Esta configuración ha sido reemplazada por HikariCP con variables de entorno. Ver `docs/DATASOURCE_JNDI.md` para la configuración actual.
+
 ```xml
 <!-- src/main/webapp/META-INF/context.xml  (NO subir al repo) -->
 <?xml version="1.0" encoding="UTF-8"?>

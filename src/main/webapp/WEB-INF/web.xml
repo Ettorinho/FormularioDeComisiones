@@ -19,7 +19,7 @@
     
     <context-param>
         <param-name>ldap.bindDn</param-name>
-        <param-value>CN=Hector Lisa Elvira,OU=Barbastro,OU=Administradores de Nivel 2,DC=salud,DC=dga,DC=es</param-value>
+        <param-value>CN=Usuario Bind,OU=UnidadOrganizativa,DC=dominio,DC=es</param-value>
     </context-param>
     
     <context-param>
@@ -38,17 +38,6 @@
         <servlet-name>LdapLookupServlet</servlet-name>
         <url-pattern>/ldapLookup</url-pattern>
     </servlet-mapping>
-
-    <!-- Servlet ComisionController -->
-    <servlet>
-        <servlet-name>ComisionController</servlet-name>
-        <servlet-class>com.comisiones.controller.ComisionController</servlet-class>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>ComisionController</servlet-name>
-        <url-pattern>/comisiones/*</url-pattern>
-    </servlet-mapping> 
 
     <!-- Página de bienvenida -->
     <welcome-file-list>
