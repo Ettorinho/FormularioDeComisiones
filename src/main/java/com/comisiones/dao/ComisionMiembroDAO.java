@@ -3,6 +3,7 @@ package com.comisiones.dao;
 import com.comisiones.model.ComisionMiembro;
 import com.comisiones.model. Comision;
 import com.comisiones.model.Miembro;
+import com.comisiones.util.AppLogger;
 import com.comisiones.util.DBUtil;
 import java. sql.*;
 import java.util. ArrayList;
@@ -95,7 +96,7 @@ public class ComisionMiembroDAO {
             stmt.setLong(3, miembroId);
             
             int rowsAffected = stmt.executeUpdate();
-            System.out.println("[darDeBaja] Filas afectadas: " + rowsAffected);
+            AppLogger.debug("darDeBaja - Filas afectadas: " + rowsAffected);
         }
     }
     
@@ -114,7 +115,7 @@ public class ComisionMiembroDAO {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs. next()) {
                     int count = rs.getInt(1);
-                    System.out.println("===> existeEnComision(comisionId=" + comisionId + ", miembroId=" + miembroId + ") = " + (count > 0));
+                    AppLogger.debug("existeEnComision(comisionId=" + comisionId + ", miembroId=" + miembroId + ") = " + (count > 0));
                     return count > 0;
                 }
             }
@@ -298,7 +299,7 @@ public class ComisionMiembroDAO {
             stmt.setLong(3, miembroId);
             
             int rowsAffected = stmt.executeUpdate();
-            System.out.println("[cambiarCargo] Filas afectadas: " + rowsAffected);
+            AppLogger.debug("cambiarCargo - Filas afectadas: " + rowsAffected);
             return rowsAffected > 0;
         }
     }

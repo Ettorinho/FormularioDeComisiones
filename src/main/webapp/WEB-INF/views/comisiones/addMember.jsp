@@ -39,7 +39,7 @@
             </div>
             <div class="card-body">
                 <c:if test="${not empty error}">
-                    <div class="alert alert-danger">${error}</div>
+                    <div class="alert alert-danger"><c:out value="${error}"/></div>
                 </c:if>
                 
                 <form id="addMemberForm" action="${pageContext.request.contextPath}/comisiones/addMember/${comision.id}" method="POST">

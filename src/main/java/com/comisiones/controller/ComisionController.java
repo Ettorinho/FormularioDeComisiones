@@ -6,9 +6,11 @@ import com.comisiones.dao.MiembroDAO;
 import com.comisiones.model. Comision;
 import com.comisiones.model.ComisionMiembro;
 import com.comisiones.model.Miembro;
+import com.comisiones.util.AppLogger;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet. http.HttpServletResponse;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.HashSet;
 import java.util. ArrayList;
 
+@WebServlet("/comisiones/*")
 public class ComisionController extends HttpServlet {
 
     private ComisionDAO comisionDAO;
@@ -32,7 +35,7 @@ public class ComisionController extends HttpServlet {
         comisionDAO = new ComisionDAO();
         comisionMiembroDAO = new ComisionMiembroDAO();
         miembroDAO = new MiembroDAO();
-        System.out.println("--- ComisionController INICIALIZADO ---");
+        AppLogger.info("ComisionController INICIALIZADO");
     }
 
     @Override
@@ -106,8 +109,7 @@ public class ComisionController extends HttpServlet {
         String pathInfo = request.getPathInfo();
         String idStr = pathInfo.substring(6);
 
-        System.out.println("DEBUG: pathInfo = " + pathInfo);
-        System.out.println("DEBUG: id a parsear = '" + idStr + "'");
+        AppLogger.debug("viewComision - pathInfo: " + pathInfo + ", id: " + idStr);
 
         Long id;
         try {
@@ -153,7 +155,7 @@ public class ComisionController extends HttpServlet {
 
     private void saveComision(HttpServletRequest request, HttpServletResponse response) 
             throws SQLException, ParseException, IOException, ServletException {
-        System.out.println("===> [DEBUG] saveComision INVOCADO");
+        AppLogger.debug("saveComision INVOCADO");
         
         String nombre = request.getParameter("nombre");
         String areaStr = request.getParameter("area");
@@ -164,14 +166,8 @@ public class ComisionController extends HttpServlet {
         String opcionCreacion = request.getParameter("opcionCreacion");
         String comisionExistenteStr = request.getParameter("comisionExistente");
         
-        System.out.println("===> Parámetros recibidos:");
-        System.out.println("    nombre:  " + nombre);
-        System.out.println("    area: " + areaStr);
-        System.out.println("    tipo: " + tipoStr);
-        System.out.println("    fechaConstitucion: " + fechaConstitucionStr);
-        System.out.println("    opcionCreacion: " + opcionCreacion);
-        System.out.println("    comisionExistente: " + comisionExistenteStr);
-        System.out.println("    miembrosJSON: " + miembrosJSON);
+        AppLogger.debug("Parámetros recibidos - nombre: " + nombre + ", area: " + areaStr + 
+                       ", tipo: " + tipoStr + ", opcionCreacion: " + opcionCreacion);
         
         // Validar área y tipo
         if (areaStr == null || tipoStr == null) {
@@ -185,7 +181,7 @@ public class ComisionController extends HttpServlet {
         // Opción 1: Agregar miembros a comisión existente
         if ("existente".equals(opcionCreacion) && comisionExistenteStr != null && !comisionExistenteStr.isEmpty()) {
             comisionId = Long.parseLong(comisionExistenteStr);
-            System.out.println("===> Agregando miembros a comisión existente ID: " + comisionId);
+            AppLogger.debug("Agregando miembros a comisión existente ID: " + comisionId);
         } 
         // Opción 2: Crear nueva comisión
         else {
@@ -218,15 +214,15 @@ public class ComisionController extends HttpServlet {
             
             comisionDAO.save(nuevaComision);
             comisionId = nuevaComision.getId();
-            System.out.println("===> Nueva comisión creada con ID: " + comisionId);
+            AppLogger.info("Nueva comisión creada con ID: " + comisionId);
         }
         
         // Procesar miembros desde JSON
         if (miembrosJSON != null && !miembrosJSON.isEmpty() && ! miembrosJSON.equals("[]")) {
-            System.out. println("===> Procesando miembros.. .");
+            AppLogger.debug("Procesando miembros JSON");
             procesarMiembrosJSON(comisionId, miembrosJSON);
         } else {
-            System.out. println("===> No hay miembros para procesar");
+            AppLogger.debug("No hay miembros para procesar");
         }
 
         response.sendRedirect(request.getContextPath() + "/comisiones/view/" + comisionId);
@@ -303,13 +299,13 @@ public class ComisionController extends HttpServlet {
         Long miembroId = Long.parseLong(parts[3]);
         String fechaBajaStr = request.getParameter("fechaBaja");
         
-        System.out.println("[bajaMiembro] comisionId=" + comisionId + ", miembroId=" + miembroId + ", fechaBajaStr=" + fechaBajaStr);
+        AppLogger.debug("bajaMiembro - comisionId: " + comisionId + ", miembroId: " + miembroId);
         
         Date fechaBajaUtil = new SimpleDateFormat("yyyy-MM-dd").parse(fechaBajaStr);
         java.sql.Date fechaBaja = new java.sql.Date(fechaBajaUtil.getTime());
         comisionMiembroDAO.darDeBaja(comisionId, miembroId, fechaBaja);
         
-        System.out.println("[bajaMiembro] Redirecting to:  " + request.getContextPath() + "/comisiones/view/" + comisionId);
+        AppLogger.debug("Redirecting to /comisiones/view/" + comisionId);
         response.sendRedirect(request.getContextPath() + "/comisiones/view/" + comisionId);
     }
    
@@ -321,7 +317,7 @@ public class ComisionController extends HttpServlet {
         
         response.setContentType("application/json;charset=UTF-8");
         
-        System.out.println("===> getComisionesExistentes:  area=" + areaStr + ", tipo=" + tipoStr);
+        AppLogger.debug("getComisionesExistentes - area: " + areaStr + ", tipo: " + tipoStr);
         
         if (areaStr == null || tipoStr == null) {
             response.getWriter().write("{\"error\": \"Parámetros area y tipo requeridos\"}");
@@ -334,7 +330,7 @@ public class ComisionController extends HttpServlet {
             
             List<Comision> comisiones = comisionDAO. findByAreaAndTipo(area, tipo);
             
-            System.out.println("===> Comisiones encontradas: " + comisiones.size());
+            AppLogger.debug("Comisiones encontradas: " + comisiones.size());
             
             // Construir JSON manualmente
             StringBuilder json = new StringBuilder("[");
@@ -349,11 +345,11 @@ public class ComisionController extends HttpServlet {
             json.append("]");
             
             String jsonString = json.toString();
-            System.out.println("===> JSON generado: " + jsonString);
+            AppLogger.debug("JSON generado: " + jsonString);
             response.getWriter().write(jsonString);
             
         } catch (IllegalArgumentException e) {
-            System.err.println("===> Error: " + e.getMessage());
+            AppLogger.error("Error: valores de area o tipo inválidos", e);
             response.getWriter().write("{\"error\": \"Valores de area o tipo inválidos\"}");
         }
     }
@@ -362,9 +358,7 @@ public class ComisionController extends HttpServlet {
      * ⭐ ACTUALIZADO: Procesar miembros desde JSON con validación de duplicados
      */
     private void procesarMiembrosJSON(Long comisionId, String miembrosJSON) throws SQLException, ParseException {
-        System.out.println("========================================");
-        System.out.println("===> Procesando miembros JSON: " + miembrosJSON);
-        System.out.println("========================================");
+        AppLogger.debug("Procesando miembros JSON: " + miembrosJSON);
         
         miembrosJSON = miembrosJSON.trim();
         if (miembrosJSON.startsWith("[")) {
@@ -372,7 +366,7 @@ public class ComisionController extends HttpServlet {
         }
         
         if (miembrosJSON.isEmpty()) {
-            System.out. println("===> JSON vacío");
+            AppLogger.debug("JSON vacío");
             return;
         }
         
@@ -404,12 +398,12 @@ public class ComisionController extends HttpServlet {
             }
             
             if (dni == null || nombre == null) {
-                System.out.println("⚠️  ADVERTENCIA: Miembro con datos incompletos.  Se omite.");
+                AppLogger.debug("ADVERTENCIA: Miembro con datos incompletos. Se omite.");
                 errores++;
                 continue;
             }
             
-            System.out.println("\n--- Procesando miembro: " + nombre + " (" + dni + ") - Rol: " + rol + " ---");
+            AppLogger.debug("Procesando miembro: " + nombre + " (" + dni + ") - Rol: " + rol);
             
             try {
                 // Verificar si el miembro ya existe en la base de datos
@@ -421,14 +415,14 @@ public class ComisionController extends HttpServlet {
                     miembro.setNombreApellidos(nombre);
                     miembro.setEmail(email);
                     miembroDAO.save(miembro);
-                    System.out.println("✅ Nuevo miembro creado con ID: " + miembro.getId());
+                    AppLogger.debug("Nuevo miembro creado con ID: " + miembro.getId());
                 } else {
-                    System.out.println("ℹ️  Miembro existente encontrado con ID: " + miembro.getId());
+                    AppLogger.debug("Miembro existente encontrado con ID: " + miembro.getId());
                 }
                 
                 // ⭐ VALIDACIÓN: Verificar si ya está en esta comisión
                 if (comisionMiembroDAO.existeEnComision(comisionId, miembro.getId())) {
-                    System.out.println("⚠️  DUPLICADO: El miembro " + nombre + " (" + dni + ") ya pertenece a esta comisión.  Se omite.");
+                    AppLogger.debug("DUPLICADO: El miembro " + nombre + " ya pertenece a esta comisión. Se omite.");
                     duplicados++;
                     continue;
                 }
@@ -442,26 +436,20 @@ public class ComisionController extends HttpServlet {
                 cm.setFechaIncorporacion(new java.sql.Date(System.currentTimeMillis()));
                 
                 comisionMiembroDAO.save(cm);
-                System.out. println("✅ Miembro agregado exitosamente a la comisión");
+                AppLogger.debug("Miembro agregado exitosamente a la comisión");
                 agregados++;
                 
                 // Mostrar en cuántas comisiones está ahora
                 int totalComisiones = comisionMiembroDAO.contarComisionesActivas(miembro.getId());
-                System.out.println("ℹ️  El miembro ahora pertenece a " + totalComisiones + " comisión(es) activa(s)");
+                AppLogger.debug("El miembro ahora pertenece a " + totalComisiones + " comisión(es) activa(s)");
                 
             } catch (Exception e) {
-                System.err.println("❌ ERROR procesando miembro " + nombre + " (" + dni + "): " + e.getMessage());
-                e.printStackTrace();
+                AppLogger.error("ERROR procesando miembro " + nombre + " (" + dni + ")", e);
                 errores++;
             }
         }
         
-        System.out.println("\n========================================");
-        System.out. println("✅ RESUMEN DE PROCESAMIENTO:");
-        System.out.println("   Total en JSON: " + miembrosArray.length);
-        System.out.println("   ✅ Agregados exitosamente: " + agregados);
-        System.out.println("   ⚠️  Duplicados omitidos: " + duplicados);
-        System.out.println("   ❌ Errores: " + errores);
-        System.out.println("========================================\n");
+        AppLogger.info("RESUMEN DE PROCESAMIENTO: Total=" + miembrosArray.length + 
+                      ", Agregados=" + agregados + ", Duplicados=" + duplicados + ", Errores=" + errores);
     }
 }

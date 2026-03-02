@@ -29,7 +29,7 @@
         
         <c:if test="${not empty error}">
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <strong>Error: </strong> ${error}
+                <strong>Error: </strong> <c:out value="${error}"/>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         </c:if>
