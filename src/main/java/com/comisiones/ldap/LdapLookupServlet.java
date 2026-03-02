@@ -28,92 +28,48 @@ public class LdapLookupServlet extends HttpServlet {
         log("========================================");
         log("Inicializando LdapLookupServlet...");
         log("========================================");
-        
-        // Leer configuración desde web.xml
-        ldapUrl = getServletContext().getInitParameter("ldap.url");
-        baseDn = getServletContext().getInitParameter("ldap.baseDn");
-        bindDn = getServletContext(). getInitParameter("ldap.bindDn");
-        dniAttr = getServletContext().getInitParameter("ldap.dniAttr");
-        
-        log("📋 Parámetros de web.xml:");
-        log("   ldap.url = " + (ldapUrl != null ? ldapUrl : "❌ NULL"));
-        log("   ldap.baseDn = " + (baseDn != null ?  baseDn : "❌ NULL"));
-        log("   ldap.bindDn = " + (bindDn != null ? bindDn : "❌ NULL"));
-        log("   ldap.dniAttr = " + (dniAttr != null ?  dniAttr : "❌ NULL"));
-        
-        // Leer password desde VM Options (-DLDAP_BIND_PASSWORD)
-        log("🔐 Intentando leer contraseña.. .");
-        bindPassword = System. getProperty("LDAP_BIND_PASSWORD");
-        
-        if (bindPassword != null && ! bindPassword.isEmpty()) {
-            log("✅ Contraseña cargada desde VM Options (-DLDAP_BIND_PASSWORD)");
-            log("   Longitud: " + bindPassword.length() + " caracteres");
-        } else {
-            log("⚠️ No se encontró en VM Options, intentando web.xml.. .");
-            // Fallback: intentar leer desde web.xml
-            bindPassword = getServletContext().getInitParameter("ldap.bindPassword");
-            if (bindPassword != null && ! bindPassword.isEmpty()) {
-                log("⚠️ Contraseña cargada desde web.xml (NO RECOMENDADO para producción)");
-            } else {
-                log("⚠️ No se encontró en web.xml, intentando context. xml...");
-                // Último fallback: intentar leer desde context.xml
-                try {
-                    InitialContext initCtx = new InitialContext();
-                    try {
-                        bindPassword = (String) initCtx.lookup("java:comp/env/ldap/bindPassword");
-                        log("✅ Contraseña cargada desde context. xml");
-                    } catch (Exception e1) {
-                        try {
-                            bindPassword = (String) initCtx.lookup("ldap/bindPassword");
-                            log("✅ Contraseña cargada desde context.xml (ruta alternativa)");
-                        } catch (Exception e2) {
-                            log("❌ No se encontró contraseña en context.xml");
-                        }
-                    }
-                } catch (Exception e) {
-                    log("❌ Error al buscar en context.xml: " + e. getMessage());
-                }
-            }
+
+        try {
+            Context initCtx = new InitialContext();
+            Context envCtx = (Context) initCtx.lookup("java:comp/env");
+
+            ldapUrl      = (String) envCtx.lookup("ldap/url");
+            baseDn       = (String) envCtx.lookup("ldap/baseDn");
+            bindDn       = (String) envCtx.lookup("ldap/bindDn");
+            bindPassword = (String) envCtx.lookup("ldap/bindPassword");
+            dniAttr      = (String) envCtx.lookup("ldap/dniAttr");
+
+            log("📋 Parámetros LDAP cargados desde JNDI (context.xml):");
+            log("   ldap/url     = " + (ldapUrl     != null ? ldapUrl     : "❌ NULL"));
+            log("   ldap/baseDn  = " + (baseDn      != null ? baseDn      : "❌ NULL"));
+            log("   ldap/bindDn  = " + (bindDn      != null ? bindDn      : "❌ NULL"));
+            log("   ldap/dniAttr = " + (dniAttr     != null ? dniAttr     : "❌ NULL"));
+            log("   ldap/bindPassword configurada: " + (bindPassword != null && !bindPassword.isEmpty() ? "✅ Sí" : "❌ No"));
+
+        } catch (NamingException e) {
+            log("❌ Error al leer configuración LDAP desde JNDI: " + e.getMessage());
+            throw new ServletException("No se pudo leer la configuración LDAP desde context.xml (JNDI)", e);
         }
-        
-        // Validar configuración
-        if (dniAttr == null || dniAttr.isEmpty()) {
-            dniAttr = "employeeNumber";
-            log("⚠️ dniAttr no configurado, usando valor por defecto: employeeNumber");
-        }
-        
-        StringBuilder errores = new StringBuilder();
+
+        // Validar que todos los parámetros obligatorios están presentes
         if (ldapUrl == null || ldapUrl.isEmpty()) {
-            errores.append("- ldap.url no configurado en web.xml\n");
+            throw new ServletException("Parámetro JNDI 'ldap/url' no configurado en context.xml");
         }
         if (baseDn == null || baseDn.isEmpty()) {
-            errores.append("- ldap.baseDn no configurado en web.xml\n");
+            throw new ServletException("Parámetro JNDI 'ldap/baseDn' no configurado en context.xml");
         }
         if (bindDn == null || bindDn.isEmpty()) {
-            errores.append("- ldap.bindDn no configurado en web.xml\n");
+            throw new ServletException("Parámetro JNDI 'ldap/bindDn' no configurado en context.xml");
         }
         if (bindPassword == null || bindPassword.isEmpty()) {
-            errores.append("- ldap.bindPassword no configurado (VM Options, web.xml o context.xml)\n");
+            throw new ServletException("Parámetro JNDI 'ldap/bindPassword' no configurado en context.xml");
         }
-        
-        if (errores.length() > 0) {
-            log("❌ ERRORES DE CONFIGURACIÓN:");
-            log(errores.toString());
-            log("\n📝 SOLUCIONES:");
-            log("1.  Para VM Options: Agrega en Tools → Servers → Platform → VM Options:");
-            log("   -DLDAP_BIND_PASSWORD=TuPassword");
-            log("2. Para web.xml: Agrega <context-param> con ldap.bindPassword");
-            log("3. Para context.xml: Agrega <Environment name=\"ldap/bindPassword\" . ../>");
-            throw new ServletException("Configuración LDAP incompleta:\n" + errores.toString());
+        if (dniAttr == null || dniAttr.isEmpty()) {
+            dniAttr = "employeeNumber"; // valor por defecto no sensible
+            log("⚠️ ldap/dniAttr no configurado, usando valor por defecto: " + dniAttr);
         }
-        
-        log("========================================");
-        log("✅ LDAP configurado correctamente");
-        log("   URL: " + ldapUrl);
-        log("   Base DN: " + baseDn);
-        log("   Bind DN: " + bindDn);
-        log("   DNI Attr: " + dniAttr);
-        log("========================================");
+
+        log("✅ LdapLookupServlet inicializado correctamente");
     }
 
     @Override
