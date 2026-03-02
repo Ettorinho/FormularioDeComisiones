@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    PLANTILLA DE context.xml
+    ========================
+    Copia este archivo a: src/main/webapp/META-INF/context.xml
+    Este archivo está excluido del repositorio (.gitignore) por contener datos sensibles.
+    NUNCA subas el context.xml real al repositorio.
+-->
+<Context path="/FormularioDeComisiones">
+
+    <!-- ====== LDAP ====== -->
+    <Environment name="ldap/url"          type="java.lang.String"
+                 value="ldap://IP_SERVIDOR:389" override="false"/>
+    <Environment name="ldap/baseDn"       type="java.lang.String"
+                 value="OU=UnidadOrg,DC=dominio,DC=es" override="false"/>
+    <Environment name="ldap/bindDn"       type="java.lang.String"
+                 value="CN=Usuario,OU=Org,DC=dominio,DC=es" override="false"/>
+    <Environment name="ldap/bindPassword" type="java.lang.String"
+                 value="PASSWORD_LDAP" override="false"/>
+    <Environment name="ldap/dniAttr"      type="java.lang.String"
+                 value="cn" override="false"/>
+
+    <!-- ====== BASE DE DATOS (ya usado por DBUtil.java) ====== -->
+    <Environment name="db/url"      type="java.lang.String"
+                 value="jdbc:postgresql://HOST:5432/NOMBRE_BD" override="false"/>
+    <Environment name="db/username" type="java.lang.String"
+                 value="USUARIO_BD" override="false"/>
+    <Environment name="db/password" type="java.lang.String"
+                 value="PASSWORD_BD" override="false"/>
+
+</Context>

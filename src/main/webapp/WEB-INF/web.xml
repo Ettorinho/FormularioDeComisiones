@@ -6,27 +6,6 @@
 
     <display-name>Formulario Comisiones</display-name>
 
-    <!-- Parámetros de configuración LDAP -->
-    <context-param>
-        <param-name>ldap.url</param-name>
-        <param-value>ldap://172.25.107.130:389</param-value>
-    </context-param>
-    
-    <context-param>
-        <param-name>ldap.baseDn</param-name>
-        <param-value>OU=Salud,DC=salud,DC=dga,DC=es</param-value>
-    </context-param>
-    
-    <context-param>
-        <param-name>ldap.bindDn</param-name>
-        <param-value>CN=Usuario Bind,OU=UnidadOrganizativa,DC=dominio,DC=es</param-value>
-    </context-param>
-    
-    <context-param>
-        <param-name>ldap.dniAttr</param-name>
-        <param-value>cn</param-value>
-    </context-param>
-        
     <!-- Servlet LDAP Lookup -->
     <servlet>
         <servlet-name>LdapLookupServlet</servlet-name>
