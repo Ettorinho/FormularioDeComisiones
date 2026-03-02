@@ -23,8 +23,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @WebServlet("/actas/*")
@@ -195,11 +197,10 @@ public class ActaController extends HttpServlet {
         }
         
         // Parsear fecha
-        SimpleDateFormat sdf = new SimpleDateFormat(AppConstants.DATE_FORMAT);
-        Date fechaReunion;
+        LocalDate fechaReunion;
         try {
-            fechaReunion = sdf.parse(fechaReunionStr);
-        } catch (ParseException e) {
+            fechaReunion = LocalDate.parse(fechaReunionStr, DateTimeFormatter.ofPattern(AppConstants.DATE_FORMAT));
+        } catch (DateTimeParseException e) {
             AppLogger.error(AppConstants.ERROR_INVALID_DATE, null);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, AppConstants.ERROR_INVALID_DATE);
             return;
@@ -210,7 +211,7 @@ public class ActaController extends HttpServlet {
         acta.setComision(comision);
         acta.setFechaReunion(fechaReunion);
         acta.setObservaciones(observaciones);
-        acta.setFechaCreacion(new Date());
+        acta.setFechaCreacion(LocalDateTime.now());
         
         // Añadir PDF si existe
         acta.setPdfNombre(pdfNombre);
