@@ -11,20 +11,23 @@ public class DBUtil {
 
     static {
         try {
-            // Leer credenciales desde variables de entorno con valores por defecto seguros
+            // Leer credenciales desde variables de entorno
             String url = System.getenv("DB_URL");
             if (url == null || url.trim().isEmpty()) {
-                url = "jdbc:postgresql://localhost:5432/comisiones";
+                url = "jdbc:postgresql://localhost:5432/comisiones_test";
             }
-            
+
             String usuario = System.getenv("DB_USER");
             if (usuario == null || usuario.trim().isEmpty()) {
                 usuario = "postgres";
             }
-            
+
             String contrasena = System.getenv("DB_PASSWORD");
             if (contrasena == null || contrasena.trim().isEmpty()) {
-                contrasena = "changeme";
+                throw new IllegalStateException(
+                    "La variable de entorno DB_PASSWORD no está configurada. " +
+                    "Por favor, establece DB_PASSWORD antes de iniciar la aplicación."
+                );
             }
 
             // Configurar HikariCP para connection pooling
@@ -32,41 +35,38 @@ public class DBUtil {
             config.setJdbcUrl(url);
             config.setUsername(usuario);
             config.setPassword(contrasena);
-            
+
             // Configuración del pool
             config.setMaximumPoolSize(10);
             config.setMinimumIdle(2);
-            config.setConnectionTimeout(30000); // 30 segundos
-            config.setIdleTimeout(600000); // 10 minutos
-            config.setMaxLifetime(1800000); // 30 minutos
-            
+            config.setConnectionTimeout(30000);   // 30 segundos
+            config.setIdleTimeout(600000);         // 10 minutos
+            config.setMaxLifetime(1800000);        // 30 minutos
+
             // Configuración adicional de PostgreSQL
             config.setDriverClassName("org.postgresql.Driver");
             config.addDataSourceProperty("cachePrepStmts", "true");
             config.addDataSourceProperty("prepStmtCacheSize", "250");
             config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-            
+
             dataSource = new HikariDataSource(config);
-            
-            AppLogger.info("Connection pool inicializado correctamente");
+
+            AppLogger.info("Connection pool HikariCP inicializado correctamente");
         } catch (Exception e) {
             AppLogger.error("Error al inicializar el connection pool", e);
             throw new RuntimeException("No se pudo inicializar el connection pool", e);
         }
     }
-    // --- IMPORTANTE ---
-    // URL de conexión a tu base de datos PostgreSQL.
-    private static final String URL = "jdbc:postgresql://localhost:5432/comisiones_test";
-    
-    // Usuario de la base de datos.
-    private static final String USUARIO = "postgres";
-    
-    // --- ¡ACCIÓN REQUERIDA! ---
-    // Reemplaza "TU_CONTRASENA_AQUI" con la contraseña real de tu usuario 'postgres'.
-    private static final String CONTRASENA = "Master03.";
 
     /**
-     * Obtiene una conexión a la base de datos desde el pool.
+     * Obtiene una conexión a la base de datos desde el pool HikariCP.
+     * Las credenciales se leen desde las variables de entorno:
+     * <ul>
+     *   <li>{@code DB_URL}      – URL JDBC (por defecto: jdbc:postgresql://localhost:5432/comisiones_test)</li>
+     *   <li>{@code DB_USER}     – Usuario de BD (por defecto: postgres)</li>
+     *   <li>{@code DB_PASSWORD} – Contraseña de BD (obligatoria, sin valor por defecto)</li>
+     * </ul>
+     *
      * @return un objeto Connection.
      * @throws SQLException si ocurre un error al conectar.
      */
@@ -76,14 +76,15 @@ public class DBUtil {
         }
         return dataSource.getConnection();
     }
-    
+
     /**
-     * Cierra el connection pool. Debe llamarse al cerrar la aplicación.
+     * Cierra el connection pool HikariCP.
+     * Debe llamarse al cerrar la aplicación (p.ej. desde un ServletContextListener).
      */
     public static void close() {
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();
-            AppLogger.info("Connection pool cerrado");
+            AppLogger.info("Connection pool HikariCP cerrado");
         }
     }
 }
