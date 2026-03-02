@@ -1,63 +1,27 @@
-# Configuración del DataSource JNDI `jdbc/Comisiones`
+# Configuración de credenciales de BD vía JNDI (`context.xml`)
 
 ## Descripción
 
-La aplicación obtiene todas sus conexiones a la base de datos PostgreSQL a través
-de un **DataSource JNDI** gestionado por Tomcat, con el nombre:
-
-```
-java:comp/env/jdbc/Comisiones
-```
-
-Esto delega al contenedor el pool de conexiones y la gestión de credenciales,
-evitando credenciales en el código fuente.
+La aplicación obtiene sus conexiones a la base de datos PostgreSQL a través de
+**HikariCP** (pool de conexiones interno). Las credenciales se leen desde
+**JNDI** (`java:comp/env`), configuradas en el `context.xml` de Tomcat, que
+está excluido del repositorio mediante `.gitignore` para no exponer secretos.
 
 ---
 
 ## Archivo `context.xml`
 
-El repositorio incluye `src/main/webapp/META-INF/context.xml` con valores de
-ejemplo (placeholders). **Antes de desplegar en producción debes sustituir los
-valores `CHANGE_ME`** con los datos reales de tu entorno.
+El archivo `src/main/webapp/META-INF/context.xml` **no está incluido en el
+repositorio** (excluido por `.gitignore`). Cada desarrollador/operador debe
+crearlo localmente con sus credenciales reales.
 
-### Ejemplo de configuración
+### Parámetros JNDI requeridos
 
-```xml
-<Context>
-    <Resource
-        name="jdbc/Comisiones"
-        auth="Container"
-        type="javax.sql.DataSource"
-        factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
-
-        driverClassName="org.postgresql.Driver"
-        url="jdbc:postgresql://localhost:5432/comisiones"
-        username="CHANGE_ME"
-        password="CHANGE_ME"
-
-        maxActive="10"
-        maxIdle="5"
-        minIdle="2"
-        maxWaitMillis="30000"
-
-        testOnBorrow="true"
-        validationQuery="SELECT 1"
-    />
-</Context>
-```
-
-### Variables a configurar
-
-| Propiedad        | Descripción                                      | Ejemplo                                        |
-|------------------|--------------------------------------------------|------------------------------------------------|
-| `url`            | URL JDBC de conexión                             | `jdbc:postgresql://db-host:5432/comisiones`    |
-| `username`       | Usuario de la base de datos                      | `comisiones_app`                               |
-| `password`       | Contraseña del usuario                           | *(secreto; no commitear)*                      |
-| `maxActive`      | Nº máximo de conexiones activas en el pool       | `10`                                           |
-| `maxIdle`        | Nº máximo de conexiones inactivas en el pool     | `5`                                            |
-| `minIdle`        | Nº mínimo de conexiones inactivas en el pool     | `2`                                            |
-| `maxWaitMillis`  | Tiempo máximo de espera para obtener conexión    | `30000` (30 s)                                 |
-| `validationQuery`| Consulta de validación al tomar conexión del pool| `SELECT 1`                                     |
+| Nombre JNDI       | Descripción                | Ejemplo                                         |
+|-------------------|----------------------------|-------------------------------------------------|
+| `db/url`          | URL JDBC de conexión       | `jdbc:postgresql://db-host:5432/comisiones`     |
+| `db/username`     | Usuario de la base de datos| `comisiones_app`                                |
+| `db/password`     | Contraseña del usuario     | *(secreto; no commitear)*                       |
 
 ---
 
@@ -67,9 +31,8 @@ Hay dos opciones equivalentes:
 
 ### Opción A — Dentro del WAR (recomendado para desarrollo)
 
-El archivo `META-INF/context.xml` incluido en el WAR es cargado automáticamente
-por Tomcat al desplegar la aplicación. Es la opción más sencilla pero almacena
-la configuración dentro del artefacto desplegable.
+Crea el archivo en `src/main/webapp/META-INF/context.xml` (excluido del repo).
+Tomcat lo carga automáticamente al desplegar el WAR.
 
 ### Opción B — Externo al WAR (recomendado para producción)
 
@@ -100,16 +63,23 @@ del inicio**. Hay dos formas:
 
 ---
 
-## Referencia en `web.xml` (opcional pero recomendado)
-
-Para declarar explícitamente la dependencia JNDI en el descriptor de la
-aplicación, añade en `WEB-INF/web.xml`:
+## Formato completo de `context.xml`
 
 ```xml
-<resource-ref>
-    <description>DataSource para la BD de Comisiones</description>
-    <res-ref-name>jdbc/Comisiones</res-ref-name>
-    <res-type>javax.sql.DataSource</res-type>
-    <res-auth>Container</res-auth>
-</resource-ref>
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="/FormularioDeComisiones">
+
+    <!-- Contraseña del LDAP -->
+    <Environment name="ldap/bindPassword" type="java.lang.String"
+                 value="PASSWORD_LDAP" override="false"/>
+
+    <!-- Credenciales de la BD (leídas por HikariCP vía JNDI) -->
+    <Environment name="db/url"      type="java.lang.String"
+                 value="jdbc:postgresql://HOST:5432/NOMBRE_BD" override="false"/>
+    <Environment name="db/username" type="java.lang.String"
+                 value="USUARIO_BD" override="false"/>
+    <Environment name="db/password" type="java.lang.String"
+                 value="PASSWORD_BD" override="false"/>
+
+</Context>
 ```
