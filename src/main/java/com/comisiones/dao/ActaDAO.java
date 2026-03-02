@@ -15,40 +15,6 @@ import java.util.Map;
 public class ActaDAO {
     
     /**
-     * Guarda un acta en la base de datos (incluyendo PDF si existe)
-     */
-    public Long save(Acta acta) throws SQLException {
-        String sql = "INSERT INTO actas (comision_id, fecha_reunion, observaciones, fecha_creacion, " +
-                     "pdf_nombre, pdf_contenido, pdf_tipo_mime) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id";
-        
-        AppLogger.debug("Guardando acta");
-        
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setLong(1, acta.getComision().getId());
-            stmt.setDate(2, java.sql.Date.valueOf(acta.getFechaReunion()));
-            stmt.setString(3, acta.getObservaciones());
-            stmt.setTimestamp(4, java.sql.Timestamp.valueOf(acta.getFechaCreacion()));
-            
-            // Campos para PDF
-            stmt.setString(5, acta.getPdfNombre());
-            stmt.setBytes(6, acta.getPdfContenido());
-            stmt.setString(7, acta.getPdfTipoMime());
-            
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                Long generatedId = rs.getLong("id");
-                AppLogger.debug("Acta guardada con ID: " + generatedId);
-                return generatedId;
-            }
-        }
-        
-        return null;
-    }
-    
-    /**
      * Guarda el acta y retorna el ID generado
      * @param conn Conexión existente (para transacciones)
      */
