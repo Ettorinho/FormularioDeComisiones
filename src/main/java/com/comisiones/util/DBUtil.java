@@ -1,52 +1,90 @@
 package com.comisiones.util;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
 public class DBUtil {
+    private static HikariDataSource dataSource;
 
-    private static final String JNDI_NAME = "java:comp/env/jdbc/Comisiones";
-
-    private static volatile DataSource dataSource;
-
-    private static DataSource getDataSource() throws NamingException {
-        if (dataSource == null) {
-            synchronized (DBUtil.class) {
-                if (dataSource == null) {
-                    Context initCtx = new InitialContext();
-                    dataSource = (DataSource) initCtx.lookup(JNDI_NAME);
-                    AppLogger.info("DataSource JNDI obtenido: " + JNDI_NAME);
-                }
+    static {
+        try {
+            // Leer credenciales desde variables de entorno
+            String url = System.getenv("DB_URL");
+            if (url == null || url.trim().isEmpty()) {
+                url = "jdbc:postgresql://localhost:5432/comisiones_test";
             }
+
+            String usuario = System.getenv("DB_USER");
+            if (usuario == null || usuario.trim().isEmpty()) {
+                usuario = "postgres";
+            }
+
+            String contrasena = System.getenv("DB_PASSWORD");
+            if (contrasena == null || contrasena.trim().isEmpty()) {
+                throw new IllegalStateException(
+                    "La variable de entorno DB_PASSWORD no está configurada. " +
+                    "Por favor, establece DB_PASSWORD antes de iniciar la aplicación."
+                );
+            }
+
+            // Configurar HikariCP para connection pooling
+            HikariConfig config = new HikariConfig();
+            config.setJdbcUrl(url);
+            config.setUsername(usuario);
+            config.setPassword(contrasena);
+
+            // Configuración del pool
+            config.setMaximumPoolSize(10);
+            config.setMinimumIdle(2);
+            config.setConnectionTimeout(30000);   // 30 segundos
+            config.setIdleTimeout(600000);         // 10 minutos
+            config.setMaxLifetime(1800000);        // 30 minutos
+
+            // Configuración adicional de PostgreSQL
+            config.setDriverClassName("org.postgresql.Driver");
+            config.addDataSourceProperty("cachePrepStmts", "true");
+            config.addDataSourceProperty("prepStmtCacheSize", "250");
+            config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+
+            dataSource = new HikariDataSource(config);
+
+            AppLogger.info("Connection pool HikariCP inicializado correctamente");
+        } catch (Exception e) {
+            AppLogger.error("Error al inicializar el connection pool", e);
+            throw new RuntimeException("No se pudo inicializar el connection pool", e);
         }
-        return dataSource;
     }
 
     /**
-     * Obtiene una conexión a la base de datos desde el DataSource JNDI
-     * {@code jdbc/Comisiones} configurado en {@code context.xml}.
+     * Obtiene una conexión a la base de datos desde el pool HikariCP.
+     * Las credenciales se leen desde las variables de entorno:
+     * <ul>
+     *   <li>{@code DB_URL}      – URL JDBC (por defecto: jdbc:postgresql://localhost:5432/comisiones_test)</li>
+     *   <li>{@code DB_USER}     – Usuario de BD (por defecto: postgres)</li>
+     *   <li>{@code DB_PASSWORD} – Contraseña de BD (obligatoria, sin valor por defecto)</li>
+     * </ul>
      *
      * @return un objeto Connection.
-     * @throws SQLException si ocurre un error al obtener la conexión.
+     * @throws SQLException si ocurre un error al conectar.
      */
     public static Connection getConnection() throws SQLException {
-        try {
-            return getDataSource().getConnection();
-        } catch (NamingException e) {
-            AppLogger.error("Error al obtener DataSource JNDI: " + JNDI_NAME, e);
-            throw new SQLException("No se pudo obtener el DataSource JNDI: " + JNDI_NAME, e);
+        if (dataSource == null) {
+            throw new SQLException("El connection pool no está inicializado");
         }
+        return dataSource.getConnection();
     }
 
     /**
-     * Método de cierre mantenido por compatibilidad.
-     * El ciclo de vida del pool es gestionado por el contenedor (Tomcat).
+     * Cierra el connection pool HikariCP.
+     * Debe llamarse al cerrar la aplicación (p.ej. desde un ServletContextListener).
      */
     public static void close() {
-        // El pool JNDI es gestionado por Tomcat; no se requiere cierre manual.
+        if (dataSource != null && !dataSource.isClosed()) {
+            dataSource.close();
+            AppLogger.info("Connection pool HikariCP cerrado");
+        }
     }
 }
