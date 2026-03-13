@@ -17,27 +17,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
-    <style>
-        .badge-activa {
-            background-color:  #28a745 !important;
-        }
-        .badge-finalizada {
-            background-color:  #6c757d !important;
-        }
-        .row-inactive {
-            opacity: 0.6;
-            background-color: #f8f9fa;
-        }
-        .oculto {
-            display: none ! important;
-        }
-    </style>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
     <!-- Header -->
-    <header style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); color: white; padding: 1.5rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <header class="header-comisiones">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">

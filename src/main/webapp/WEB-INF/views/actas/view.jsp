@@ -10,36 +10,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
-    <style>
-        .justificacion-box {
-            margin-top: 8px;
-            margin-left: 25px;
-            padding: 10px 15px;
-            background-color: #fff3cd;
-            border-left: 4px solid #ffc107;
-            border-radius: 4px;
-        }
-        .justificacion-label {
-            font-weight: bold;
-            color: #856404;
-            font-size: 0.85em;
-            margin-bottom: 4px;
-        }
-        .justificacion-text {
-            color: #664d03;
-            font-style: italic;
-            font-size: 0.9em;
-        }
-        .pdf-card {
-            border: 2px dashed #dc3545;
-            background-color: #fff5f5;
-            transition: all 0.3s ease;
-        }
-        .pdf-card:hover {
-            border-color: #bb2d3b;
-            box-shadow: 0 0.125rem 0.25rem rgba(220, 53, 69, 0.2);
-        }
-    </style>
 </head>
 <body>
     <!-- Header -->

@@ -30,10 +30,10 @@
             <table class="table table-hover">
                 <thead class="table-light">
                     <tr>
-                        <th style="width: 50%">Miembro</th>
-                        <th style="width: 20%" class="text-center">Asistió</th>
-                        <th style="width: 20%" class="text-center">No asistió</th>
-                        <th style="width: 10%"></th>
+                        <th class="col-miembro">Miembro</th>
+                        <th class="col-asistencia text-center">Asistió</th>
+                        <th class="col-asistencia text-center">No asistió</th>
+                        <th class="col-accion"></th>
                     </tr>
                 </thead>
                 <tbody>
