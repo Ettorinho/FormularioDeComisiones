@@ -37,7 +37,7 @@
 </head>
 <body>
     <!-- Header -->
-    <header style="background: linear-gradient(135deg, #004B87 0%, #003366 100%); color: white; padding: 1.5rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <header style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); color: white; padding: 1.5rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
