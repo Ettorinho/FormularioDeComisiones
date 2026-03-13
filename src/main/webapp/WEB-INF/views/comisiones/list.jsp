@@ -21,7 +21,7 @@
                         <i class="bi bi-file-earmark-text"></i>
                         Sistema de Gestión de Comisiones
                     </h1>
-                    <p class="mb-0 mt-1" style="opacity: 0.9;">Gobierno de Aragón</p>
+                    <p class="mb-0 mt-1 header-subtitle">Gobierno de Aragón</p>
                 </div>
                 <div class="col-md-4 text-end">
                     <fmt:formatDate value="<%= new java.util.Date() %>" pattern="dd/MM/yyyy" />

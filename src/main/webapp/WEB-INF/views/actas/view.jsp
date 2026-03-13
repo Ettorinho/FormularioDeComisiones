@@ -21,7 +21,7 @@
                         <i class="bi bi-file-earmark-text"></i>
                         Sistema de Gestión de Comisiones
                     </h1>
-                    <p class="mb-0 mt-1" style="opacity: 0.9;">Gestión de Actas</p>
+                    <p class="mb-0 mt-1 header-subtitle">Gestión de Actas</p>
                 </div>
                 <div class="col-md-4 text-end">
                     <fmt:formatDate value="<%= new java.util.Date() %>" pattern="dd/MM/yyyy" />
@@ -157,25 +157,25 @@
 
                     <div class="row mb-4 no-print">
                         <div class="col-md-3">
-                            <div class="stats-box" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="stats-box">
                                 <h3>${contadorAsistieron + contadorNoAsistieron}</h3>
                                 <p>Total Miembros</p>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="stats-box" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                            <div class="stats-box stats-box-green">
                                 <h3>${contadorAsistieron}</h3>
                                 <p>Asistieron</p>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="stats-box" style="background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);">
+                            <div class="stats-box stats-box-red">
                                 <h3>${contadorNoAsistieron}</h3>
                                 <p>No Asistieron</p>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="stats-box" style="background: linear-gradient(135deg, #ffc107 0%, #ff8800 100%);">
+                            <div class="stats-box stats-box-yellow">
                                 <h3>${contadorConJustificacion}</h3>
                                 <p>Con Justificación</p>
                             </div>
