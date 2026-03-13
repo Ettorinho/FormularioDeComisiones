@@ -9,35 +9,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
-    <style>
-        .spinner-border-sm {
-            width: 1rem;
-            height: 1rem;
-            border-width:  0.15em;
-        }
-        .ldap-info {
-            font-size: 0.875rem;
-            color: #28a745;
-            margin-top: 0.5rem;
-        }
-        .ldap-error {
-            font-size: 0.875rem;
-            color: #dc3545;
-            margin-top: 0.5rem;
-        }
-        .debug-info {
-            font-size: 0.75rem;
-            color: #6c757d;
-            margin-top: 0.25rem;
-            font-family: monospace;
-        }
-    </style>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
     <!-- Header -->
-    <header style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); color: white; padding: 1.5rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <header class="header-comisiones">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">

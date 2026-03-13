@@ -250,3 +250,146 @@ body {
         box-shadow: none !important;
     }
 }
+
+/* ========================================
+   Header de páginas de Comisiones
+   ======================================== */
+
+.header-comisiones {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    color: white;
+    padding: 1.5rem 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* ========================================
+   Formulario de Comisiones (form.jsp)
+   ======================================== */
+
+.hidden {
+    display: none;
+}
+
+.section-header {
+    background-color: #f8f9fa;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-left: 4px solid #0d6efd;
+}
+
+.card-custom {
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+/* ========================================
+   Añadir Miembro (addMember.jsp)
+   ======================================== */
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.15em;
+}
+
+.ldap-info {
+    font-size: 0.875rem;
+    color: #28a745;
+    margin-top: 0.5rem;
+}
+
+.ldap-error {
+    font-size: 0.875rem;
+    color: #dc3545;
+    margin-top: 0.5rem;
+}
+
+.debug-info {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+    font-family: monospace;
+}
+
+/* ========================================
+   Buscar por DNI (buscarPorDni.jsp)
+   ======================================== */
+
+.badge-activa {
+    background-color: #28a745 !important;
+}
+
+.badge-finalizada {
+    background-color: #6c757d !important;
+}
+
+.row-inactive {
+    opacity: 0.6;
+    background-color: #f8f9fa;
+}
+
+.oculto {
+    display: none !important;
+}
+
+/* ========================================
+   Cargos de comisión (cambiarCargo.jsp)
+   ======================================== */
+
+.badge-cargo {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+}
+
+.cargo-PRESIDENTE { background-color: #0d6efd; }
+.cargo-SECRETARIO { background-color: #6610f2; }
+.cargo-REFERENTE { background-color: #0dcaf0; }
+.cargo-RESPONSABLE { background-color: #198754; }
+.cargo-PARTICIPANTE { background-color: #6c757d; }
+.cargo-INVESTIGADOR_PRINCIPAL { background-color: #fd7e14; }
+.cargo-INVESTIGADOR_COLABORADOR { background-color: #ffc107; }
+
+/* ========================================
+   Justificaciones de actas (actas/view.jsp)
+   ======================================== */
+
+.justificacion-box {
+    margin-top: 8px;
+    margin-left: 25px;
+    padding: 10px 15px;
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    border-radius: 4px;
+}
+
+.justificacion-label {
+    font-weight: bold;
+    color: #856404;
+    font-size: 0.85em;
+    margin-bottom: 4px;
+}
+
+.justificacion-text {
+    color: #664d03;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+.pdf-card {
+    border: 2px dashed #dc3545;
+    background-color: #fff5f5;
+    transition: all 0.3s ease;
+}
+
+.pdf-card:hover {
+    border-color: #bb2d3b;
+    box-shadow: 0 0.125rem 0.25rem rgba(220, 53, 69, 0.2);
+}
+
+/* ========================================
+   Tabla de miembros / asistencia (miembros-fragment.jsp)
+   ======================================== */
+
+.col-miembro { width: 50%; }
+.col-asistencia { width: 20%; }
+.col-accion { width: 10%; }

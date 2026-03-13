@@ -10,27 +10,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
-    <style>
-        .hidden {
-            display: none;
-        }
-        .section-header {
-            background-color: #f8f9fa;
-            padding: 10px 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid #0d6efd;
-        }
-        .card-custom {
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-    </style>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
     <!-- Header -->
-    <header style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); color: white; padding: 1.5rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <header class="header-comisiones">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
