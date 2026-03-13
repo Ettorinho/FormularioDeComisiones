@@ -95,12 +95,14 @@
                             <table class="table table-striped table-hover mb-0" id="tablaComisiones">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Comisión/Grupo</th>
-                                        <th>Área</th>
+                                        <th>Comision/Grupo</th>
+                                        <th>Area</th>
                                         <th>Tipo</th>
-                                        <th>Cargo</th>
-                                        <th>Fecha Constitución</th>
-                                        <th>Fecha Fin</th>
+                                        <th>Cargo actual</th>
+                                        <th>Incorporacion</th>
+                                        <th>Baja</th>
+                                        <th>Constitucion</th>
+                                        <th>Fin</th>
                                         <th>Estado</th>
                                         <th>Estado Miembro</th>
                                     </tr>
@@ -112,7 +114,12 @@
                                         
                                         <tr class="fila-comision" data-estado="${esActiva ? 'activa' : 'finalizada'}">
                                             <td>
-                                                <strong>${cm.comision.nombre}</strong>
+                                                <a href="#" class="text-decoration-none text-dark fw-bold toggle-historial"
+                                                   data-target="historial-${cm.comision.id}"
+                                                   onclick="toggleHistorial('historial-${cm.comision.id}'); return false;">
+                                                    ${cm.comision.nombre}
+                                                    <small class="text-muted ms-1">[+]</small>
+                                                </a>
                                             </td>
                                             <td>
                                                 <c:choose>
@@ -175,6 +182,17 @@
                                                 </c:choose>
                                             </td>
                                             <td>
+                                                <fmt:formatDate value="${cm.fechaIncorporacion}" pattern="dd/MM/yyyy" />
+                                            </td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${not empty cm.fechaBaja}">
+                                                        <fmt:formatDate value="${cm.fechaBaja}" pattern="dd/MM/yyyy" />
+                                                    </c:when>
+                                                    <c:otherwise>-</c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td>
                                                 <fmt:formatDate value="${cm.comision.fechaConstitucion}" pattern="dd/MM/yyyy" />
                                             </td>
                                             <td>
@@ -210,6 +228,69 @@
                                                 </c:choose>
                                             </td>
                                         </tr>
+                                        <%-- Fila de detalle expandible con historial de cargos --%>
+                                        <tr class="fila-detalle-historial oculto" id="historial-${cm.comision.id}">
+                                            <td colspan="10" class="bg-light p-3">
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <strong>Fechas de participacion:</strong>
+                                                        <ul class="list-unstyled mt-1 mb-0">
+                                                            <li><small>Incorporacion: <fmt:formatDate value="${cm.fechaIncorporacion}" pattern="dd/MM/yyyy" /></small></li>
+                                                            <li>
+                                                                <small>Baja: 
+                                                                    <c:choose>
+                                                                        <c:when test="${not empty cm.fechaBaja}">
+                                                                            <fmt:formatDate value="${cm.fechaBaja}" pattern="dd/MM/yyyy" />
+                                                                        </c:when>
+                                                                        <c:otherwise>Activo</c:otherwise>
+                                                                    </c:choose>
+                                                                </small>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <strong>Historial de cargos:</strong>
+                                                        <c:set var="historialComision" value="${historialPorComision[cm.comision.id.toString()]}" />
+                                                        <c:choose>
+                                                            <c:when test="${empty historialComision}">
+                                                                <p class="text-muted mt-1 mb-0"><small>Sin cambios de cargo registrados.</small></p>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <table class="table table-sm table-bordered mt-1 mb-0">
+                                                                    <thead class="table-secondary">
+                                                                        <tr>
+                                                                            <th>Fecha</th>
+                                                                            <th>Cargo anterior</th>
+                                                                            <th></th>
+                                                                            <th>Cargo nuevo</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <c:forEach var="cambio" items="${historialComision}">
+                                                                            <tr>
+                                                                                <td><small><fmt:formatDate value="${cambio.fechaCambio}" pattern="dd/MM/yyyy HH:mm" /></small></td>
+                                                                                <td>
+                                                                                    <c:choose>
+                                                                                        <c:when test="${empty cambio.cargoAnterior}">
+                                                                                            <span class="text-muted fst-italic"><small>-</small></span>
+                                                                                        </c:when>
+                                                                                        <c:otherwise>
+                                                                                            <small>${cambio.cargoAnterior}</small>
+                                                                                        </c:otherwise>
+                                                                                    </c:choose>
+                                                                                </td>
+                                                                                <td class="text-center"><small>-&gt;</small></td>
+                                                                                <td><small>${cambio.cargoNuevo}</small></td>
+                                                                            </tr>
+                                                                        </c:forEach>
+                                                                    </tbody>
+                                                                </table>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
                                     </c:forEach>
                                 </tbody>
                             </table>
@@ -233,6 +314,21 @@
 </div>
 
 <script>
+function toggleHistorial(id) {
+    const fila = document.getElementById(id);
+    if (fila) {
+        fila.classList.toggle('oculto');
+        // Cambiar el icono +/-
+        const link = document.querySelector('[data-target="' + id + '"]');
+        if (link) {
+            const icono = link.querySelector('small');
+            if (icono) {
+                icono.textContent = fila.classList.contains('oculto') ? '[+]' : '[-]';
+            }
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const checkActivas = document.getElementById('mostrarActivas');
     const checkFinalizadas = document.getElementById('mostrarFinalizadas');
