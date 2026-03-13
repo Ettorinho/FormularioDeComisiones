@@ -2,9 +2,11 @@ package com.comisiones.controller;
 
 import com.comisiones.dao.ComisionDAO;
 import com.comisiones.dao.ComisionMiembroDAO;
+import com.comisiones.dao.HistorialCargoDAO;
 import com.comisiones.dao.MiembroDAO;
 import com.comisiones.model. Comision;
 import com.comisiones.model.ComisionMiembro;
+import com.comisiones.model.HistorialCargo;
 import com.comisiones.model.Miembro;
 import com.comisiones.util.AppLogger;
 
@@ -20,6 +22,7 @@ import java.text.ParseException;
 import java. text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.HashSet;
 import java.util. ArrayList;
 
@@ -260,16 +263,29 @@ public class ComisionController extends HttpServlet {
         dispatcher.forward(request, response);
     }
 
-    private void buscarComisionesPorDni(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException {
+    private void buscarComisionesPorDni(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException, SQLException {
         String dni = request.getParameter("dni");
         Miembro miembro = miembroDAO.findByDni(dni);
         List<ComisionMiembro> comisiones = null;
+        Map<String, List<HistorialCargo>> historialPorComision = new java.util.HashMap<>();
+
         if (miembro != null) {
-            comisiones = comisionMiembroDAO.findByMiembroId(miembro. getId());
+            comisiones = comisionMiembroDAO.findByMiembroId(miembro.getId());
+            if (comisiones != null) {
+                HistorialCargoDAO historialDAO = new HistorialCargoDAO();
+                for (ComisionMiembro cm : comisiones) {
+                    List<HistorialCargo> historial = historialDAO.getHistorialByComisionMiembro(
+                        cm.getComision().getId(), miembro.getId()
+                    );
+                    historialPorComision.put(cm.getComision().getId().toString(), historial);
+                }
+            }
         }
         request.setAttribute("miembro", miembro);
         request.setAttribute("comisiones", comisiones);
         request.setAttribute("dniBuscado", dni);
+        request.setAttribute("historialPorComision", historialPorComision);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/comisiones/buscarPorDni.jsp");
         dispatcher.forward(request, response);
     }
