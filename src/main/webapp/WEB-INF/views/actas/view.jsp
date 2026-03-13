@@ -42,7 +42,7 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
+    <%-- Header (comentado temporalmente)
     <header class="header-aragon no-print">
         <div class="container">
             <div class="row align-items-center">
@@ -59,9 +59,9 @@
             </div>
         </div>
     </header>
+    --%>
 
-    <%-- Navbar --%>
-    <%--
+    <%-- Navbar (comentado temporalmente)
     <nav class="navbar navbar-expand-lg navbar-custom no-print">
         <div class="container">
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
