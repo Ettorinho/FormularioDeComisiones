@@ -18,13 +18,18 @@
             <div class="row align-items-center">
                 <div class="col-md-8">
                     <h1 class="h3 mb-0">
-                        <i class="bi bi-people"></i>
+                        <i class="bi bi-file-earmark-text"></i>
                         Sistema de Gestión de Comisiones
                     </h1>
+                    <p class="mb-0 mt-1" style="opacity: 0.9;">Gobierno de Aragón</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <fmt:formatDate value="<%= new java.util.Date() %>" pattern="dd/MM/yyyy" />
                 </div>
             </div>
         </div>
     </header>
+
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2>Comisiones y Grupos</h2>

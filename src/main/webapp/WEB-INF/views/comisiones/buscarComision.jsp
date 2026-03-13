@@ -11,19 +11,24 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
-<!-- Header -->
-<header class="header-aragon no-print">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="h3 mb-0">
-                    <i class="bi bi-people"></i>
-                    Sistema de Gestión de Comisiones
-                </h1>
+    <!-- Header -->
+    <header class="header-aragon no-print">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h3 mb-0">
+                        <i class="bi bi-file-earmark-text"></i>
+                        Sistema de Gestión de Comisiones
+                    </h1>
+                    <p class="mb-0 mt-1" style="opacity: 0.9;">Gobierno de Aragón</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <fmt:formatDate value="<%= new java.util.Date() %>" pattern="dd/MM/yyyy" />
+                </div>
             </div>
         </div>
-    </div>
-</header>
+    </header>
+
 <div class="container mt-4">
     <h2>Buscar Comisión o Grupo de Trabajo</h2>
     <form action="${pageContext.request.contextPath}/comisiones/buscarComision" method="post" class="row g-3 mb-4">

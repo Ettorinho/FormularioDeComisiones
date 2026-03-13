@@ -15,6 +15,8 @@
     <meta charset="UTF-8">
     <title>Buscar Comisiones por DNI</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
     <style>
         .badge-activa {
             background-color:  #28a745 !important;
@@ -34,19 +36,24 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
-<!-- Header -->
-<header class="header-aragon no-print">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="h3 mb-0">
-                    <i class="bi bi-people"></i>
-                    Sistema de Gestión de Comisiones
-                </h1>
+    <!-- Header -->
+    <header class="header-aragon no-print">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h3 mb-0">
+                        <i class="bi bi-file-earmark-text"></i>
+                        Sistema de Gestión de Comisiones
+                    </h1>
+                    <p class="mb-0 mt-1" style="opacity: 0.9;">Gobierno de Aragón</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <fmt:formatDate value="<%= new java.util.Date() %>" pattern="dd/MM/yyyy" />
+                </div>
             </div>
         </div>
-    </div>
-</header>
+    </header>
+
 <div class="container mt-4">
     <h2>Buscar Miembro</h2>
     
