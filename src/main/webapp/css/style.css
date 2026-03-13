@@ -261,6 +261,12 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.header-subtitle {
+    opacity: 0.9;
+    margin-bottom: 0;
+    margin-top: 0.25rem;
+}
+
 /* ========================================
    Formulario de Comisiones (form.jsp)
    ======================================== */
@@ -392,3 +398,19 @@ body {
 .col-miembro { width: 50%; }
 .col-asistencia { width: 20%; }
 .col-accion { width: 10%; }
+
+/* ========================================
+   Estadísticas de actas (actas/view.jsp)
+   ======================================== */
+
+.stats-box-green  { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
+.stats-box-red    { background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%); }
+.stats-box-yellow { background: linear-gradient(135deg, #ffc107 0%, #ff8800 100%); }
+
+/* ========================================
+   Formularios inline
+   ======================================== */
+
+.form-inline-action {
+    display: inline;
+}
