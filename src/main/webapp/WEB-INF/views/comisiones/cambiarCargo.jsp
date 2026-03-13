@@ -9,24 +9,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
-    <style>
-        .badge-cargo {
-            font-size: 0.9rem;
-            padding: 0.4rem 0.8rem;
-        }
-        .cargo-PRESIDENTE { background-color: #0d6efd; }
-        .cargo-SECRETARIO { background-color: #6610f2; }
-        .cargo-REFERENTE { background-color: #0dcaf0; }
-        .cargo-RESPONSABLE { background-color: #198754; }
-        .cargo-PARTICIPANTE { background-color: #6c757d; }
-        .cargo-INVESTIGADOR_PRINCIPAL { background-color: #fd7e14; }
-        .cargo-INVESTIGADOR_COLABORADOR { background-color: #ffc107; }
-    </style>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
     <!-- Header -->
-    <header style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); color: white; padding: 1.5rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <header class="header-comisiones">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
