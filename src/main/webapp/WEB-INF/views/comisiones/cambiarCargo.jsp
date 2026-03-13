@@ -26,7 +26,7 @@
 </head>
 <body>
     <!-- Header -->
-    <header class="header-aragon no-print">
+    <header style="background: linear-gradient(135deg, #004B87 0%, #003366 100%); color: white; padding: 1.5rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
