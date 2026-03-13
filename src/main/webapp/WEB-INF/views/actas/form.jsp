@@ -30,7 +30,8 @@
         </div>
     </header>
 
-    <!-- Navbar -->
+    <%-- Navbar --%>
+    <%--
     <nav class="navbar navbar-expand-lg navbar-custom no-print">
         <div class="container">
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -62,6 +63,7 @@
             </div>
         </div>
     </nav>
+    --%>
 
     <!-- Contenido Principal -->
     <div class="container mt-4 mb-5">
@@ -171,7 +173,8 @@
         </div>
     </div>
 
-    <!-- Footer -->
+    <%-- Footer --%>
+    <%--
     <footer class="bg-dark text-white py-3 mt-5">
         <div class="container text-center">
             <p class="mb-0">
@@ -180,6 +183,7 @@
             </p>
         </div>
     </footer>
+    --%>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
