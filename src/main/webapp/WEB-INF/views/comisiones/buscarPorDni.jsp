@@ -7,6 +7,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <jsp:useBean id="now" class="java.util.Date" />
 <! DOCTYPE html>
 <html>
@@ -259,30 +260,59 @@
                                                                 <table class="table table-sm table-bordered mt-1 mb-0">
                                                                     <thead class="table-secondary">
                                                                         <tr>
-                                                                            <th>Fecha</th>
-                                                                            <th>Cargo anterior</th>
-                                                                            <th></th>
-                                                                            <th>Cargo nuevo</th>
+                                                                            <th>Cargo</th>
+                                                                            <th>Desde</th>
+                                                                            <th>Hasta</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                        <c:forEach var="cambio" items="${historialComision}">
-                                                                            <tr>
-                                                                                <td><small><fmt:formatDate value="${cambio.fechaCambio}" pattern="dd/MM/yyyy HH:mm" /></small></td>
-                                                                                <td>
+                                                                        <%-- Fila para el cargo actual (cargoNuevo del elemento más reciente, índice 0) --%>
+                                                                        <c:set var="primerCambio" value="${historialComision[0]}" />
+                                                                        <tr>
+                                                                            <td><small><strong>${primerCambio.cargoNuevo}</strong></small></td>
+                                                                            <td><small><fmt:formatDate value="${primerCambio.fechaCambio}" pattern="dd/MM/yyyy" /></small></td>
+                                                                            <td>
+                                                                                <small>
                                                                                     <c:choose>
-                                                                                        <c:when test="${empty cambio.cargoAnterior}">
-                                                                                            <span class="text-muted fst-italic"><small>-</small></span>
+                                                                                        <c:when test="${not empty cm.fechaBaja}">
+                                                                                            <fmt:formatDate value="${cm.fechaBaja}" pattern="dd/MM/yyyy" />
                                                                                         </c:when>
                                                                                         <c:otherwise>
-                                                                                            <small>${cambio.cargoAnterior}</small>
+                                                                                            <span class="text-success fw-bold">Activo</span>
                                                                                         </c:otherwise>
                                                                                     </c:choose>
-                                                                                </td>
-                                                                                <td class="text-center"><small>-&gt;</small></td>
-                                                                                <td><small>${cambio.cargoNuevo}</small></td>
-                                                                            </tr>
+                                                                                </small>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <%-- Filas para los cargos intermedios (índice 1 en adelante) --%>
+                                                                        <c:forEach var="cambio" items="${historialComision}" varStatus="status">
+                                                                            <c:if test="${status.index > 0}">
+                                                                                <c:set var="cambioAnterior" value="${historialComision[status.index - 1]}" />
+                                                                                <tr>
+                                                                                    <td><small>${cambio.cargoNuevo}</small></td>
+                                                                                    <td><small><fmt:formatDate value="${cambio.fechaCambio}" pattern="dd/MM/yyyy" /></small></td>
+                                                                                    <td><small><fmt:formatDate value="${cambioAnterior.fechaCambio}" pattern="dd/MM/yyyy" /></small></td>
+                                                                                </tr>
+                                                                            </c:if>
                                                                         </c:forEach>
+                                                                        <%-- Fila adicional para el primer cargo histórico (cargoAnterior del último elemento) --%>
+                                                                        <c:set var="ultimoCambio" value="${historialComision[fn:length(historialComision) - 1]}" />
+                                                                        <c:if test="${not empty ultimoCambio.cargoAnterior}">
+                                                                            <tr class="table-light">
+                                                                                <td><small>${ultimoCambio.cargoAnterior}</small></td>
+                                                                                <td>
+                                                                                    <small>
+                                                                                        <c:choose>
+                                                                                            <c:when test="${not empty cm.fechaIncorporacion}">
+                                                                                                <fmt:formatDate value="${cm.fechaIncorporacion}" pattern="dd/MM/yyyy" />
+                                                                                            </c:when>
+                                                                                            <c:otherwise>-</c:otherwise>
+                                                                                        </c:choose>
+                                                                                    </small>
+                                                                                </td>
+                                                                                <td><small><fmt:formatDate value="${ultimoCambio.fechaCambio}" pattern="dd/MM/yyyy" /></small></td>
+                                                                            </tr>
+                                                                        </c:if>
                                                                     </tbody>
                                                                 </table>
                                                             </c:otherwise>
