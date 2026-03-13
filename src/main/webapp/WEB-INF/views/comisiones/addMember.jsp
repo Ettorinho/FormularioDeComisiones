@@ -30,8 +30,23 @@
             font-family: monospace;
         }
     </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
+    <!-- Header -->
+    <header class="header-aragon no-print">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h3 mb-0">
+                        <i class="bi bi-people"></i>
+                        Sistema de Gestión de Comisiones
+                    </h1>
+                </div>
+            </div>
+        </div>
+    </header>
     <div class="container">
         <div class="card">
             <div class="card-header">
