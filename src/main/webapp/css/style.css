@@ -67,7 +67,7 @@ body {
 }
 
 .btn-primary {
-    background-color: #007bff;
+    background-color: #0d6efd;
     color: #fff;
 }
 
@@ -145,18 +145,19 @@ body {
 
 :root {
     --aragon-rojo: #C1272D;
-    --aragon-azul: #004B87;
+    --aragon-azul: #0d6efd;
 }
 
 .header-aragon {
-    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    background-color: #0d6efd !important;
+    background: #0d6efd !important;
     color: white;
     padding: 1.5rem 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .navbar-custom {
-    background-color: var(--aragon-azul);
+    background-color: #0d6efd;
     padding: 0.5rem 0;
 }
 
