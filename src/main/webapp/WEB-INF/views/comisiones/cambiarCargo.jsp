@@ -22,6 +22,7 @@
         .cargo-INVESTIGADOR_PRINCIPAL { background-color: #fd7e14; }
         .cargo-INVESTIGADOR_COLABORADOR { background-color: #ffc107; }
     </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
     <!-- Header -->
