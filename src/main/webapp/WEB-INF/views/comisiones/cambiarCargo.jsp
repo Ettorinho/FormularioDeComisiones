@@ -21,8 +21,22 @@
         .cargo-INVESTIGADOR_PRINCIPAL { background-color: #fd7e14; }
         .cargo-INVESTIGADOR_COLABORADOR { background-color: #ffc107; }
     </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
+<!-- Header -->
+<header class="header-aragon no-print">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-people"></i>
+                    Sistema de Gestión de Comisiones
+                </h1>
+            </div>
+        </div>
+    </div>
+</header>
 <div class="container mt-4">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
