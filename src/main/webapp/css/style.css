@@ -152,17 +152,30 @@ body {
 
 /* ========================================
    Header principal (todas las páginas)
+   Tres clases para compatibilidad durante la migración.
+   Todas producen el mismo header azul corporativo.
    ======================================== */
-.header-app {
+.header-app,
+.header-comisiones,
+.header-aragon {
     background: var(--aragon-primary-gradient);
     color: white;
     padding: 1.5rem 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.header-app h1,
-.header-app p {
+/* Asegurar que h1, h2, h3, p dentro del header sean blancos
+   (Bootstrap puede sobreescribir el color heredado) */
+.header-app h1, .header-app h2, .header-app h3, .header-app p,
+.header-comisiones h1, .header-comisiones h2, .header-comisiones h3, .header-comisiones p,
+.header-aragon h1, .header-aragon h2, .header-aragon h3, .header-aragon p {
     color: white;
+}
+
+/* Texto de la fecha en el header */
+.header-app .text-end, .header-comisiones .text-end, .header-aragon .text-end {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.9rem;
 }
 
 .navbar-custom {
@@ -248,7 +261,7 @@ body {
         background-color: white;
     }
     
-    .header-app, .navbar-custom {
+    .header-app, .header-comisiones, .header-aragon, .navbar-custom {
         background: white !important;
         color: black !important;
         border-bottom: 2px solid #000;
