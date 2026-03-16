@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import com.comisiones.util.DateFormatUtil;
 
 public class Comision implements Serializable {
  
@@ -80,4 +81,20 @@ public class Comision implements Serializable {
     
     public Set<ComisionMiembro> getMiembros() { return miembros; }
     public void setMiembros(Set<ComisionMiembro> miembros) { this.miembros = miembros; }
+
+    /**
+     * Devuelve fechaConstitucion formateada como "dd/MM/yyyy".
+     * Retorna cadena vacía si el valor es null (evita NPE en JSP).
+     */
+    public String getFechaConstitucionFormateada() {
+        return DateFormatUtil.formatUtilDate(fechaConstitucion);
+    }
+
+    /**
+     * Devuelve fechaFin formateada como "dd/MM/yyyy".
+     * Retorna cadena vacía si el valor es null (evita NPE en JSP).
+     */
+    public String getFechaFinFormateada() {
+        return DateFormatUtil.formatUtilDate(fechaFin);
+    }
 }
