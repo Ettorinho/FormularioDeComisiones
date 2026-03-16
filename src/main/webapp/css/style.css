@@ -67,7 +67,7 @@ body {
 }
 
 .btn-primary {
-    background-color: #0d6efd;
+    background-color: var(--aragon-azul);
     color: #fff;
 }
 
@@ -144,19 +144,21 @@ body {
    ======================================== */
 
 :root {
-    --aragon-rojo: #C1272D;
-    --aragon-azul: #0d6efd;
+    --aragon-rojo:              #C1272D;
+    --aragon-azul:              #0d6efd;
+    --aragon-azul-dark:         #0a58ca;
+    --aragon-primary-gradient:  linear-gradient(135deg, var(--aragon-azul) 0%, var(--aragon-azul-dark) 100%);
 }
 
-.header-aragon {
-    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+.header-app {
+    background: var(--aragon-primary-gradient);
     color: white;
     padding: 1.5rem 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .navbar-custom {
-    background-color: #0d6efd;
+    background-color: var(--aragon-azul);
     padding: 0.5rem 0;
 }
 
@@ -238,7 +240,7 @@ body {
         background-color: white;
     }
     
-    .header-aragon, .navbar-custom {
+    .header-app, .navbar-custom {
         background: white !important;
         color: black !important;
         border-bottom: 2px solid #000;
@@ -251,15 +253,8 @@ body {
 }
 
 /* ========================================
-   Header de páginas de Comisiones
+   Subtítulo del header de página
    ======================================== */
-
-.header-comisiones {
-    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-    color: white;
-    padding: 1.5rem 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
 
 .header-subtitle {
     opacity: 0.9;
@@ -279,7 +274,7 @@ body {
     background-color: #f8f9fa;
     padding: 10px 15px;
     margin-bottom: 15px;
-    border-left: 4px solid #0d6efd;
+    border-left: 4px solid var(--aragon-azul);
 }
 
 .card-custom {
@@ -346,7 +341,7 @@ body {
     padding: 0.4rem 0.8rem;
 }
 
-.cargo-PRESIDENTE { background-color: #0d6efd; }
+.cargo-PRESIDENTE { background-color: var(--aragon-azul); }
 .cargo-SECRETARIO { background-color: #6610f2; }
 .cargo-REFERENTE { background-color: #0dcaf0; }
 .cargo-RESPONSABLE { background-color: #198754; }
