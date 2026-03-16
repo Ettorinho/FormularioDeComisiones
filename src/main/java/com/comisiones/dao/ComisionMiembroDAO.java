@@ -14,7 +14,7 @@ public class ComisionMiembroDAO {
     private static final String TABLE_NAME = "comision_miembros";
     
     public void save(ComisionMiembro comisionMiembro) throws SQLException {
-        String sql = "INSERT INTO " + TABLE_NAME + " (comision_id, miembro_id, cargo, fecha_incorporacion) VALUES (?, ?, ? :: cargo_type, ?)";
+        String sql = "INSERT INTO " + TABLE_NAME + " (comision_id, miembro_id, cargo, fecha_incorporacion) VALUES (?, ?, ?::cargo_type, ?)";
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
