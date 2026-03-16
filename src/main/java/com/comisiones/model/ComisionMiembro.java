@@ -2,6 +2,7 @@ package com.comisiones.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import com.comisiones.util.DateFormatUtil;
 
 public class ComisionMiembro implements Serializable {
 
@@ -78,6 +79,22 @@ public class ComisionMiembro implements Serializable {
 
     public void setFechaBaja(Date fechaBaja) {
         this.fechaBaja = fechaBaja;
+    }
+
+    /**
+     * Devuelve fechaIncorporacion formateada como "dd/MM/yyyy".
+     * Retorna cadena vacía si el valor es null (evita NPE en JSP).
+     */
+    public String getFechaIncorporacionFormateada() {
+        return DateFormatUtil.formatUtilDate(fechaIncorporacion);
+    }
+
+    /**
+     * Devuelve fechaBaja formateada como "dd/MM/yyyy".
+     * Retorna cadena vacía si el valor es null (evita NPE en JSP).
+     */
+    public String getFechaBajaFormateada() {
+        return DateFormatUtil.formatUtilDate(fechaBaja);
     }
 
     @Override
