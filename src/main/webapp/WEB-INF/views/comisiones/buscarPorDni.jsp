@@ -20,7 +20,7 @@
 </head>
 <body>
     <!-- Header -->
-    <header class="header-comisiones">
+    <header class="header-app">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">

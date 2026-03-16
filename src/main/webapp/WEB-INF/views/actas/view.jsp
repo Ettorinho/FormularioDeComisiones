@@ -13,7 +13,7 @@
 </head>
 <body>
     <!-- Header -->
-    <header class="header-aragon no-print">
+    <header class="header-app no-print">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
