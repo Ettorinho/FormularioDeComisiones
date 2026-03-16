@@ -234,27 +234,40 @@ public class ComisionController extends HttpServlet {
     private void saveMemberInComision(HttpServletRequest request, HttpServletResponse response) throws SQLException, ParseException, IOException {
         Long comisionId = Long.parseLong(request.getPathInfo().substring(11));
         String nombreApellidos = request.getParameter("nombreApellidos");
-        String dni = request.getParameter("dni");
-        String email = request.getParameter("email");
-        String cargoStr = request.getParameter("cargo");
-        String fechaIncorporacionStr = request. getParameter("fechaIncorporacion");
+        String dni              = request.getParameter("dni");
+        String email            = request.getParameter("email");
+        String cargoStr         = request.getParameter("cargo");
+        String fechaIncorporacionStr = request.getParameter("fechaIncorporacion");
 
-        Miembro nuevoMiembro = new Miembro();
-        nuevoMiembro.setNombreApellidos(nombreApellidos);
-        nuevoMiembro.setDniNif(dni);
-        nuevoMiembro.setEmail(email);
+        // 1. ¿El miembro ya existe? Si es así, reutilizarlo.
+        Miembro miembro = miembroDAO.findByDni(dni);
+        if (miembro == null) {
+            miembro = new Miembro();
+            miembro.setNombreApellidos(nombreApellidos);
+            miembro.setDniNif(dni);
+            miembro.setEmail(email);
+            miembroDAO.save(miembro);
+        }
 
-        miembroDAO.save(nuevoMiembro);
+        // 2. ¿Ya está asignado (activo) a esta comisión?
+        if (comisionMiembroDAO.existeEnComision(comisionId, miembro.getId())) {
+            response.sendRedirect(request.getContextPath()
+                    + "/comisiones/addMember/" + comisionId
+                    + "?error=El+miembro+ya+pertenece+a+esta+comisi%C3%B3n");
+            return;
+        }
+
+        // 3. Crear la relación comisión–miembro
         Comision comision = comisionDAO.findById(comisionId);
         Date fechaIncorp = new SimpleDateFormat("yyyy-MM-dd").parse(fechaIncorporacionStr);
 
         ComisionMiembro comisionMiembro = new ComisionMiembro();
         comisionMiembro.setComision(comision);
-        comisionMiembro.setMiembro(nuevoMiembro);
-        comisionMiembro.setCargo(ComisionMiembro.Cargo. valueOf(cargoStr. toUpperCase()));
+        comisionMiembro.setMiembro(miembro);
+        comisionMiembro.setCargo(ComisionMiembro.Cargo.valueOf(cargoStr.toUpperCase()));
         comisionMiembro.setFechaIncorporacion(new java.sql.Date(fechaIncorp.getTime()));
 
-        comisionMiembroDAO. save(comisionMiembro);
+        comisionMiembroDAO.save(comisionMiembro);
         response.sendRedirect(request.getContextPath() + "/comisiones/view/" + comisionId);
     }
 
