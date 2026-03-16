@@ -14,6 +14,17 @@ CREATE TYPE area_type AS ENUM ('ATENCION_ESPECIALIZADA', 'ATENCION_PRIMARIA', 'M
 -- Tipo para tipo de comisión
 CREATE TYPE tipo_type AS ENUM ('COMISION', 'GRUPO_TRABAJO', 'GRUPO_MEJORA');
 
+-- Tipo para cargo de miembro en comisión
+CREATE TYPE cargo_type AS ENUM (
+    'REFERENTE',
+    'RESPONSABLE',
+    'PRESIDENTE',
+    'PARTICIPANTE',
+    'SECRETARIO',
+    'INVESTIGADOR_PRINCIPAL',
+    'INVESTIGADOR_COLABORADOR'
+);
+
 -- ========================================
 -- TABLA: comisiones
 -- ========================================
@@ -52,15 +63,14 @@ CREATE TABLE miembros (
 CREATE TABLE comision_miembros (
     comision_id BIGINT NOT NULL,
     miembro_id BIGINT NOT NULL,
-    cargo VARCHAR(30) NOT NULL,
+    cargo cargo_type NOT NULL,
     fecha_incorporacion DATE NOT NULL,
     fecha_baja DATE,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (comision_id, miembro_id),
     FOREIGN KEY (comision_id) REFERENCES comisiones(id) ON DELETE CASCADE,
-    FOREIGN KEY (miembro_id) REFERENCES miembros(id) ON DELETE CASCADE,
-    CONSTRAINT check_cargo CHECK (cargo IN ('REFERENTE', 'RESPONSABLE', 'PRESIDENTE', 'MIEMBRO', 'SECRETARIO', 'PARTICIPANTE', 'INVESTIGADOR_PRINCIPAL', 'INVESTIGADOR_COLABORADOR'))
+    FOREIGN KEY (miembro_id) REFERENCES miembros(id) ON DELETE CASCADE
 );
 
 -- ========================================
@@ -229,6 +239,7 @@ CREATE TRIGGER trigger_cambio_cargo
 
 COMMENT ON TYPE area_type IS 'Tipos de área: ATENCION_ESPECIALIZADA, ATENCION_PRIMARIA, MIXTA';
 COMMENT ON TYPE tipo_type IS 'Tipos de comisión: COMISION, GRUPO_TRABAJO, GRUPO_MEJORA';
+COMMENT ON TYPE cargo_type IS 'Tipos de cargo en comisión: REFERENTE, RESPONSABLE, PRESIDENTE, PARTICIPANTE, SECRETARIO, INVESTIGADOR_PRINCIPAL, INVESTIGADOR_COLABORADOR';
 
 COMMENT ON TABLE comision_miembro_historial_cargos IS 'Historial completo de cambios de cargo de miembros en comisiones';
 COMMENT ON COLUMN comision_miembro_historial_cargos.comision_id IS 'ID de la comisión (parte de clave compuesta)';
