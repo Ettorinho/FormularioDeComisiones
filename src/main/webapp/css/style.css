@@ -144,12 +144,15 @@ body {
    ======================================== */
 
 :root {
-    --aragon-rojo:              #C1272D;
-    --aragon-azul:              #0d6efd;
-    --aragon-azul-dark:         #0a58ca;
-    --aragon-primary-gradient:  linear-gradient(135deg, var(--aragon-azul) 0%, var(--aragon-azul-dark) 100%);
+    --aragon-rojo:             #C1272D;
+    --aragon-azul:             #0d6efd;
+    --aragon-azul-dark:        #0a58ca;
+    --aragon-primary-gradient: linear-gradient(135deg, var(--aragon-azul) 0%, var(--aragon-azul-dark) 100%);
 }
 
+/* ========================================
+   Header principal (todas las páginas)
+   ======================================== */
 .header-app {
     background: var(--aragon-primary-gradient);
     color: white;
