@@ -2,6 +2,7 @@ package com.comisiones.model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.comisiones.util.DateFormatUtil;
 
 public class Acta {
     private Long id;
@@ -89,7 +90,23 @@ public class Acta {
     public boolean tienePdf() {
         return pdfNombre != null && !pdfNombre.isEmpty();
     }
-    
+
+    /**
+     * Devuelve fechaReunion formateada como "dd/MM/yyyy".
+     * Retorna cadena vacía si el valor es null (evita NPE en JSP).
+     */
+    public String getFechaReunionFormateada() {
+        return DateFormatUtil.formatDate(fechaReunion);
+    }
+
+    /**
+     * Devuelve fechaCreacion formateada como "dd/MM/yyyy 'a las' HH:mm".
+     * Retorna cadena vacía si el valor es null (evita NPE en JSP).
+     */
+    public String getFechaCreacionFormateada() {
+        return DateFormatUtil.formatDateTime(fechaCreacion);
+    }
+
     @Override
     public String toString() {
         return "Acta{" +

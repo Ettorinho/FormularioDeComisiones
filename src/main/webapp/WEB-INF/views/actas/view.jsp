@@ -124,7 +124,7 @@
                                 <p class="mb-2">
                                     <strong><i class="bi bi-calendar-event"></i> Fecha de Reunión:</strong>
                                     <span class="ms-2">
-                                        <fmt:formatDate value="${acta.fechaReunion}" pattern="dd/MM/yyyy" />
+                                        ${acta.fechaReunionFormateada}
                                     </span>
                                 </p>
                             </div>
@@ -132,7 +132,7 @@
                                 <p class="mb-0 text-muted">
                                     <small>
                                         <i class="bi bi-clock-history"></i> Acta creada el: 
-                                        <fmt:formatDate value="${acta.fechaCreacion}" pattern="dd/MM/yyyy 'a las' HH:mm" />
+                                        ${acta.fechaCreacionFormateada}
                                     </small>
                                 </p>
                             </div>
