@@ -135,6 +135,10 @@ public class ComisionController extends HttpServlet {
         Long comisionId = Long.parseLong(request.getPathInfo().substring(11));
         Comision comision = comisionDAO.findById(comisionId);
         request.setAttribute("comision", comision);
+        String error = request.getParameter("error");
+        if (error != null) {
+            request.setAttribute("error", error);
+        }
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/comisiones/addMember.jsp");
         dispatcher.forward(request, response);
     }
