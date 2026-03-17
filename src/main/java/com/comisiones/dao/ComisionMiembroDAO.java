@@ -14,7 +14,7 @@ public class ComisionMiembroDAO {
     private static final String TABLE_NAME = "comision_miembros";
     
     public void save(ComisionMiembro comisionMiembro) throws SQLException {
-        String sql = "INSERT INTO " + TABLE_NAME + " (comision_id, miembro_id, cargo, fecha_incorporacion) VALUES (?, ?, ?::cargo_type, ?)";
+        String sql = "INSERT INTO " + TABLE_NAME + " (comision_id, miembro_id, cargo, fecha_incorporacion) VALUES (?, ?, CAST(? AS cargo_type), ?)";
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -288,7 +288,7 @@ public class ComisionMiembroDAO {
      * @return true si se actualizó correctamente, false si no se encontró el registro
      */
     public boolean cambiarCargo(Long comisionId, Long miembroId, String nuevoCargo) throws SQLException {
-        String sql = "UPDATE " + TABLE_NAME + " SET cargo = ?::cargo_type " +
+        String sql = "UPDATE " + TABLE_NAME + " SET cargo = CAST(? AS cargo_type) " +
                      "WHERE comision_id = ? AND miembro_id = ?";
         
         try (Connection conn = DBUtil.getConnection();
