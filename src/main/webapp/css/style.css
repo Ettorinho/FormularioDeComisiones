@@ -1,4 +1,26 @@
-/* Estilos generales */
+/*
+ * style.css — Estilos corporativos propios de la aplicación.
+ *
+ * Este archivo COMPLEMENTA Bootstrap 5.3 (cargado antes en todos los JSPs).
+ * NO redefinir clases que ya existen en Bootstrap (.card, .btn, .table, etc.)
+ * para evitar conflictos y sobreescrituras no deseadas.
+ */
+
+/* ========================================
+   Variables CSS corporativas
+   ======================================== */
+
+:root {
+    --aragon-rojo:             #C1272D;
+    --aragon-azul:             #0d6efd;
+    --aragon-azul-dark:        #0a58ca;
+    --aragon-primary-gradient: linear-gradient(135deg, var(--aragon-azul) 0%, var(--aragon-azul-dark) 100%);
+}
+
+/* ========================================
+   Layout base
+   ======================================== */
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f8f9fa;
@@ -12,152 +34,11 @@ body {
     padding: 20px;
 }
 
-/* Estilos de componentes */
-.card {
-    background-color: #fff;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-}
-
-.card-header {
-    background-color: #f0f0f0;
-    padding: 12px 20px;
-    border-bottom: 1px solid #e0e0e0;
-    border-radius: 5px 5px 0 0;
-    font-weight: bold;
-}
-
-.card-body {
-    padding: 20px;
-}
-
-/* Formularios */
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
-}
-
-.form-control {
-    width: 100%;
-    padding: 8px 12px;
-    font-size: 16px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-
-/* Botones */
-.btn {
-    display: inline-block;
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: 400;
-    text-align: center;
-    text-decoration: none;
-    border-radius: 4px;
-    cursor: pointer;
-    border: 1px solid transparent;
-    margin-right: 5px;
-}
-
-.btn-primary {
-    background-color: var(--aragon-azul);
-    color: #fff;
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-    color: #fff;
-}
-
-.btn-success {
-    background-color: #28a745;
-    color: #fff;
-}
-
-.btn-info {
-    background-color: #17a2b8;
-    color: #fff;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    color: #fff;
-}
-
-.btn-sm {
-    padding: 4px 8px;
-    font-size: 12px;
-}
-
-/* Tablas */
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-}
-
-.table th, .table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.table thead th {
-    background-color: #f8f9fa;
-    font-weight: bold;
-}
-
-/* Alertas */
-.alert {
-    padding: 12px 20px;
-    margin-bottom: 20px;
-    border-radius: 4px;
-}
-
-.alert-danger {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-.float-right {
-    float: right;
-}
-
-.mb-3 {
-    margin-bottom: 1rem;
-}
-
-.mt-3 {
-    margin-top: 1rem;
-}
-
 /* ========================================
-   Estilos consolidados desde actas/view.jsp
+   Header corporativo
    ======================================== */
 
-:root {
-    --aragon-rojo:             #C1272D;
-    --aragon-azul:             #0d6efd;
-    --aragon-azul-dark:        #0a58ca;
-    --aragon-primary-gradient: linear-gradient(135deg, var(--aragon-azul) 0%, var(--aragon-azul-dark) 100%);
-}
-
-/* ========================================
-   Header principal (todas las páginas)
-   Tres clases para compatibilidad durante la migración.
-   Todas producen el mismo header azul corporativo.
-   ======================================== */
-.header-app,
-.header-comisiones,
-.header-aragon {
+.header-app {
     background: var(--aragon-primary-gradient);
     color: white;
     padding: 1.5rem 0;
@@ -166,34 +47,29 @@ body {
 
 /* Asegurar que h1, h2, h3, p dentro del header sean blancos
    (Bootstrap puede sobreescribir el color heredado) */
-.header-app h1, .header-app h2, .header-app h3, .header-app p,
-.header-comisiones h1, .header-comisiones h2, .header-comisiones h3, .header-comisiones p,
-.header-aragon h1, .header-aragon h2, .header-aragon h3, .header-aragon p {
+.header-app h1, .header-app h2, .header-app h3, .header-app p {
     color: white;
 }
 
 /* Texto de la fecha en el header */
-.header-app .text-end, .header-comisiones .text-end, .header-aragon .text-end {
+.header-app .text-end {
     color: rgba(255, 255, 255, 0.85);
     font-size: 0.9rem;
 }
 
-.navbar-custom {
-    background-color: var(--aragon-azul);
-    padding: 0.5rem 0;
+/* ========================================
+   Subtítulo del header de página
+   ======================================== */
+
+.header-subtitle {
+    opacity: 0.9;
+    margin-bottom: 0;
+    margin-top: 0.25rem;
 }
 
-.navbar-custom .nav-link {
-    color: rgba(255, 255, 255, 0.9);
-    padding: 0.5rem 1rem;
-    transition: all 0.3s;
-}
-
-.navbar-custom .nav-link:hover {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-}
+/* ========================================
+   Actas
+   ======================================== */
 
 .acta-header {
     border-left: 4px solid var(--aragon-rojo);
@@ -252,36 +128,9 @@ body {
     opacity: 0.9;
 }
 
-@media print {
-    .no-print {
-        display: none !important;
-    }
-    
-    body {
-        background-color: white;
-    }
-    
-    .header-app, .header-comisiones, .header-aragon, .navbar-custom {
-        background: white !important;
-        color: black !important;
-        border-bottom: 2px solid #000;
-    }
-    
-    .card {
-        border: 1px solid #000 !important;
-        box-shadow: none !important;
-    }
-}
-
-/* ========================================
-   Subtítulo del header de página
-   ======================================== */
-
-.header-subtitle {
-    opacity: 0.9;
-    margin-bottom: 0;
-    margin-top: 0.25rem;
-}
+.stats-box-green  { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
+.stats-box-red    { background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%); }
+.stats-box-yellow { background: linear-gradient(135deg, #ffc107 0%, #ff8800 100%); }
 
 /* ========================================
    Formulario de Comisiones (form.jsp)
@@ -416,17 +265,34 @@ body {
 .col-accion { width: 10%; }
 
 /* ========================================
-   Estadísticas de actas (actas/view.jsp)
-   ======================================== */
-
-.stats-box-green  { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
-.stats-box-red    { background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%); }
-.stats-box-yellow { background: linear-gradient(135deg, #ffc107 0%, #ff8800 100%); }
-
-/* ========================================
    Formularios inline
    ======================================== */
 
 .form-inline-action {
     display: inline;
+}
+
+/* ========================================
+   Print media query
+   ======================================== */
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        background-color: white;
+    }
+
+    .header-app {
+        background: white !important;
+        color: black !important;
+        border-bottom: 2px solid #000;
+    }
+
+    .card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
 }
