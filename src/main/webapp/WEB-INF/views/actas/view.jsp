@@ -93,9 +93,11 @@
                         <button onclick="window.print()" class="btn btn-light btn-sm me-2">
                             <i class="bi bi-printer"></i> Imprimir
                         </button>
+                        <c:if test="${rolUsuario == 'ADMIN' || rolUsuario == 'GESTOR'}">
                         <a href="${pageContext.request.contextPath}/actas/new" class="btn btn-light btn-sm">
                             <i class="bi bi-plus-circle"></i> Nueva Acta
                         </a>
+                        </c:if>
                     </div>
                 </div>
                 
@@ -346,9 +348,11 @@
                             <a href="${pageContext.request.contextPath}/" class="btn btn-secondary">
                                 <i class="bi bi-house"></i> Inicio
                             </a>
+                            <c:if test="${rolUsuario == 'ADMIN' || rolUsuario == 'GESTOR'}">
                             <a href="${pageContext.request.contextPath}/actas/new" class="btn btn-primary">
                                 <i class="bi bi-plus-circle"></i> Nueva Acta
                             </a>
+                            </c:if>
                         </div>
                         <button onclick="window.print()" class="btn btn-outline-primary">
                             <i class="bi bi-printer"></i> Imprimir

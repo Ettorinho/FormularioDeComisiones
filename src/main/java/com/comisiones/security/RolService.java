@@ -5,6 +5,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,14 +45,16 @@ public class RolService {
     }
 
     /**
-     * Devuelve el rol interno del usuario (ADMIN, GESTOR o LECTURA),
-     * o null si no tiene ningún grupo AD configurado.
+     * Devuelve el rol interno del usuario (ADMIN, GESTOR o LECTURA).
+     * Cualquier usuario autenticado recibe al menos LECTURA como fallback.
      */
     public String resolverRol(UsuarioAD usuario) {
-        if (usuario == null || usuario.getRoles() == null) return null;
+        if (usuario == null) return AppRoles.LECTURA;
+        List<String> grupos = usuario.getRoles();
+        if (grupos == null || grupos.isEmpty()) return AppRoles.LECTURA;
         // Prioridad: ADMIN > GESTOR > LECTURA — buscamos el rol de mayor prioridad
         String mejorRol = null;
-        for (String grupoAd : usuario.getRoles()) {
+        for (String grupoAd : grupos) {
             String rol = grupoAdARol.get(grupoAd);
             if (AppRoles.ADMIN.equals(rol)) {
                 return AppRoles.ADMIN; // Máxima prioridad, no hay que seguir
@@ -62,7 +65,8 @@ public class RolService {
                 mejorRol = AppRoles.LECTURA;
             }
         }
-        return mejorRol;
+        // Fallback: cualquier usuario autenticado puede leer
+        return mejorRol != null ? mejorRol : AppRoles.LECTURA;
     }
 
     /**
