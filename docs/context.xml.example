@@ -31,4 +31,14 @@
     <Environment name="db/password" type="java.lang.String"
                  value="PASSWORD_BD" override="false"/>
 
+    <!-- ====== ROLES AD (grupos del Active Directory) ====== -->
+    <!-- Sustituir los valores por los nombres reales de los grupos AD (CN=...) -->
+    <!-- Si un parámetro no está configurado, ese rol simplemente no se asigna -->
+    <Environment name="roles/admin"   type="java.lang.String"
+                 value="CONFIGURAR_GRUPO_AD_ADMIN"   override="false"/>
+    <Environment name="roles/gestor"  type="java.lang.String"
+                 value="CONFIGURAR_GRUPO_AD_GESTOR"  override="false"/>
+    <Environment name="roles/lectura" type="java.lang.String"
+                 value="CONFIGURAR_GRUPO_AD_LECTURA" override="false"/>
+
 </Context>

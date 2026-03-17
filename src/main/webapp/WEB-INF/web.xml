@@ -23,4 +23,23 @@
         <welcome-file>index</welcome-file>
     </welcome-file-list>
 
+    <!-- Orden explícito de filtros: AuthFilter primero, RolFilter después -->
+    <filter>
+        <filter-name>AuthFilter</filter-name>
+        <filter-class>com.comisiones.filter.AuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>RolFilter</filter-name>
+        <filter-class>com.comisiones.filter.RolFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>RolFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
 </web-app>

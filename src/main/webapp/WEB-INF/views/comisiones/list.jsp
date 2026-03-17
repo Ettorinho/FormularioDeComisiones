@@ -33,7 +33,9 @@
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2>Comisiones y Grupos</h2>
-            <a href="${pageContext.request.contextPath}/comisiones/new" class="btn btn-primary">Nueva Comisión</a>
+            <c:if test="${rolUsuario == 'ADMIN'}">
+                <a href="${pageContext.request.contextPath}/comisiones/new" class="btn btn-primary">Nueva Comisión</a>
+            </c:if>
         </div>
         <c:if test="${not empty comisiones}">
             <table class="table table-striped">
