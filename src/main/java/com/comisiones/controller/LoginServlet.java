@@ -2,6 +2,7 @@ package com.comisiones.controller;
 
 import com.comisiones.ldap.LdapAuthService;
 import com.comisiones.model.UsuarioAD;
+import com.comisiones.service.AuditoriaService;
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -37,21 +38,37 @@ public class LoginServlet extends HttpServlet {
             Context initCtx = new InitialContext();
             Context envCtx  = (Context) initCtx.lookup("java:comp/env");
 
-            String ldapUrl    = (String) envCtx.lookup("ldap/url");
-            String baseDn     = (String) envCtx.lookup("ldap/baseDn");
-            String dominioAd  = (String) envCtx.lookup("ldap/dominio");
+            String ldapUrl      = (String) envCtx.lookup("ldap/url");
+            String baseDn       = (String) envCtx.lookup("ldap/baseDn");
+            String dominioAd    = (String) envCtx.lookup("ldap/dominio");
+            String bindDn       = lookupOptional(envCtx, "ldap/bindDn");
+            String bindPassword = lookupOptional(envCtx, "ldap/bindPassword");
 
             log("📋 Parámetros LDAP para autenticación:");
-            log("   ldap/url     = " + (ldapUrl   != null ? ldapUrl   : "❌ NULL"));
-            log("   ldap/baseDn  = " + (baseDn    != null ? baseDn    : "❌ NULL"));
-            log("   ldap/dominio = " + (dominioAd != null ? dominioAd : "❌ NULL"));
+            log("   ldap/url        = " + (ldapUrl      != null ? ldapUrl      : "❌ NULL"));
+            log("   ldap/baseDn     = " + (baseDn       != null ? baseDn       : "❌ NULL"));
+            log("   ldap/dominio    = " + (dominioAd    != null ? dominioAd    : "❌ NULL"));
+            log("   ldap/bindDn     = " + (bindDn       != null ? bindDn       : "⚠️ no configurado (fallback a credenciales de usuario)"));
+            log("   ldap/bindPassword = " + (bindPassword != null ? "******" : "⚠️ no configurado"));
 
-            ldapAuthService = new LdapAuthService(ldapUrl, baseDn, dominioAd);
+            ldapAuthService = new LdapAuthService(ldapUrl, baseDn, dominioAd, bindDn, bindPassword);
             log("✅ LoginServlet inicializado correctamente");
 
         } catch (NamingException e) {
             log("❌ Error al leer configuración LDAP desde JNDI: " + e.getMessage());
             throw new ServletException("No se pudo leer la configuración LDAP desde context.xml (JNDI)", e);
+        }
+    }
+
+    /**
+     * Intenta leer un parámetro JNDI opcional; devuelve null si no está configurado
+     * en lugar de lanzar NamingException.
+     */
+    private String lookupOptional(Context envCtx, String name) {
+        try {
+            return (String) envCtx.lookup(name);
+        } catch (NamingException e) {
+            return null;
         }
     }
 
@@ -106,7 +123,9 @@ public class LoginServlet extends HttpServlet {
                     + " [" + usuario.getNombreCompleto() + "]"
                     + " roles=" + usuario.getRoles());
 
-            log("🔐 Login registrado: " + usuario.getUsername() + " desde IP: " + request.getRemoteAddr());
+            AuditoriaService.getInstance().registrar(request, usuario.getUsername(),
+                "LOGIN", "SESION", null,
+                "Login exitoso desde IP: " + request.getRemoteAddr());
 
             // Redirigir a la URL solicitada originalmente o a /comisiones por defecto
             String urlAntesDeSesion = (String) session.getAttribute("urlAntesDeSesion");
@@ -119,7 +138,9 @@ public class LoginServlet extends HttpServlet {
 
         } catch (AuthenticationException ae) {
             log("⚠️ Login fallido (credenciales incorrectas): " + username);
-            log("🔐 Login fallido registrado para usuario: " + username);
+            AuditoriaService.getInstance().registrar(request, username,
+                "LOGIN_FALLIDO", "SESION", null,
+                "Intento de login fallido (credenciales incorrectas)");
             request.setAttribute("error", "Usuario o contraseña incorrectos.");
             request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
 
