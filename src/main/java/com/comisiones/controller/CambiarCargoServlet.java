@@ -5,6 +5,7 @@ import com.comisiones.dao.HistorialCargoDAO;
 import com.comisiones.model.ComisionMiembro;
 import com.comisiones.model.HistorialCargo;
 import com.comisiones.model.UsuarioAD;
+import com.comisiones.service.AuditoriaService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
