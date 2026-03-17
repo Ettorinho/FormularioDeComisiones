@@ -62,7 +62,7 @@
             <hr/>
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4>Miembros</h4>
-                <c:if test="${empty comision.fechaFin || comision.fechaFin > now}">
+                <c:if test="${(empty comision.fechaFin || comision.fechaFin > now) && (rolUsuario == 'ADMIN' || rolUsuario == 'GESTOR')}">
                     <div>
                         <a href="${pageContext.request.contextPath}/comisiones/addMember/${comision.id}" class="btn btn-primary me-2">Añadir Miembro</a>
                         <a href="${pageContext.request.contextPath}/comisiones/bajaMiembros/${comision.id}" class="btn btn-warning">Dar de baja a Miembros</a>
@@ -96,11 +96,13 @@
                                 <td>
                                     <c:choose>
                                         <c:when test="${empty cm.fechaBaja}">
-                                            <a href="${pageContext.request.contextPath}/comisiones/cambiarCargo?comisionId=${comision.id}&miembroId=${cm.miembro.id}" 
-                                               class="btn btn-warning btn-sm" 
-                                               title="Cambiar cargo del miembro">
-                                                <i class="bi bi-arrow-left-right"></i> Cambiar Cargo
-                                            </a>
+                                            <c:if test="${rolUsuario == 'ADMIN' || rolUsuario == 'GESTOR'}">
+                                                <a href="${pageContext.request.contextPath}/comisiones/cambiarCargo?comisionId=${comision.id}&miembroId=${cm.miembro.id}" 
+                                                   class="btn btn-warning btn-sm" 
+                                                   title="Cambiar cargo del miembro">
+                                                    <i class="bi bi-arrow-left-right"></i> Cambiar Cargo
+                                                </a>
+                                            </c:if>
                                         </c:when>
                                         <c:otherwise>
                                             <span class="badge bg-secondary">Baja: <fmt:formatDate value="${cm.fechaBaja}" pattern="dd/MM/yyyy"/></span>
