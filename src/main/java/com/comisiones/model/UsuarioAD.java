@@ -15,9 +15,8 @@ public class UsuarioAD implements Serializable {
     private String username;
     private String nombreCompleto;
     private String email;
-    private String department;
-    private String title;
-    /** CNs de los grupos AD a los que pertenece el usuario (extraídos de memberOf). */
+    private String departamento;
+    private String cargo;
     private List<String> roles;
 
     public UsuarioAD() {
@@ -34,46 +33,46 @@ public class UsuarioAD implements Serializable {
         this.roles          = roles != null ? roles : new ArrayList<>();
     }
 
-    public UsuarioAD(String username, String displayName, String email) {
-        this.username = username;
-        this.displayName = displayName;
-        this.email = email;
-        this.roles = new ArrayList<>();
+    /** Constructor de compatibilidad (3 parámetros) */
+    public UsuarioAD(String username, String nombreCompleto, String email) {
+        this(username, nombreCompleto, email, "", "", new ArrayList<>());
     }
 
-    public UsuarioAD(String username, String displayName, String email,
-                     String department, String title, List<String> roles) {
-        this.username = username;
-        this.displayName = displayName;
-        this.email = email;
-        this.department = department;
-        this.title = title;
-        this.roles = roles != null ? roles : new ArrayList<>();
-    }
-
+    // --- username ---
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
+    // --- nombreCompleto / displayName (alias) ---
     public String getNombreCompleto() { return nombreCompleto; }
     public void setNombreCompleto(String nombreCompleto) { this.nombreCompleto = nombreCompleto; }
 
+    /** Alias para compatibilidad con codigo que use displayName */
     public String getDisplayName() { return nombreCompleto; }
     public void setDisplayName(String displayName) { this.nombreCompleto = displayName; }
 
-    /** Alias de displayName, para compatibilidad con el nombre del AD. */
-    public String getNombreCompleto() { return displayName; }
-
+    // --- email ---
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public String getDepartment() { return department; }
-    public void setDepartment(String department) { this.department = department; }
+    // --- departamento ---
+    public String getDepartamento() { return departamento; }
+    public void setDepartamento(String departamento) { this.departamento = departamento; }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    // --- cargo ---
+    public String getCargo() { return cargo; }
+    public void setCargo(String cargo) { this.cargo = cargo; }
 
+    // --- roles ---
     public List<String> getRoles() { return roles; }
-    public void setRoles(List<String> roles) { this.roles = roles; }
+    public void setRoles(List<String> roles) { this.roles = roles != null ? roles : new ArrayList<>(); }
+
+    /**
+     * Comprueba si el usuario tiene un rol determinado (case-insensitive).
+     */
+    public boolean tieneRol(String rol) {
+        if (rol == null || roles == null) return false;
+        return roles.stream().anyMatch(r -> r.equalsIgnoreCase(rol));
+    }
 
     @Override
     public String toString() {
