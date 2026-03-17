@@ -63,12 +63,6 @@ public class RolFilter implements Filter {
         String rolUsuario = rolService.resolverRol(usuario);
         session.setAttribute("rolUsuario", rolUsuario);
 
-        // Si no tiene ningún rol, denegar acceso
-        if (rolUsuario == null) {
-            httpReq.getRequestDispatcher("/WEB-INF/views/sin-permisos.jsp").forward(httpReq, httpResp);
-            return;
-        }
-
         // Verificar permisos según la ruta y el método HTTP
         String rolRequerido = determinarRolRequerido(path, method);
         if (!rolService.tienePermiso(usuario, rolRequerido)) {
