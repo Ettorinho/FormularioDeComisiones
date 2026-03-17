@@ -13,8 +13,13 @@ import java.util.List;
 
 /**
  * Servicio de autenticación contra Active Directory mediante bind LDAP.
- * Utiliza las credenciales del propio usuario (no la cuenta de servicio)
- * para realizar el bind, y luego busca sus atributos y grupos.
+ *
+ * Flujo de dos pasos:
+ * 1. Bind con las credenciales del usuario → verificar que la contraseña es correcta.
+ * 2. Bind con la cuenta de servicio (bindDn/bindPassword) → leer memberOf con permisos suficientes.
+ *
+ * Si no se configura cuenta de servicio, se hace la búsqueda con el contexto del propio
+ * usuario (comportamiento anterior, puede que memberOf no esté disponible).
  */
 public class LdapAuthService {
 
@@ -22,15 +27,30 @@ public class LdapAuthService {
     private final String baseDn;
     /** Dominio AD, p.ej. "empresa.com" */
     private final String dominioAd;
+    /** DN de la cuenta de servicio para búsquedas (puede ser null) */
+    private final String bindDn;
+    /** Contraseña de la cuenta de servicio (puede ser null) */
+    private final String bindPassword;
 
+    /** Constructor sin cuenta de servicio (compatibilidad hacia atrás). */
     public LdapAuthService(String ldapUrl, String baseDn, String dominioAd) {
-        this.ldapUrl   = ldapUrl;
-        this.baseDn    = baseDn;
-        this.dominioAd = dominioAd;
+        this(ldapUrl, baseDn, dominioAd, null, null);
+    }
+
+    /** Constructor con cuenta de servicio para leer memberOf correctamente. */
+    public LdapAuthService(String ldapUrl, String baseDn, String dominioAd,
+                           String bindDn, String bindPassword) {
+        this.ldapUrl      = ldapUrl;
+        this.baseDn       = baseDn;
+        this.dominioAd    = dominioAd;
+        this.bindDn       = bindDn;
+        this.bindPassword = bindPassword;
     }
 
     /**
-     * Autentica al usuario contra el AD realizando un bind LDAP con sus propias credenciales.
+     * Autentica al usuario contra el AD en dos pasos:
+     * 1. Bind con las credenciales del usuario para verificar la contraseña.
+     * 2. Bind con la cuenta de servicio para leer los atributos (incluido memberOf).
      *
      * @param username nombre de usuario (con o sin @dominio)
      * @param password contraseña del usuario
@@ -42,25 +62,52 @@ public class LdapAuthService {
         // Construir el userPrincipalName para el bind
         String principal = username.contains("@") ? username : username + "@" + dominioAd;
 
-        Hashtable<String, String> env = new Hashtable<>();
-        env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        env.put(Context.PROVIDER_URL, ldapUrl);
-        env.put(Context.SECURITY_AUTHENTICATION, "simple");
-        env.put(Context.SECURITY_PRINCIPAL, principal);
-        env.put(Context.SECURITY_CREDENTIALS, password);
+        // PASO 1: Bind con las credenciales del usuario → solo para verificar la contraseña
+        Hashtable<String, String> envUsuario = new Hashtable<>();
+        envUsuario.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        envUsuario.put(Context.PROVIDER_URL, ldapUrl);
+        envUsuario.put(Context.SECURITY_AUTHENTICATION, "simple");
+        envUsuario.put(Context.SECURITY_PRINCIPAL, principal);
+        envUsuario.put(Context.SECURITY_CREDENTIALS, password);
         // Timeouts de 5 segundos para evitar bloqueos prolongados
-        env.put("com.sun.jndi.ldap.connect.timeout", "5000");
-        env.put("com.sun.jndi.ldap.read.timeout",    "5000");
+        envUsuario.put("com.sun.jndi.ldap.connect.timeout", "5000");
+        envUsuario.put("com.sun.jndi.ldap.read.timeout",    "5000");
 
-        DirContext ctx = null;
+        DirContext ctxUsuario = null;
         try {
-            // El bind falla con AuthenticationException si las credenciales son incorrectas
-            ctx = new InitialDirContext(env);
-            return buscarDatosUsuario(ctx, username);
+            // Lanza AuthenticationException si las credenciales son incorrectas
+            ctxUsuario = new InitialDirContext(envUsuario);
         } finally {
-            if (ctx != null) {
+            if (ctxUsuario != null) {
+                try { ctxUsuario.close(); } catch (NamingException ignored) {}
+            }
+        }
+
+        // PASO 2: Abrir contexto de búsqueda con la cuenta de servicio (si está configurada)
+        // para poder leer memberOf con los permisos adecuados.
+        DirContext ctxBusqueda = null;
+        try {
+            if (bindDn != null && !bindDn.trim().isEmpty()
+                    && bindPassword != null && !bindPassword.trim().isEmpty()) {
+                // Usar cuenta de servicio
+                Hashtable<String, String> envServicio = new Hashtable<>();
+                envServicio.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+                envServicio.put(Context.PROVIDER_URL, ldapUrl);
+                envServicio.put(Context.SECURITY_AUTHENTICATION, "simple");
+                envServicio.put(Context.SECURITY_PRINCIPAL, bindDn);
+                envServicio.put(Context.SECURITY_CREDENTIALS, bindPassword);
+                envServicio.put("com.sun.jndi.ldap.connect.timeout", "5000");
+                envServicio.put("com.sun.jndi.ldap.read.timeout",    "5000");
+                ctxBusqueda = new InitialDirContext(envServicio);
+            } else {
+                // Fallback: reabrir con las credenciales del usuario
+                ctxBusqueda = new InitialDirContext(envUsuario);
+            }
+            return buscarDatosUsuario(ctxBusqueda, username);
+        } finally {
+            if (ctxBusqueda != null) {
                 try {
-                    ctx.close();
+                    ctxBusqueda.close();
                 } catch (NamingException e) {
                     // Se registra pero no se propaga para no ocultar una excepción original
                     System.err.println("[LdapAuthService] Advertencia: error al cerrar el contexto LDAP: " + e.getMessage());

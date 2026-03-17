@@ -13,6 +13,11 @@
                  value="ldap://IP_SERVIDOR:389" override="false"/>
     <Environment name="ldap/baseDn"       type="java.lang.String"
                  value="OU=UnidadOrg,DC=dominio,DC=es" override="false"/>
+    <!--
+        ldap/bindDn y ldap/bindPassword: cuenta de servicio con permisos para leer memberOf.
+        Usada por LdapLookupServlet (búsqueda de usuarios por DNI) y por LoginServlet
+        (lectura de memberOf tras autenticación, necesario para asignar el rol correcto).
+    -->
     <Environment name="ldap/bindDn"       type="java.lang.String"
                  value="CN=Usuario,OU=Org,DC=dominio,DC=es" override="false"/>
     <Environment name="ldap/bindPassword" type="java.lang.String"
