@@ -19,6 +19,9 @@
                  value="PASSWORD_LDAP" override="false"/>
     <Environment name="ldap/dniAttr"      type="java.lang.String"
                  value="cn" override="false"/>
+    <!-- Dominio AD para construir el userPrincipalName en el login (ej: empresa.com) -->
+    <Environment name="ldap/dominio"      type="java.lang.String"
+                 value="CONFIGURAR_DOMINIO_AD" override="false"/>
 
     <!-- ====== BASE DE DATOS (ya usado por DBUtil.java) ====== -->
     <Environment name="db/url"      type="java.lang.String"
