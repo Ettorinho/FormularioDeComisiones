@@ -13,7 +13,7 @@ public class ComisionDAO {
     
     public void save(Comision comision) throws SQLException {
         AppLogger.debug("ComisionDAO.save: " + comision.getNombre());
-        String sql = "INSERT INTO comisiones (nombre, area, tipo, fecha_constitucion, fecha_fin) VALUES (?, ?::area_type, ?::tipo_type, ?, ?)";
+        String sql = "INSERT INTO comisiones (nombre, area, tipo, fecha_constitucion, fecha_fin) VALUES (?, CAST(? AS area_type), CAST(? AS tipo_type), ?, ?)";
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -69,7 +69,7 @@ public class ComisionDAO {
     // ⭐ NUEVO:  Buscar por área y tipo
     public List<Comision> findByAreaAndTipo(Area area, Tipo tipo) throws SQLException {
         List<Comision> comisiones = new ArrayList<>();
-        String sql = "SELECT * FROM comisiones WHERE area = ?::area_type AND tipo = ?::tipo_type ORDER BY nombre";
+        String sql = "SELECT * FROM comisiones WHERE area = CAST(? AS area_type) AND tipo = CAST(? AS tipo_type) ORDER BY nombre";
         
         try (Connection conn = DBUtil.getConnection(); 
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -101,7 +101,7 @@ public class ComisionDAO {
     }
     
     public boolean exists(String nombre, Area area, Tipo tipo) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM comisiones WHERE nombre = ? AND area = ?::area_type AND tipo = ?::tipo_type";
+        String sql = "SELECT COUNT(*) FROM comisiones WHERE nombre = ? AND area = CAST(? AS area_type) AND tipo = CAST(? AS tipo_type)";
         try (Connection conn = DBUtil.getConnection(); 
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, nombre);
