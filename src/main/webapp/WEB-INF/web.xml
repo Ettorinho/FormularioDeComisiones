@@ -18,7 +18,7 @@
         <url-pattern>/ldapLookup</url-pattern>
     </servlet-mapping>
 
-    <!-- Página de bienvenida -->
+    <!-- Welcome file points to a servlet path, NOT a physical JSP -->
     <welcome-file-list>
         <welcome-file>index</welcome-file>
     </welcome-file-list>

@@ -2,6 +2,7 @@ package com.comisiones.controller;
 
 import com.comisiones.ldap.LdapAuthService;
 import com.comisiones.model.UsuarioAD;
+import com.comisiones.service.AuditoriaService;
 
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
@@ -107,6 +108,10 @@ public class LoginServlet extends HttpServlet {
                     + " [" + usuario.getNombreCompleto() + "]"
                     + " roles=" + usuario.getRoles());
 
+            AuditoriaService.getInstance().registrar(request, usuario.getUsername(),
+                "LOGIN", "SESION", null,
+                "Login exitoso desde IP: " + request.getRemoteAddr());
+
             // Redirigir a la URL solicitada originalmente o a /comisiones por defecto
             String urlAntesDeSesion = (String) session.getAttribute("urlAntesDeSesion");
             if (urlAntesDeSesion != null && !urlAntesDeSesion.isEmpty()) {
@@ -118,6 +123,9 @@ public class LoginServlet extends HttpServlet {
 
         } catch (AuthenticationException ae) {
             log("⚠️ Login fallido (credenciales incorrectas): " + username);
+            AuditoriaService.getInstance().registrar(request, username,
+                "LOGIN_FALLIDO", "SESION", null,
+                "Intento de login fallido (credenciales incorrectas)");
             request.setAttribute("error", "Usuario o contraseña incorrectos.");
             request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
 

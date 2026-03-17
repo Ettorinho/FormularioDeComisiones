@@ -8,9 +8,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Servlet raíz. Redirige la petición a /comisiones.
- * El AuthFilter interceptará la petición y, si no hay sesión,
- * redirigirá al login antes de que llegue aquí.
+ * Root servlet. Redirects the request to /comisiones.
+ * The AuthFilter will intercept this request first and, if there is no session,
+ * will redirect to /login before this code is ever reached.
  */
 @WebServlet("/index")
 public class IndexServlet extends HttpServlet {
