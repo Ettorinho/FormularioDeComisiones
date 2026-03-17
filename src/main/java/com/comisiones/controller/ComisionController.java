@@ -8,6 +8,8 @@ import com.comisiones.model. Comision;
 import com.comisiones.model.ComisionMiembro;
 import com.comisiones.model.HistorialCargo;
 import com.comisiones.model.Miembro;
+import com.comisiones.model.UsuarioAD;
+import com.comisiones.service.AuditoriaService;
 import com.comisiones.util.AppLogger;
 
 import javax.servlet.RequestDispatcher;
@@ -16,6 +18,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet. http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -39,6 +42,15 @@ public class ComisionController extends HttpServlet {
         comisionMiembroDAO = new ComisionMiembroDAO();
         miembroDAO = new MiembroDAO();
         AppLogger.info("ComisionController INICIALIZADO");
+    }
+
+    private String getUsuarioLogueado(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            UsuarioAD u = (UsuarioAD) session.getAttribute("usuarioLogueado");
+            if (u != null) return u.getUsername();
+        }
+        return "SISTEMA";
     }
 
     @Override
@@ -222,12 +234,20 @@ public class ComisionController extends HttpServlet {
             comisionDAO.save(nuevaComision);
             comisionId = nuevaComision.getId();
             AppLogger.info("Nueva comisión creada con ID: " + comisionId);
+            AuditoriaService.getInstance().registrar(request, getUsuarioLogueado(request),
+                "CREAR", "COMISION", nuevaComision.getId().toString(),
+                "Creó la comisión: " + nuevaComision.getNombre());
         }
         
         // Procesar miembros desde JSON
         if (miembrosJSON != null && !miembrosJSON.isEmpty() && ! miembrosJSON.equals("[]")) {
             AppLogger.debug("Procesando miembros JSON");
             procesarMiembrosJSON(comisionId, miembrosJSON);
+            if ("existente".equals(opcionCreacion)) {
+                AuditoriaService.getInstance().registrar(request, getUsuarioLogueado(request),
+                    "MODIFICAR", "COMISION", comisionId.toString(),
+                    "Agregó miembros a la comisión ID: " + comisionId);
+            }
         } else {
             AppLogger.debug("No hay miembros para procesar");
         }
@@ -272,6 +292,10 @@ public class ComisionController extends HttpServlet {
         comisionMiembro.setFechaIncorporacion(new java.sql.Date(fechaIncorp.getTime()));
 
         comisionMiembroDAO.save(comisionMiembro);
+        AuditoriaService.getInstance().registrar(request, getUsuarioLogueado(request),
+            "CREAR", "MIEMBRO", comisionId + "/" + miembro.getId(),
+            "Agregó al miembro " + miembro.getNombreApellidos() + " (DNI: " + miembro.getDniNif()
+                + ") a la comisión ID: " + comisionId + " con cargo: " + cargoStr);
         response.sendRedirect(request.getContextPath() + "/comisiones/view/" + comisionId);
     }
 
@@ -337,6 +361,10 @@ public class ComisionController extends HttpServlet {
         Date fechaBajaUtil = new SimpleDateFormat("yyyy-MM-dd").parse(fechaBajaStr);
         java.sql.Date fechaBaja = new java.sql.Date(fechaBajaUtil.getTime());
         comisionMiembroDAO.darDeBaja(comisionId, miembroId, fechaBaja);
+        AuditoriaService.getInstance().registrar(request, getUsuarioLogueado(request),
+            "BAJA", "MIEMBRO", comisionId + "/" + miembroId,
+            "Dio de baja al miembro ID: " + miembroId + " de la comisión ID: " + comisionId
+                + " con fecha: " + fechaBajaStr);
         
         AppLogger.debug("Redirecting to /comisiones/view/" + comisionId);
         response.sendRedirect(request.getContextPath() + "/comisiones/view/" + comisionId);

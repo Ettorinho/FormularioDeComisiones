@@ -4,12 +4,15 @@ import com.comisiones.dao.ComisionMiembroDAO;
 import com.comisiones.dao.HistorialCargoDAO;
 import com.comisiones.model.ComisionMiembro;
 import com.comisiones.model.HistorialCargo;
+import com.comisiones.model.UsuarioAD;
+import com.comisiones.service.AuditoriaService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -29,7 +32,16 @@ public class CambiarCargoServlet extends HttpServlet {
         comisionMiembroDAO = new ComisionMiembroDAO();
         historialDAO = new HistorialCargoDAO();
     }
-    
+
+    private String getUsuarioLogueado(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            UsuarioAD u = (UsuarioAD) session.getAttribute("usuarioLogueado");
+            if (u != null) return u.getUsername();
+        }
+        return "SISTEMA";
+    }
+
     /**
      * GET: Muestra el formulario de cambio de cargo con el historial.
      */
@@ -131,7 +143,10 @@ public class CambiarCargoServlet extends HttpServlet {
                 if (motivo != null && !motivo.trim().isEmpty()) {
                     historialDAO.actualizarMotivoUltimoCambio(comisionId, miembroId, motivo);
                 }
-                
+                AuditoriaService.getInstance().registrar(request, getUsuarioLogueado(request),
+                    "MODIFICAR", "CARGO", comisionId + "/" + miembroId,
+                    "Cambió el cargo de " + cm.getCargo().name() + " a " + nuevoCargo
+                        + " en la comisión ID: " + comisionId);
                 request.setAttribute("success", "Cargo cambiado exitosamente de " + 
                     cm.getCargo().name() + " a " + nuevoCargo);
             } else {
