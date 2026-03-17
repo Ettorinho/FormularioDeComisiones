@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Root servlet. Redirects the request to /comisiones.
+ * Root servlet. Forwards the request to the main menu page (index.jsp).
  * The AuthFilter will intercept this request first and, if there is no session,
  * will redirect to /login before this code is ever reached.
  */
@@ -18,6 +18,6 @@ public class IndexServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.sendRedirect(request.getContextPath() + "/comisiones");
+        request.getRequestDispatcher("/index.jsp").forward(request, response);
     }
 }
