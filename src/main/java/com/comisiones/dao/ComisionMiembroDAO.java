@@ -290,7 +290,7 @@ public class ComisionMiembroDAO {
      * @return true si se actualizó correctamente, false si no se encontró el registro
      */
     public boolean cambiarCargo(Long comisionId, Long miembroId, String nuevoCargo) throws SQLException {
-        String sql = "UPDATE " + TABLE_NAME + " SET cargo = ?::cargo " +
+        String sql = "UPDATE " + TABLE_NAME + " SET cargo = ?::cargo_type " +
                      "WHERE comision_id = ? AND miembro_id = ?";
         
         try (Connection conn = DBUtil.getConnection();
