@@ -4,12 +4,14 @@ import com.comisiones.dao.ComisionMiembroDAO;
 import com.comisiones.dao.HistorialCargoDAO;
 import com.comisiones.model.ComisionMiembro;
 import com.comisiones.model.HistorialCargo;
+import com.comisiones.model.UsuarioAD;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -124,7 +126,12 @@ public class CambiarCargoServlet extends HttpServlet {
             }
             
             // Cambiar cargo (el trigger registrará automáticamente en el historial)
-            boolean success = comisionMiembroDAO.cambiarCargo(comisionId, miembroId, nuevoCargo);
+            HttpSession session = request.getSession(false);
+            UsuarioAD usuarioLogueado = (session != null)
+                ? (UsuarioAD) session.getAttribute("usuarioLogueado")
+                : null;
+            String usernameAD = (usuarioLogueado != null) ? usuarioLogueado.getUsername() : "SYSTEM";
+            boolean success = comisionMiembroDAO.cambiarCargo(comisionId, miembroId, nuevoCargo, usernameAD);
             
             if (success) {
                 // Si hay motivo, actualizar en el historial

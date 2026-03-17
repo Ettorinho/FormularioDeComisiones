@@ -279,28 +279,49 @@ public class ComisionMiembroDAO {
     }
     
     /**
-     * Cambia el cargo de un miembro en una comisión.
-     * El trigger registrará automáticamente el cambio en el historial.
-     * 
-     * @param comisionId ID de la comisión
-     * @param miembroId ID del miembro
-     * @param nuevoCargo Nuevo cargo a asignar
-     * @return true si se actualizó correctamente, false si no se encontró el registro
+     * Cambia el cargo de un miembro en una comisión, registrando el usuario AD en el historial.
+     * Usa SET LOCAL para que el trigger de PostgreSQL pueda leer el usuario de la sesión web.
+     *
+     * @param comisionId  ID de la comisión
+     * @param miembroId   ID del miembro
+     * @param nuevoCargo  Nuevo cargo a asignar
+     * @param usuarioAD   Username del usuario AD logueado que realiza el cambio
+     * @return true si se actualizó correctamente
      */
-    public boolean cambiarCargo(Long comisionId, Long miembroId, String nuevoCargo) throws SQLException {
-        String sql = "UPDATE " + TABLE_NAME + " SET cargo = CAST(? AS cargo_type) " +
-                     "WHERE comision_id = ? AND miembro_id = ?";
-        
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, nuevoCargo);
-            stmt.setLong(2, comisionId);
-            stmt.setLong(3, miembroId);
-            
-            int rowsAffected = stmt.executeUpdate();
-            AppLogger.debug("cambiarCargo - Filas afectadas: " + rowsAffected);
-            return rowsAffected > 0;
+    public boolean cambiarCargo(Long comisionId, Long miembroId, String nuevoCargo, String usuarioAD) throws SQLException {
+        // Usar una sola conexión con autocommit desactivado para que SET LOCAL y el UPDATE
+        // pertenezcan a la misma transacción y el trigger pueda leer la variable de sesión.
+        try (Connection conn = DBUtil.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                // 1. Establecer el usuario AD como variable de sesión local de PostgreSQL
+                //    SET LOCAL es transaccional y solo dura hasta el final de la transacción actual
+                try (PreparedStatement setUser = conn.prepareStatement("SET LOCAL app.usuario_modificacion = ?")) {
+                    setUser.setString(1, usuarioAD != null ? usuarioAD : "SYSTEM");
+                    setUser.execute();
+                }
+
+                // 2. Ejecutar el cambio de cargo (el trigger leerá app.usuario_modificacion)
+                String sql = "UPDATE " + TABLE_NAME + " SET cargo = CAST(? AS cargo_type) " +
+                             "WHERE comision_id = ? AND miembro_id = ?";
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setString(1, nuevoCargo);
+                    stmt.setLong(2, comisionId);
+                    stmt.setLong(3, miembroId);
+                    int rowsAffected = stmt.executeUpdate();
+                    conn.commit();
+                    AppLogger.debug("cambiarCargo - Usuario: " + usuarioAD + " - Filas afectadas: " + rowsAffected);
+                    return rowsAffected > 0;
+                }
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
         }
+    }
+
+    // Sobrecarga para compatibilidad con llamadas existentes sin usuario
+    public boolean cambiarCargo(Long comisionId, Long miembroId, String nuevoCargo) throws SQLException {
+        return cambiarCargo(comisionId, miembroId, nuevoCargo, "SYSTEM");
     }
 }
