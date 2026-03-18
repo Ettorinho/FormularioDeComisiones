@@ -55,7 +55,6 @@
                                            id="username"
                                            name="username"
                                            class="form-control"
-                                           placeholder="usuario o usuario@empresa.com"
                                            autofocus
                                            required>
                                 </div>
