@@ -87,9 +87,7 @@ public class RolFilter implements Filter {
             || path.endsWith(".js")
             || path.endsWith(".png")
             || path.endsWith(".jpg")
-            || path.endsWith(".ico")
-            || path.equals("/index.jsp")
-            || path.equals("/index");
+            || path.endsWith(".ico");
     }
 
     private String determinarRolRequerido(String path, String method) {
