@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acta de Reunión - Gobierno de Aragón</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
@@ -35,40 +35,6 @@
             </div>
         </div>
     </header>
-
-    <%-- Navbar (comentado temporalmente)
-    <nav class="navbar navbar-expand-lg navbar-custom no-print">
-        <div class="container">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/">
-                            <i class="bi bi-house-door"></i> Inicio
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/comisiones">
-                            <i class="bi bi-people"></i> Comisiones
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="${pageContext.request.contextPath}/actas/new">
-                            <i class="bi bi-file-earmark-plus"></i> Actas
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/comisiones/buscarPorDni">
-                            <i class="bi bi-search"></i> Buscar Miembros
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    --%>
 
     <!-- Contenido Principal -->
     <div class="container mt-4 mb-5">
@@ -369,18 +335,6 @@
         </c:if>
         
     </div>
-
-    <%-- Footer --%>
-    <%--
-    <footer class="bg-dark text-white py-3 mt-5 no-print">
-        <div class="container text-center">
-            <p class="mb-0">
-                &copy; <fmt:formatDate value="<%= new java.util.Date() %>" pattern="yyyy" /> 
-                Gobierno de Aragón - Departamento de Sanidad
-            </p>
-        </div>
-    </footer>
-    --%>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
