@@ -114,7 +114,15 @@ public class LoginServlet extends HttpServlet {
         try {
             UsuarioAD usuario = ldapAuthService.autenticar(username, password);
 
-            // Login exitoso: crear sesión y guardar el usuario
+            // Leer urlAntesDeSesion ANTES de invalidar la sesión anterior
+            String urlAntesDeSesion = null;
+            HttpSession sessionAntigua = request.getSession(false);
+            if (sessionAntigua != null) {
+                urlAntesDeSesion = (String) sessionAntigua.getAttribute("urlAntesDeSesion");
+                sessionAntigua.invalidate();
+            }
+
+            // Login exitoso: crear sesión nueva y limpia para el nuevo usuario
             HttpSession session = request.getSession(true);
             session.setMaxInactiveInterval(SESSION_MAX_INACTIVE);
             session.setAttribute("usuarioLogueado", usuario);
@@ -128,9 +136,7 @@ public class LoginServlet extends HttpServlet {
                 "Login exitoso desde IP: " + request.getRemoteAddr());
 
             // Redirigir a la URL solicitada originalmente o a /index por defecto
-            String urlAntesDeSesion = (String) session.getAttribute("urlAntesDeSesion");
             if (urlAntesDeSesion != null && !urlAntesDeSesion.isEmpty()) {
-                session.removeAttribute("urlAntesDeSesion");
                 response.sendRedirect(urlAntesDeSesion);
             } else {
                 response.sendRedirect(request.getContextPath() + "/index");
