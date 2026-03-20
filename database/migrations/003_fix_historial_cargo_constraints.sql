@@ -8,11 +8,17 @@ ALTER TABLE comision_miembro_historial_cargos
 
 ALTER TABLE comision_miembro_historial_cargos
     ADD CONSTRAINT check_cargo_nuevo
-    CHECK (cargo_nuevo IN ('PRESIDENTE', 'SECRETARIO', 'VOCAL', 'SUPLENTE', 'PARTICIPANTE'));
+    CHECK (cargo_nuevo IN (
+        'REFERENTE', 'RESPONSABLE', 'PRESIDENTE', 'PARTICIPANTE',
+        'SECRETARIO', 'INVESTIGADOR_PRINCIPAL', 'INVESTIGADOR_COLABORADOR'
+    ));
 
 ALTER TABLE comision_miembro_historial_cargos
     DROP CONSTRAINT IF EXISTS check_cargo_anterior;
 
 ALTER TABLE comision_miembro_historial_cargos
     ADD CONSTRAINT check_cargo_anterior
-    CHECK (cargo_anterior IS NULL OR cargo_anterior IN ('PRESIDENTE', 'SECRETARIO', 'VOCAL', 'SUPLENTE', 'PARTICIPANTE'));
+    CHECK (cargo_anterior IS NULL OR cargo_anterior IN (
+        'REFERENTE', 'RESPONSABLE', 'PRESIDENTE', 'PARTICIPANTE',
+        'SECRETARIO', 'INVESTIGADOR_PRINCIPAL', 'INVESTIGADOR_COLABORADOR'
+    ));
