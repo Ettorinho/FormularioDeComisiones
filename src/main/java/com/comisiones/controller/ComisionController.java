@@ -130,7 +130,7 @@ public class ComisionController extends HttpServlet {
         try {
             id = Long.parseLong(idStr.replaceAll("[^\\d]", ""));
         } catch (NumberFormatException e) {
-            request.setAttribute("error", "ID de comisión no válido en la URL:  " + idStr);
+            request.setAttribute("error", "ID de comisión no válido en la URL: " + idStr);
             request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
             return;
         }
