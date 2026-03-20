@@ -80,7 +80,6 @@
                 </div>
             </div>
         </div>
-        <a href="${pageContext.request.contextPath}/" class="btn btn-secondary mt-3">Volver al Inicio</a>
     </div>
 </body>
 </html>
