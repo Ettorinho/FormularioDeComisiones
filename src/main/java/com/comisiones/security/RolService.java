@@ -31,6 +31,7 @@ public class RolService {
             // Si no hay configuración JNDI de roles, el sistema funcionará
             // pero ningún usuario tendrá rol asignado
         }
+        System.out.println("[RolService] Mapa cargado: " + grupoAdARol);
     }
 
     private void cargarRol(Context envCtx, String jndiKey, String rolInterno) {
@@ -51,6 +52,7 @@ public class RolService {
     public String resolverRol(UsuarioAD usuario) {
         if (usuario == null) return AppRoles.LECTURA;
         List<String> grupos = usuario.getRoles();
+        System.out.println("[RolService] Grupos del usuario: " + grupos + " | Mapa: " + grupoAdARol);
         if (grupos == null || grupos.isEmpty()) return AppRoles.LECTURA;
         // Prioridad: ADMIN > GESTOR > LECTURA — buscamos el rol de mayor prioridad
         String mejorRol = null;
