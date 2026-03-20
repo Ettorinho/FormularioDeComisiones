@@ -73,7 +73,7 @@ public class LoginServlet extends HttpServlet {
     }
 
     /**
-     * GET /login: muestra el formulario de login o redirige a /index si ya hay sesión.
+     * GET /login: muestra el formulario de login o redirige a / si ya hay sesión.
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -82,7 +82,7 @@ public class LoginServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("usuarioLogueado") != null) {
             // Usuario ya autenticado → redirigir a la aplicación
-            response.sendRedirect(request.getContextPath() + "/index");
+            response.sendRedirect(request.getContextPath() + "/");
             return;
         }
 
@@ -135,11 +135,11 @@ public class LoginServlet extends HttpServlet {
                 "LOGIN", "SESION", null,
                 "Login exitoso desde IP: " + request.getRemoteAddr());
 
-            // Redirigir a la URL solicitada originalmente o a /index por defecto
+            // Redirigir a la URL solicitada originalmente o a / por defecto
             if (urlAntesDeSesion != null && !urlAntesDeSesion.isEmpty()) {
                 response.sendRedirect(urlAntesDeSesion);
             } else {
-                response.sendRedirect(request.getContextPath() + "/index");
+                response.sendRedirect(request.getContextPath() + "/");
             }
 
         } catch (AuthenticationException ae) {
