@@ -2,13 +2,6 @@
 
 Scripts SQL ordenados por versión. Formato: V{n}__{descripcion}.sql
 
-<<<<<<< copilot/improve-maintainability
-| Fichero | Descripción |
-|---|---|
-| V1__esquema_inicial.sql | Esquema inicial |
-| V2__add_pdf_support.sql | Soporte PDF |
-| V3__updated_schema.sql | Actualizaciones del esquema |
-=======
 ## Migraciones de esquema base (V-numeradas)
 
 | Fichero | Descripción |
@@ -258,4 +251,3 @@ Cada migración debe:
 
 **Última actualización**: 2026-02-05  
 **Versión**: 1.0
->>>>>>> main

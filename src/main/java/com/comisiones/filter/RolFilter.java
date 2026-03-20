@@ -80,17 +80,28 @@ public class RolFilter implements Filter {
     }
 
     private boolean esRutaPublica(String path) {
-        return path.startsWith("/login")
-            || path.startsWith("/logout")
-            || path.startsWith("/css/")
-            || path.startsWith("/js/")
-            || path.startsWith("/images/")
-            || path.startsWith("/fonts/")
-            || path.endsWith(".css")
-            || path.endsWith(".js")
-            || path.endsWith(".png")
-            || path.endsWith(".jpg")
-            || path.endsWith(".ico");
+        // Rutas funcionales públicas
+        if ("/login".equals(path) || "/logout".equals(path)) {
+            return true;
+        }
+
+        // Recursos estáticos por prefijo de ruta
+        if (path.startsWith("/css/")    || path.startsWith("/js/")
+                || path.startsWith("/img/")    || path.startsWith("/images/")
+                || path.startsWith("/fonts/")  || path.startsWith("/webjars/")) {
+            return true;
+        }
+
+        // Recursos estáticos por extensión de archivo
+        String pathLower = path.toLowerCase();
+        if (pathLower.endsWith(".css")   || pathLower.endsWith(".js")
+                || pathLower.endsWith(".png")   || pathLower.endsWith(".jpg")
+                || pathLower.endsWith(".ico")   || pathLower.endsWith(".woff")
+                || pathLower.endsWith(".woff2")) {
+            return true;
+        }
+
+        return false;
     }
 
     private String determinarRolRequerido(String path, String method) {

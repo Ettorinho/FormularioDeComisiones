@@ -70,8 +70,8 @@ public class AuthFilter implements Filter {
 
         // Recursos estáticos por prefijo de ruta
         if (path.startsWith("/css/")    || path.startsWith("/js/")
-                || path.startsWith("/img/")    || path.startsWith("/fonts/")
-                || path.startsWith("/webjars/")) {
+                || path.startsWith("/img/")    || path.startsWith("/images/")
+                || path.startsWith("/fonts/")  || path.startsWith("/webjars/")) {
             return true;
         }
 

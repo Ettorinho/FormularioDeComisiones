@@ -4,7 +4,7 @@ import com.comisiones.dao.ComisionDAO;
 import com.comisiones.dao.ComisionMiembroDAO;
 import com.comisiones.dao.HistorialCargoDAO;
 import com.comisiones.dao.MiembroDAO;
-import com.comisiones.model. Comision;
+import com.comisiones.model.Comision;
 import com.comisiones.model.ComisionMiembro;
 import com.comisiones.model.HistorialCargo;
 import com.comisiones.model.Miembro;
@@ -17,17 +17,17 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet. http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java. text.SimpleDateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.HashSet;
-import java.util. ArrayList;
+import java.util.ArrayList;
 
 @WebServlet("/comisiones/*")
 public class ComisionController extends HttpServlet {
@@ -94,7 +94,7 @@ public class ComisionController extends HttpServlet {
         try {
             if (pathInfo != null && pathInfo.equals("/buscarPorDni")) {
                 buscarComisionesPorDni(request, response);
-            } else if (pathInfo != null && pathInfo. equals("/buscarComision")) {
+            } else if (pathInfo != null && pathInfo.equals("/buscarComision")) {
                 buscarComisionPorNombre(request, response);
             } else if (pathInfo != null && pathInfo.startsWith("/addMember/")) {
                 saveMemberInComision(request, response);
@@ -128,7 +128,7 @@ public class ComisionController extends HttpServlet {
 
         Long id;
         try {
-            id = Long.parseLong(idStr. replaceAll("[^\\d]", ""));
+            id = Long.parseLong(idStr.replaceAll("[^\\d]", ""));
         } catch (NumberFormatException e) {
             request.setAttribute("error", "ID de comisión no válido en la URL:  " + idStr);
             request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
@@ -144,7 +144,15 @@ public class ComisionController extends HttpServlet {
     }
 
     private void showAddMemberForm(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
-        Long comisionId = Long.parseLong(request.getPathInfo().substring(11));
+        String pathSuffix = request.getPathInfo().substring(11);
+        Long comisionId;
+        try {
+            comisionId = Long.parseLong(pathSuffix.replaceAll("[^\\d]", ""));
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "ID de comisión no válido: " + pathSuffix);
+            request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+            return;
+        }
         Comision comision = comisionDAO.findById(comisionId);
         request.setAttribute("comision", comision);
         String error = request.getParameter("error");
@@ -156,7 +164,15 @@ public class ComisionController extends HttpServlet {
     }
 
     private void showBajaMiembrosForm(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
-        Long comisionId = Long.parseLong(request.getPathInfo().substring(14));
+        String pathSuffix = request.getPathInfo().substring(14);
+        Long comisionId;
+        try {
+            comisionId = Long.parseLong(pathSuffix.replaceAll("[^\\d]", ""));
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "ID de comisión no válido: " + pathSuffix);
+            request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+            return;
+        }
         Comision comision = comisionDAO.findById(comisionId);
         List<ComisionMiembro> miembros = comisionMiembroDAO.findByComisionId(comisionId);
         
@@ -180,7 +196,7 @@ public class ComisionController extends HttpServlet {
         String areaStr = request.getParameter("area");
         String tipoStr = request.getParameter("tipo");
         String fechaConstitucionStr = request.getParameter("fechaConstitucion");
-        String fechaFinStr = request. getParameter("fechaFin");
+        String fechaFinStr = request.getParameter("fechaFin");
         String miembrosJSON = request.getParameter("miembrosJSON");
         String opcionCreacion = request.getParameter("opcionCreacion");
         String comisionExistenteStr = request.getParameter("comisionExistente");
@@ -211,7 +227,7 @@ public class ComisionController extends HttpServlet {
             }
             
             Comision nuevaComision = new Comision();
-            nuevaComision. setNombre(nombre. trim());
+            nuevaComision.setNombre(nombre.trim());
             nuevaComision.setArea(Comision.Area.valueOf(areaStr));
             nuevaComision.setTipo(Comision.Tipo.valueOf(tipoStr));
 
@@ -220,12 +236,12 @@ public class ComisionController extends HttpServlet {
 
             if (fechaFinStr != null && !fechaFinStr.isEmpty()) {
                 Date fechaFin = new SimpleDateFormat("yyyy-MM-dd").parse(fechaFinStr);
-                nuevaComision. setFechaFin(new java.sql.Date(fechaFin.getTime()));
+                nuevaComision.setFechaFin(new java.sql.Date(fechaFin.getTime()));
             }
             
             // Verificar si ya existe
-            if (comisionDAO.exists(nombre. trim(), nuevaComision.getArea(), nuevaComision.getTipo())) {
-                request. setAttribute("error", "Ya existe una " + nuevaComision.getTipo().getDescripcion() + 
+            if (comisionDAO.exists(nombre.trim(), nuevaComision.getArea(), nuevaComision.getTipo())) {
+                request.setAttribute("error", "Ya existe una " + nuevaComision.getTipo().getDescripcion() + 
                                               " con ese nombre en " + nuevaComision.getArea().getDescripcion());
                 showNewForm(request, response);
                 return;
@@ -240,7 +256,7 @@ public class ComisionController extends HttpServlet {
         }
         
         // Procesar miembros desde JSON
-        if (miembrosJSON != null && !miembrosJSON.isEmpty() && ! miembrosJSON.equals("[]")) {
+        if (miembrosJSON != null && !miembrosJSON.isEmpty() && !miembrosJSON.equals("[]")) {
             AppLogger.debug("Procesando miembros JSON");
             procesarMiembrosJSON(comisionId, miembrosJSON);
             if ("existente".equals(opcionCreacion)) {
@@ -386,10 +402,10 @@ public class ComisionController extends HttpServlet {
         }
         
         try {
-            Comision. Area area = Comision.Area.valueOf(areaStr);
-            Comision.Tipo tipo = Comision.Tipo. valueOf(tipoStr);
+            Comision.Area area = Comision.Area.valueOf(areaStr);
+            Comision.Tipo tipo = Comision.Tipo.valueOf(tipoStr);
             
-            List<Comision> comisiones = comisionDAO. findByAreaAndTipo(area, tipo);
+            List<Comision> comisiones = comisionDAO.findByAreaAndTipo(area, tipo);
             
             AppLogger.debug("Comisiones encontradas: " + comisiones.size());
             
@@ -493,7 +509,7 @@ public class ComisionController extends HttpServlet {
                 ComisionMiembro cm = new ComisionMiembro();
                 cm.setComision(comision);
                 cm.setMiembro(miembro);
-                cm. setCargo(ComisionMiembro.Cargo.valueOf(rol));
+                cm.setCargo(ComisionMiembro.Cargo.valueOf(rol));
                 cm.setFechaIncorporacion(new java.sql.Date(System.currentTimeMillis()));
                 
                 comisionMiembroDAO.save(cm);
