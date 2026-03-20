@@ -1,19 +1,25 @@
 # Migraciones de base de datos
 
-Scripts SQL ordenados por versión. Formato: V{n}__{descripcion}.sql
+Scripts SQL ordenados por versión.
 
-## Migraciones de esquema base (V-numeradas)
+## Orden de ejecución de migraciones
 
-| Fichero | Descripción |
-|---|---|
-| `V1__esquema_inicial.sql` | Esquema inicial de la base de datos |
-| `V2__add_pdf_support.sql` | Añade soporte para almacenamiento de PDFs |
-| `V3__updated_schema.sql` | Actualizaciones del esquema |
+| Orden | Archivo | Fecha | Descripción |
+|-------|---------|-------|-------------|
+| 1 | `V1__esquema_inicial.sql` | 2026-02-05 (aprox.) | Esquema inicial completo |
+| 2 | `001_mejoras_criticas.sql` | 2026-02-05 | Correcciones críticas, auditoría, validaciones |
+| 3 | `V2__add_pdf_support.sql` | — | Soporte para PDFs en actas |
+| 4 | `002_historial_cargos.sql` | 2026-02-11 | Historial de cambios de cargo |
+| 5 | `002_fix_duplicate_indexes.sql` | — | Corrección de índices duplicados |
+| 6 | `003_agregar_area_mixta.sql` | 2026-02-11 | Añade valor MIXTA al enum area_type |
+| 7 | `003_fix_historial_cargo_constraints.sql` | 2026-02-11 | Constraints de validación de cargo en historial |
+| 8 | `V3__updated_schema.sql` | 2026-02-11 | Esquema actualizado consolidado |
+| 9 | `V4__cargo_enum.sql` | 2026-03-16 | Conversión de cargo a ENUM cargo_type |
+| 10 | `003_trigger_usuario_ad.sql` | 2026-03-17 | Trigger para usuario AD en historial |
+| 11 | `004_auditoria_acciones.sql` | 2026-03-17 | Tabla de auditoría centralizada |
+| 12 | `005_fix_historial_cargo_types.sql` | 2026-03-20 | Convierte cargo_anterior/nuevo a ENUM en historial |
 
-### Convención de nombres
-
-Los ficheros siguen el formato `V{número}__{descripción}.sql` para facilitar
-la aplicación ordenada de migraciones.
+> **Nota:** A partir de nuevas migraciones, usar exclusivamente el formato `NNN_descripcion.sql` (ej: `005_...`, `006_...`).
 
 ---
 
