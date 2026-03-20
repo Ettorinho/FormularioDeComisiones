@@ -61,6 +61,20 @@ public class LoginServlet extends HttpServlet {
     }
 
     /**
+     * Verifica que la URL de redirección es interna y no apunta a un dominio externo.
+     * Solo se permiten URLs relativas que empiecen por '/' (sin '//').
+     */
+    private boolean esSafeRedirect(String url) {
+        if (url == null || url.isEmpty()) return false;
+        // Rechazar URLs absolutas o con protocolo relativo
+        if (url.startsWith("//") || url.toLowerCase().startsWith("http://")
+                || url.toLowerCase().startsWith("https://")) {
+            return false;
+        }
+        return url.startsWith("/");
+    }
+
+    /**
      * Intenta leer un parámetro JNDI opcional; devuelve null si no está configurado
      * en lugar de lanzar NamingException.
      */
@@ -136,7 +150,7 @@ public class LoginServlet extends HttpServlet {
                 "Login exitoso desde IP: " + request.getRemoteAddr());
 
             // Redirigir a la URL solicitada originalmente o a / por defecto
-            if (urlAntesDeSesion != null && !urlAntesDeSesion.isEmpty()) {
+            if (urlAntesDeSesion != null && esSafeRedirect(urlAntesDeSesion)) {
                 response.sendRedirect(urlAntesDeSesion);
             } else {
                 response.sendRedirect(request.getContextPath() + "/");

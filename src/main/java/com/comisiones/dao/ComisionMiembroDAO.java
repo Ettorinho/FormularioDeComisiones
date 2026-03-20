@@ -1,13 +1,13 @@
 package com.comisiones.dao;
 
 import com.comisiones.model.ComisionMiembro;
-import com.comisiones.model. Comision;
+import com.comisiones.model.Comision;
 import com.comisiones.model.Miembro;
 import com.comisiones.util.AppLogger;
 import com.comisiones.util.DBUtil;
-import java. sql.*;
-import java.util. ArrayList;
-import java.util. List;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ComisionMiembroDAO {
     
@@ -19,7 +19,7 @@ public class ComisionMiembroDAO {
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt. setLong(1, comisionMiembro.getComision().getId());
+            stmt.setLong(1, comisionMiembro.getComision().getId());
             stmt.setLong(2, comisionMiembro.getMiembro().getId());
             stmt.setString(3, comisionMiembro.getCargo().name());
             stmt.setDate(4, new java.sql.Date(comisionMiembro.getFechaIncorporacion().getTime()));
@@ -39,7 +39,7 @@ public class ComisionMiembroDAO {
                      "m.dni_nif, m.nombre_apellidos, m.correo_electronico, " +
                      "c.nombre as comision_nombre " +
                      "FROM " + TABLE_NAME + " cm " +
-                     "INNER JOIN miembros m ON cm.miembro_id = m. id " +
+                     "INNER JOIN miembros m ON cm.miembro_id = m.id " +
                      "INNER JOIN comisiones c ON cm.comision_id = c.id " +
                      "WHERE cm.comision_id = ? " +
                      "ORDER BY cm.cargo, m.nombre_apellidos";
@@ -61,10 +61,10 @@ public class ComisionMiembroDAO {
     public List<ComisionMiembro> findByMiembroId(Long miembroId) throws SQLException {
         List<ComisionMiembro> lista = new ArrayList<>();
         // ⭐ SIN cm.id
-        String sql = "SELECT cm. cargo, cm.fecha_incorporacion, cm.fecha_baja, " +
-                     "cm. comision_id, cm.miembro_id, " +
+        String sql = "SELECT cm.cargo, cm.fecha_incorporacion, cm.fecha_baja, " +
+                     "cm.comision_id, cm.miembro_id, " +
                      "m.dni_nif, m.nombre_apellidos, m.correo_electronico, " +
-                     "c. nombre as comision_nombre, c.area, c.tipo, c.fecha_constitucion, c.fecha_fin " +
+                     "c.nombre as comision_nombre, c.area, c.tipo, c.fecha_constitucion, c.fecha_fin " +
                      "FROM " + TABLE_NAME + " cm " +
                      "INNER JOIN miembros m ON cm.miembro_id = m.id " +
                      "INNER JOIN comisiones c ON cm.comision_id = c.id " +
@@ -72,7 +72,7 @@ public class ComisionMiembroDAO {
                      "ORDER BY c.nombre";
         
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement stmt = conn. prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setLong(1, miembroId);
             
@@ -106,14 +106,14 @@ public class ComisionMiembroDAO {
     public boolean existeEnComision(Long comisionId, Long miembroId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE comision_id = ? AND miembro_id = ?  AND fecha_baja IS NULL";
         
-        try (Connection conn = DBUtil. getConnection();
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setLong(1, comisionId);
             stmt.setLong(2, miembroId);
             
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs. next()) {
+                if (rs.next()) {
                     int count = rs.getInt(1);
                     AppLogger.debug("existeEnComision(comisionId=" + comisionId + ", miembroId=" + miembroId + ") = " + (count > 0));
                     return count > 0;
@@ -131,7 +131,7 @@ public class ComisionMiembroDAO {
         String sql = "SELECT comision_id FROM " + TABLE_NAME + " WHERE miembro_id = ?  AND fecha_baja IS NULL";
         
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement stmt = conn. prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setLong(1, miembroId);
             
@@ -236,7 +236,7 @@ public class ComisionMiembroDAO {
         // Cargo
         String cargoStr = rs.getString("cargo");
         if (cargoStr != null) {
-            cm.setCargo(ComisionMiembro.Cargo. valueOf(cargoStr));
+            cm.setCargo(ComisionMiembro.Cargo.valueOf(cargoStr));
         }
         
         // Fechas de incorporación y baja
