@@ -129,7 +129,13 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long comisionId = Long.parseLong(comisionIdParam);
+        Long comisionId;
+        try {
+            comisionId = Long.parseLong(comisionIdParam);
+        } catch (NumberFormatException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID de comisión no válido: " + comisionIdParam);
+            return;
+        }
         List<Miembro> miembros = miembroDAO.findMiembrosByComisionId(comisionId);
         
         AppLogger.debug("Miembros cargados: " + (miembros != null ? miembros.size() : 0));

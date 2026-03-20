@@ -145,22 +145,29 @@ public class LdapAuthService {
         });
 
         NamingEnumeration<SearchResult> results = ctx.search(baseDn, filter, sc);
+        try {
+            if (results != null && results.hasMore()) {
+                SearchResult sr = results.next();
+                Attributes attrs = sr.getAttributes();
 
-        if (results != null && results.hasMore()) {
-            SearchResult sr = results.next();
-            Attributes attrs = sr.getAttributes();
+                // Usar sAMAccountName como username canónico si está disponible
+                String samAccount = getAttr(attrs, "sAMAccountName", username);
 
-            // Usar sAMAccountName como username canónico si está disponible
-            String samAccount = getAttr(attrs, "sAMAccountName", username);
-
-            return new UsuarioAD(
-                    samAccount,
-                    getAttr(attrs, "displayName", samAccount),
-                    getAttr(attrs, "mail",        ""),
-                    getAttr(attrs, "department",  ""),
-                    getAttr(attrs, "title",       ""),
-                    extraerRoles(attrs)
-            );
+                return new UsuarioAD(
+                        samAccount,
+                        getAttr(attrs, "displayName", samAccount),
+                        getAttr(attrs, "mail",        ""),
+                        getAttr(attrs, "department",  ""),
+                        getAttr(attrs, "title",       ""),
+                        extraerRoles(attrs)
+                );
+            }
+        } finally {
+            if (results != null) {
+                try { results.close(); } catch (NamingException e) {
+                    System.err.println("[LdapAuthService] Advertencia: error al cerrar resultados LDAP: " + e.getMessage());
+                }
+            }
         }
 
         // Si no se encontró el usuario tras autenticar (poco común), devolver objeto básico
@@ -183,13 +190,19 @@ public class LdapAuthService {
         if (memberOf == null) return roles;
 
         NamingEnumeration<?> valores = memberOf.getAll();
-        while (valores.hasMore()) {
-            Object val = valores.next();
-            if (val != null) {
-                String cn = extraerCN(val.toString());
-                if (cn != null && !cn.isEmpty()) {
-                    roles.add(cn);
+        try {
+            while (valores.hasMore()) {
+                Object val = valores.next();
+                if (val != null) {
+                    String cn = extraerCN(val.toString());
+                    if (cn != null && !cn.isEmpty()) {
+                        roles.add(cn);
+                    }
                 }
+            }
+        } finally {
+            try { valores.close(); } catch (NamingException e) {
+                System.err.println("[LdapAuthService] Advertencia: error al cerrar enumeración LDAP: " + e.getMessage());
             }
         }
         return roles;
