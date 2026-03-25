@@ -64,11 +64,11 @@
                     </c:if>
 
                     <%-- Opciones solo para ADMIN --%>
-                    <c:if test="${sessionScope.rolUsuario == 'ADMIN'}">
+                    <%--    <c:if test="${sessionScope.rolUsuario == 'ADMIN'}">
                         <a href="${pageContext.request.contextPath}/comisiones/new" class="btn btn-outline-secondary btn-lg text-start">
                             <i class="bi bi-plus-circle"></i> Nueva Comisión
                         </a>
-                    </c:if>
+                    </c:if> --%>
 
                     <%-- Fallback: sin rol asignado --%>
                     <c:if test="${empty sessionScope.rolUsuario}">
