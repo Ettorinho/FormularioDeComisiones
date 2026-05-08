@@ -57,8 +57,8 @@ public class ComisionDAO {
         List<Comision> comisiones = new ArrayList<>();
         String sql = "SELECT * FROM comisiones ORDER BY area, tipo, nombre";
         try (Connection conn = DBUtil.getConnection(); 
-             Statement stmt = conn.createStatement(); 
-             ResultSet rs = stmt.executeQuery(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 comisiones.add(extractComisionFromResultSet(rs));
             }

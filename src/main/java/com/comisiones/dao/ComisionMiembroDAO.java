@@ -10,11 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ComisionMiembroDAO {
-    
-    private static final String TABLE_NAME = "comision_miembros";
-    
+
     public void save(ComisionMiembro comisionMiembro) throws SQLException {
-        String sql = "INSERT INTO " + TABLE_NAME + " (comision_id, miembro_id, cargo, fecha_incorporacion) VALUES (?, ?, CAST(? AS cargo_type), ?)";
+        String sql = "INSERT INTO comision_miembros (comision_id, miembro_id, cargo, fecha_incorporacion) VALUES (?, ?, CAST(? AS cargo_type), ?)";
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -34,15 +32,16 @@ public class ComisionMiembroDAO {
     public List<ComisionMiembro> findByComisionId(Long comisionId) throws SQLException {
         List<ComisionMiembro> lista = new ArrayList<>();
         // ⭐ SIN cm.id - solo seleccionar las columnas que existen
-        String sql = "SELECT cm.cargo, cm.fecha_incorporacion, cm.fecha_baja, " +
-                     "cm.comision_id, cm.miembro_id, " +
-                     "m.dni_nif, m.nombre_apellidos, m.correo_electronico, " +
-                     "c.nombre as comision_nombre " +
-                     "FROM " + TABLE_NAME + " cm " +
-                     "INNER JOIN miembros m ON cm.miembro_id = m.id " +
-                     "INNER JOIN comisiones c ON cm.comision_id = c.id " +
-                     "WHERE cm.comision_id = ? " +
-                     "ORDER BY cm.cargo, m.nombre_apellidos";
+        String sql = String.join(" ",
+                "SELECT cm.cargo, cm.fecha_incorporacion, cm.fecha_baja,",
+                "cm.comision_id, cm.miembro_id,",
+                "m.dni_nif, m.nombre_apellidos, m.correo_electronico,",
+                "c.nombre as comision_nombre",
+                "FROM comision_miembros cm",
+                "INNER JOIN miembros m ON cm.miembro_id = m.id",
+                "INNER JOIN comisiones c ON cm.comision_id = c.id",
+                "WHERE cm.comision_id = ?",
+                "ORDER BY cm.cargo, m.nombre_apellidos");
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -61,15 +60,16 @@ public class ComisionMiembroDAO {
     public List<ComisionMiembro> findByMiembroId(Long miembroId) throws SQLException {
         List<ComisionMiembro> lista = new ArrayList<>();
         // ⭐ SIN cm.id
-        String sql = "SELECT cm.cargo, cm.fecha_incorporacion, cm.fecha_baja, " +
-                     "cm.comision_id, cm.miembro_id, " +
-                     "m.dni_nif, m.nombre_apellidos, m.correo_electronico, " +
-                     "c.nombre as comision_nombre, c.area, c.tipo, c.fecha_constitucion, c.fecha_fin " +
-                     "FROM " + TABLE_NAME + " cm " +
-                     "INNER JOIN miembros m ON cm.miembro_id = m.id " +
-                     "INNER JOIN comisiones c ON cm.comision_id = c.id " +
-                     "WHERE cm.miembro_id = ? " +
-                     "ORDER BY c.nombre";
+        String sql = String.join(" ",
+                "SELECT cm.cargo, cm.fecha_incorporacion, cm.fecha_baja,",
+                "cm.comision_id, cm.miembro_id,",
+                "m.dni_nif, m.nombre_apellidos, m.correo_electronico,",
+                "c.nombre as comision_nombre, c.area, c.tipo, c.fecha_constitucion, c.fecha_fin",
+                "FROM comision_miembros cm",
+                "INNER JOIN miembros m ON cm.miembro_id = m.id",
+                "INNER JOIN comisiones c ON cm.comision_id = c.id",
+                "WHERE cm.miembro_id = ?",
+                "ORDER BY c.nombre");
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -86,7 +86,7 @@ public class ComisionMiembroDAO {
     }
     
     public void darDeBaja(Long comisionId, Long miembroId, java.sql.Date fechaBaja) throws SQLException {
-        String sql = "UPDATE " + TABLE_NAME + " SET fecha_baja = ? WHERE comision_id = ? AND miembro_id = ?";
+        String sql = "UPDATE comision_miembros SET fecha_baja = ? WHERE comision_id = ? AND miembro_id = ?";
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -104,7 +104,7 @@ public class ComisionMiembroDAO {
      * Verifica si un miembro ya está asignado a una comisión específica (activo)
      */
     public boolean existeEnComision(Long comisionId, Long miembroId) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE comision_id = ? AND miembro_id = ?  AND fecha_baja IS NULL";
+        String sql = "SELECT COUNT(*) FROM comision_miembros WHERE comision_id = ? AND miembro_id = ? AND fecha_baja IS NULL";
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -128,7 +128,7 @@ public class ComisionMiembroDAO {
      */
     public List<Long> getComisionesByMiembroId(Long miembroId) throws SQLException {
         List<Long> comisionesIds = new ArrayList<>();
-        String sql = "SELECT comision_id FROM " + TABLE_NAME + " WHERE miembro_id = ?  AND fecha_baja IS NULL";
+        String sql = "SELECT comision_id FROM comision_miembros WHERE miembro_id = ? AND fecha_baja IS NULL";
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -148,7 +148,7 @@ public class ComisionMiembroDAO {
      * Cuenta cuántas comisiones activas tiene un miembro
      */
     public int contarComisionesActivas(Long miembroId) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE miembro_id = ? AND fecha_baja IS NULL";
+        String sql = "SELECT COUNT(*) FROM comision_miembros WHERE miembro_id = ? AND fecha_baja IS NULL";
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -254,14 +254,15 @@ public class ComisionMiembroDAO {
      * @return ComisionMiembro encontrado, o null si no existe
      */
     public ComisionMiembro findByCompositeKey(Long comisionId, Long miembroId) throws SQLException {
-        String sql = "SELECT cm.cargo, cm.fecha_incorporacion, cm.fecha_baja, " +
-                     "cm.comision_id, cm.miembro_id, " +
-                     "m.dni_nif, m.nombre_apellidos, m.correo_electronico, " +
-                     "c.nombre as comision_nombre " +
-                     "FROM " + TABLE_NAME + " cm " +
-                     "INNER JOIN miembros m ON cm.miembro_id = m.id " +
-                     "INNER JOIN comisiones c ON cm.comision_id = c.id " +
-                     "WHERE cm.comision_id = ? AND cm.miembro_id = ?";
+        String sql = String.join(" ",
+                "SELECT cm.cargo, cm.fecha_incorporacion, cm.fecha_baja,",
+                "cm.comision_id, cm.miembro_id,",
+                "m.dni_nif, m.nombre_apellidos, m.correo_electronico,",
+                "c.nombre as comision_nombre",
+                "FROM comision_miembros cm",
+                "INNER JOIN miembros m ON cm.miembro_id = m.id",
+                "INNER JOIN comisiones c ON cm.comision_id = c.id",
+                "WHERE cm.comision_id = ? AND cm.miembro_id = ?");
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -302,8 +303,9 @@ public class ComisionMiembroDAO {
                 }
 
                 // 2. Ejecutar el cambio de cargo (el trigger leerá app.usuario_modificacion)
-                String sql = "UPDATE " + TABLE_NAME + " SET cargo = CAST(? AS cargo_type) " +
-                             "WHERE comision_id = ? AND miembro_id = ?";
+                String sql = String.join(" ",
+                        "UPDATE comision_miembros SET cargo = CAST(? AS cargo_type)",
+                        "WHERE comision_id = ? AND miembro_id = ?");
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, nuevoCargo);
                     stmt.setLong(2, comisionId);
