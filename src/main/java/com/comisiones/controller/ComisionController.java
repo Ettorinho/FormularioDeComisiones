@@ -4,6 +4,8 @@ import com.comisiones.dao.ComisionDAO;
 import com.comisiones.dao.ComisionMiembroDAO;
 import com.comisiones.dao.HistorialCargoDAO;
 import com.comisiones.dao.MiembroDAO;
+import com.comisiones.dto.ComisionDTO;
+import com.comisiones.dto.MiembroDTO;
 import com.comisiones.model.Comision;
 import com.comisiones.model.ComisionMiembro;
 import com.comisiones.model.HistorialCargo;
@@ -11,6 +13,8 @@ import com.comisiones.model.Miembro;
 import com.comisiones.model.UsuarioAD;
 import com.comisiones.service.AuditoriaService;
 import com.comisiones.util.AppLogger;
+import com.comisiones.util.ServletHelper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -35,12 +39,14 @@ public class ComisionController extends HttpServlet {
     private ComisionDAO comisionDAO;
     private ComisionMiembroDAO comisionMiembroDAO;
     private MiembroDAO miembroDAO;
+    private ObjectMapper objectMapper;
 
     @Override
     public void init() {
         comisionDAO = new ComisionDAO();
         comisionMiembroDAO = new ComisionMiembroDAO();
         miembroDAO = new MiembroDAO();
+        objectMapper = new ObjectMapper();
         AppLogger.info("ComisionController INICIALIZADO");
     }
 
@@ -126,10 +132,8 @@ public class ComisionController extends HttpServlet {
 
         AppLogger.debug("viewComision - pathInfo: " + pathInfo + ", id: " + idStr);
 
-        Long id;
-        try {
-            id = Long.parseLong(idStr.replaceAll("[^\\d]", ""));
-        } catch (NumberFormatException e) {
+        Long id = ServletHelper.parseIdSafely(idStr);
+        if (id == null) {
             request.setAttribute("error", "ID de comisión no válido en la URL: " + idStr);
             request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
             return;
@@ -145,10 +149,8 @@ public class ComisionController extends HttpServlet {
 
     private void showAddMemberForm(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
         String pathSuffix = request.getPathInfo().substring(11);
-        Long comisionId;
-        try {
-            comisionId = Long.parseLong(pathSuffix.replaceAll("[^\\d]", ""));
-        } catch (NumberFormatException e) {
+        Long comisionId = ServletHelper.parseIdSafely(pathSuffix);
+        if (comisionId == null) {
             request.setAttribute("error", "ID de comisión no válido: " + pathSuffix);
             request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
             return;
@@ -165,10 +167,8 @@ public class ComisionController extends HttpServlet {
 
     private void showBajaMiembrosForm(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
         String pathSuffix = request.getPathInfo().substring(14);
-        Long comisionId;
-        try {
-            comisionId = Long.parseLong(pathSuffix.replaceAll("[^\\d]", ""));
-        } catch (NumberFormatException e) {
+        Long comisionId = ServletHelper.parseIdSafely(pathSuffix);
+        if (comisionId == null) {
             request.setAttribute("error", "ID de comisión no válido: " + pathSuffix);
             request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
             return;
@@ -215,7 +215,12 @@ public class ComisionController extends HttpServlet {
         
         // Opción 1: Agregar miembros a comisión existente
         if ("existente".equals(opcionCreacion) && comisionExistenteStr != null && !comisionExistenteStr.isEmpty()) {
-            comisionId = Long.parseLong(comisionExistenteStr);
+            comisionId = ServletHelper.parseIdSafely(comisionExistenteStr);
+            if (comisionId == null) {
+                request.setAttribute("error", "ID de comisión existente no válido: " + comisionExistenteStr);
+                showNewForm(request, response);
+                return;
+            }
             AppLogger.debug("Agregando miembros a comisión existente ID: " + comisionId);
         } 
         // Opción 2: Crear nueva comisión
@@ -272,7 +277,11 @@ public class ComisionController extends HttpServlet {
     }
 
     private void saveMemberInComision(HttpServletRequest request, HttpServletResponse response) throws SQLException, ParseException, IOException {
-        Long comisionId = Long.parseLong(request.getPathInfo().substring(11));
+        Long comisionId = ServletHelper.parseIdSafely(request.getPathInfo().substring(11));
+        if (comisionId == null) {
+            response.sendRedirect(request.getContextPath() + "/comisiones?error=ID+invalido");
+            return;
+        }
         String nombreApellidos = request.getParameter("nombreApellidos");
         String dni              = request.getParameter("dni");
         String email            = request.getParameter("email");
@@ -368,8 +377,14 @@ public class ComisionController extends HttpServlet {
 
     private void bajaMiembro(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ParseException {
         String[] parts = request.getPathInfo().split("/");
-        Long comisionId = Long.parseLong(parts[2]);
-        Long miembroId = Long.parseLong(parts[3]);
+        Long comisionId = ServletHelper.parseIdSafely(parts[2]);
+        Long miembroId = ServletHelper.parseIdSafely(parts[3]);
+        
+        if (comisionId == null || miembroId == null) {
+            response.sendRedirect(request.getContextPath() + "/comisiones?error=IDs+invalidos");
+            return;
+        }
+        
         String fechaBajaStr = request.getParameter("fechaBaja");
         
         AppLogger.debug("bajaMiembro - comisionId: " + comisionId + ", miembroId: " + miembroId);
@@ -397,7 +412,7 @@ public class ComisionController extends HttpServlet {
         AppLogger.debug("getComisionesExistentes - area: " + areaStr + ", tipo: " + tipoStr);
         
         if (areaStr == null || tipoStr == null) {
-            response.getWriter().write("{\"error\": \"Parámetros area y tipo requeridos\"}");
+            ServletHelper.sendBadRequest(response, "Parámetros area y tipo requeridos");
             return;
         }
         
@@ -409,124 +424,102 @@ public class ComisionController extends HttpServlet {
             
             AppLogger.debug("Comisiones encontradas: " + comisiones.size());
             
-            // Construir JSON manualmente
-            StringBuilder json = new StringBuilder("[");
-            for (int i = 0; i < comisiones.size(); i++) {
-                Comision c = comisiones.get(i);
-                json.append("{\"id\": ").append(c.getId())
-                    .append(",\"nombre\": \"").append(c.getNombre().replace("\"", "\\\"")).append("\"}");
-                if (i < comisiones.size() - 1) {
-                    json.append(",");
-                }
+            // Convertir a DTOs y serializar con Jackson
+            List<ComisionDTO> dtos = new ArrayList<>();
+            for (Comision c : comisiones) {
+                dtos.add(new ComisionDTO(c.getId(), c.getNombre()));
             }
-            json.append("]");
             
-            String jsonString = json.toString();
-            AppLogger.debug("JSON generado: " + jsonString);
-            response.getWriter().write(jsonString);
+            String json = objectMapper.writeValueAsString(dtos);
+            AppLogger.debug("JSON generado con " + dtos.size() + " comisiones");
+            response.getWriter().write(json);
             
         } catch (IllegalArgumentException e) {
             AppLogger.error("Error: valores de area o tipo inválidos", e);
-            response.getWriter().write("{\"error\": \"Valores de area o tipo inválidos\"}");
+            ServletHelper.sendBadRequest(response, "Valores de area o tipo inválidos");
         }
     }
 
     /**
      * ⭐ ACTUALIZADO: Procesar miembros desde JSON con validación de duplicados
+     * Ahora usa Jackson para parsing seguro
      */
-    private void procesarMiembrosJSON(Long comisionId, String miembrosJSON) throws SQLException, ParseException {
+    private void procesarMiembrosJSON(Long comisionId, String miembrosJSON) throws SQLException {
         AppLogger.debug("Procesando miembros JSON: " + miembrosJSON);
         
-        miembrosJSON = miembrosJSON.trim();
-        if (miembrosJSON.startsWith("[")) {
-            miembrosJSON = miembrosJSON.substring(1, miembrosJSON.length() - 1);
-        }
-        
-        if (miembrosJSON.isEmpty()) {
-            AppLogger.debug("JSON vacío");
-            return;
-        }
-        
-        String[] miembrosArray = miembrosJSON.split("\\},\\{");
-        
-        int agregados = 0;
-        int duplicados = 0;
-        int errores = 0;
-        
-        for (String miembroStr : miembrosArray) {
-            miembroStr = miembroStr.replace("{", "").replace("}", "").replace("\"", "");
+        try {
+            // Deserializar con Jackson
+            MiembroDTO[] miembros = objectMapper.readValue(miembrosJSON, MiembroDTO[].class);
             
-            String dni = null, nombre = null, rol = "PARTICIPANTE", email = "";
+            int agregados = 0;
+            int duplicados = 0;
+            int errores = 0;
             
-            String[] campos = miembroStr.split(",");
-            for (String campo :  campos) {
-                String[] partes = campo.split(":", 2);
-                if (partes.length == 2) {
-                    String key = partes[0].trim();
-                    String value = partes[1].trim();
-                    
-                    switch(key) {
-                        case "dni":  dni = value; break;
-                        case "nombre": nombre = value; break;
-                        case "rol": rol = value; break;
-                        case "email": email = value; break;
-                    }
-                }
-            }
-            
-            if (dni == null || nombre == null) {
-                AppLogger.debug("ADVERTENCIA: Miembro con datos incompletos. Se omite.");
-                errores++;
-                continue;
-            }
-            
-            AppLogger.debug("Procesando miembro: " + nombre + " (" + dni + ") - Rol: " + rol);
-            
-            try {
-                // Verificar si el miembro ya existe en la base de datos
-                Miembro miembro = miembroDAO.findByDni(dni);
-                if (miembro == null) {
-                    // Crear nuevo miembro
-                    miembro = new Miembro();
-                    miembro.setDniNif(dni);
-                    miembro.setNombreApellidos(nombre);
-                    miembro.setEmail(email);
-                    miembroDAO.save(miembro);
-                    AppLogger.debug("Nuevo miembro creado con ID: " + miembro.getId());
-                } else {
-                    AppLogger.debug("Miembro existente encontrado con ID: " + miembro.getId());
-                }
-                
-                // ⭐ VALIDACIÓN: Verificar si ya está en esta comisión
-                if (comisionMiembroDAO.existeEnComision(comisionId, miembro.getId())) {
-                    AppLogger.debug("DUPLICADO: El miembro " + nombre + " ya pertenece a esta comisión. Se omite.");
-                    duplicados++;
+            for (MiembroDTO dto : miembros) {
+                // Validar datos del miembro
+                if (!dto.isValid()) {
+                    AppLogger.debug("ADVERTENCIA: Miembro con datos incompletos. Se omite: " + dto);
+                    errores++;
                     continue;
                 }
                 
-                // Agregar a la comisión
-                Comision comision = comisionDAO.findById(comisionId);
-                ComisionMiembro cm = new ComisionMiembro();
-                cm.setComision(comision);
-                cm.setMiembro(miembro);
-                cm.setCargo(ComisionMiembro.Cargo.valueOf(rol));
-                cm.setFechaIncorporacion(new java.sql.Date(System.currentTimeMillis()));
+                String dni = dto.getDni().trim();
+                String nombre = dto.getNombre().trim();
+                String rol = dto.getRol().toUpperCase();
+                String email = dto.getEmail().trim();
                 
-                comisionMiembroDAO.save(cm);
-                AppLogger.debug("Miembro agregado exitosamente a la comisión");
-                agregados++;
+                AppLogger.debug("Procesando miembro: " + nombre + " (" + dni + ") - Rol: " + rol);
                 
-                // Mostrar en cuántas comisiones está ahora
-                int totalComisiones = comisionMiembroDAO.contarComisionesActivas(miembro.getId());
-                AppLogger.debug("El miembro ahora pertenece a " + totalComisiones + " comisión(es) activa(s)");
-                
-            } catch (Exception e) {
-                AppLogger.error("ERROR procesando miembro " + nombre + " (" + dni + ")", e);
-                errores++;
+                try {
+                    // Verificar si el miembro ya existe en la base de datos
+                    Miembro miembro = miembroDAO.findByDni(dni);
+                    if (miembro == null) {
+                        // Crear nuevo miembro
+                        miembro = new Miembro();
+                        miembro.setDniNif(dni);
+                        miembro.setNombreApellidos(nombre);
+                        miembro.setEmail(email);
+                        miembroDAO.save(miembro);
+                        AppLogger.debug("Nuevo miembro creado con ID: " + miembro.getId());
+                    } else {
+                        AppLogger.debug("Miembro existente encontrado con ID: " + miembro.getId());
+                    }
+                    
+                    // ⭐ VALIDACIÓN: Verificar si ya está en esta comisión
+                    if (comisionMiembroDAO.existeEnComision(comisionId, miembro.getId())) {
+                        AppLogger.debug("DUPLICADO: El miembro " + nombre + " ya pertenece a esta comisión. Se omite.");
+                        duplicados++;
+                        continue;
+                    }
+                    
+                    // Agregar a la comisión
+                    Comision comision = comisionDAO.findById(comisionId);
+                    ComisionMiembro cm = new ComisionMiembro();
+                    cm.setComision(comision);
+                    cm.setMiembro(miembro);
+                    cm.setCargo(ComisionMiembro.Cargo.valueOf(rol));
+                    cm.setFechaIncorporacion(new java.sql.Date(System.currentTimeMillis()));
+                    
+                    comisionMiembroDAO.save(cm);
+                    AppLogger.debug("Miembro agregado exitosamente a la comisión");
+                    agregados++;
+                    
+                    // Mostrar en cuántas comisiones está ahora
+                    int totalComisiones = comisionMiembroDAO.contarComisionesActivas(miembro.getId());
+                    AppLogger.debug("El miembro ahora pertenece a " + totalComisiones + " comisión(es) activa(s)");
+                    
+                } catch (Exception e) {
+                    AppLogger.error("ERROR procesando miembro " + nombre + " (" + dni + ")", e);
+                    errores++;
+                }
             }
+            
+            AppLogger.info("RESUMEN DE PROCESAMIENTO: Total=" + miembros.length + 
+                          ", Agregados=" + agregados + ", Duplicados=" + duplicados + ", Errores=" + errores);
+                          
+        } catch (Exception e) {
+            AppLogger.error("ERROR al parsear JSON de miembros", e);
+            throw new SQLException("Error al procesar miembros desde JSON: " + e.getMessage(), e);
         }
-        
-        AppLogger.info("RESUMEN DE PROCESAMIENTO: Total=" + miembrosArray.length + 
-                      ", Agregados=" + agregados + ", Duplicados=" + duplicados + ", Errores=" + errores);
     }
 }

@@ -78,7 +78,7 @@
                     <!-- Información General -->
                     <div class="acta-header mb-4">
                         <h4 class="text-primary mb-3">
-                            <i class="bi bi-building"></i> ${acta.comision.nombre}
+                            <i class="bi bi-building"></i> <c:out value="${acta.comision.nombre}"/>
                         </h4>
                         <div class="row">
                             <div class="col-md-6">
