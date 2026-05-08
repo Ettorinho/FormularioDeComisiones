@@ -12,6 +12,7 @@ import com.comisiones.service.ActaGeneratorService;
 import com.comisiones.service.AuditoriaService;
 import com.comisiones.util.AppConstants;
 import com.comisiones.util.AppLogger;
+import com.comisiones.util.ServletHelper;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -129,11 +130,9 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long comisionId;
-        try {
-            comisionId = Long.parseLong(comisionIdParam);
-        } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID de comisión no válido: " + comisionIdParam);
+        Long comisionId = ServletHelper.parseIdSafely(comisionIdParam);
+        if (comisionId == null) {
+            ServletHelper.sendBadRequest(response, "ID de comisión no válido: " + comisionIdParam);
             return;
         }
         List<Miembro> miembros = miembroDAO.findMiembrosByComisionId(comisionId);
@@ -204,7 +203,11 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long comisionId = Long.parseLong(comisionIdStr);
+        Long comisionId = ServletHelper.parseIdSafely(comisionIdStr);
+        if (comisionId == null) {
+            ServletHelper.sendBadRequest(response, "ID de comisión no válido: " + comisionIdStr);
+            return;
+        }
         
         // Buscar comisión
         Comision comision = comisionDAO.findById(comisionId);
@@ -241,7 +244,11 @@ public class ActaController extends HttpServlet {
         Map<Long, String> justificaciones = new HashMap<>();
         
         for (String miembroIdStr : miembroIds) {
-            Long miembroId = Long.parseLong(miembroIdStr);
+            Long miembroId = ServletHelper.parseIdSafely(miembroIdStr);
+            if (miembroId == null) {
+                AppLogger.debug("ID de miembro inválido, omitiendo: " + miembroIdStr);
+                continue;
+            }
             String asistenciaParam = request.getParameter("asistencia_" + miembroId);
             String justificacion = request.getParameter("justificacion_" + miembroId);
             
@@ -288,7 +295,13 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long id = Long.parseLong(idStr);
+        Long id = ServletHelper.parseIdSafely(idStr);
+        if (id == null) {
+            AppLogger.error("ID de acta inválido: " + idStr, null);
+            request.setAttribute("error", "ID de acta no válido");
+            response.sendRedirect(request.getContextPath() + "/");
+            return;
+        }
         
         // Buscar acta
         Acta acta = actaDAO.findById(id);
@@ -328,7 +341,11 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long actaId = Long.parseLong(idStr);
+        Long actaId = ServletHelper.parseIdSafely(idStr);
+        if (actaId == null) {
+            ServletHelper.sendBadRequest(response, "ID de acta no válido: " + idStr);
+            return;
+        }
         Acta acta = actaDAO.findById(actaId);
         
         if (acta == null || !acta.tienePdf()) {
@@ -367,7 +384,11 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long actaId = Long.parseLong(idStr);
+        Long actaId = ServletHelper.parseIdSafely(idStr);
+        if (actaId == null) {
+            ServletHelper.sendBadRequest(response, "ID de acta no válido: " + idStr);
+            return;
+        }
         Acta acta = actaDAO.findById(actaId);
         
         if (acta == null || !acta.tienePdf()) {
@@ -419,11 +440,9 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long actaId;
-        try {
-            actaId = Long.parseLong(idStr);
-        } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID inválido");
+        Long actaId = ServletHelper.parseIdSafely(idStr);
+        if (actaId == null) {
+            ServletHelper.sendBadRequest(response, "ID de acta no válido: " + idStr);
             return;
         }
         
@@ -477,11 +496,9 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long actaId;
-        try {
-            actaId = Long.parseLong(idStr);
-        } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID inválido");
+        Long actaId = ServletHelper.parseIdSafely(idStr);
+        if (actaId == null) {
+            ServletHelper.sendBadRequest(response, "ID de acta no válido: " + idStr);
             return;
         }
         
