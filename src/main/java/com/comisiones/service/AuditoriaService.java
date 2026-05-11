@@ -231,9 +231,15 @@ public class AuditoriaService {
 
     /**
      * Trunca un String al número máximo de caracteres indicado.
+     * Escribe un aviso en el log cuando se produce el truncado.
      */
     private String truncar(String str, int maxLen) {
         if (str == null) return null;
-        return str.length() > maxLen ? str.substring(0, maxLen) : str;
+        if (str.length() > maxLen) {
+            AppLogger.debug("AuditoriaService: valor truncado de " + str.length()
+                    + " a " + maxLen + " caracteres");
+            return str.substring(0, maxLen);
+        }
+        return str;
     }
 }
