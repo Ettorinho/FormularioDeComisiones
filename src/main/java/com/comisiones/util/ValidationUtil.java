@@ -74,4 +74,20 @@ public class ValidationUtil {
     public static <T> boolean isValid(T object) {
         return validator.validate(object).isEmpty();
     }
+
+    /**
+     * Validates the given object and returns all error messages concatenated as a single string.
+     * <p>
+     * This is a convenience method for displaying validation errors in error pages,
+     * request attributes, or logging. Each error message is separated by "; ".
+     * </p>
+     *
+     * @param <T>    the type of the object to validate
+     * @param object the object to validate
+     * @return a single string with all error messages separated by "; ", or empty string if valid
+     */
+    public static <T> String getErrorMessages(T object) {
+        List<String> errors = validate(object);
+        return errors.isEmpty() ? "" : String.join("; ", errors);
+    }
 }
