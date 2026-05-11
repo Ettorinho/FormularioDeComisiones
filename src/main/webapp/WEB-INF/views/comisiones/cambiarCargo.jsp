@@ -211,7 +211,7 @@
                                                 <span class="text-muted fst-italic">Sin motivo especificado</span>
                                             </c:when>
                                             <c:otherwise>
-                                                 <c:out value="${cambio.motivo}"/>
+                                                <c:out value="${cambio.motivo}"/>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
@@ -221,7 +221,7 @@
                                                 <span class="text-muted fst-italic">SYSTEM</span>
                                             </c:when>
                                             <c:otherwise>
-                                                 <c:out value="${cambio.usuarioModificacion}"/>
+                                                <c:out value="${cambio.usuarioModificacion}"/>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
