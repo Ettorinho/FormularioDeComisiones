@@ -61,8 +61,8 @@ public class MiembroDAO {
         List<Miembro> miembros = new ArrayList<>();
         String sql = "SELECT * FROM miembros ORDER BY nombre_apellidos";
         try (Connection conn = DBUtil.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 miembros.add(extractMiembroFromResultSet(rs));
             }
@@ -76,11 +76,12 @@ public class MiembroDAO {
     public List<Miembro> findMiembrosByComisionId(Long comisionId) throws SQLException {
         List<Miembro> miembros = new ArrayList<>();
         
-        String sql = "SELECT m.id, m.nombre_apellidos, m.dni_nif, m.correo_electronico " +
-                     "FROM miembros m " +
-                     "INNER JOIN comision_miembros cm ON m.id = cm.miembro_id " +
-                     "WHERE cm.comision_id = ? " +
-                     "ORDER BY m.nombre_apellidos";
+        String sql = String.join(" ",
+                "SELECT m.id, m.nombre_apellidos, m.dni_nif, m.correo_electronico",
+                "FROM miembros m",
+                "INNER JOIN comision_miembros cm ON m.id = cm.miembro_id",
+                "WHERE cm.comision_id = ?",
+                "ORDER BY m.nombre_apellidos");
         
         AppLogger.debug("Buscando miembros de comisión ID: " + comisionId);
         
