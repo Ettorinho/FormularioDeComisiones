@@ -18,6 +18,7 @@ import java.util.List;
  * GET /auditoria              → lista las últimas 200 acciones
  * GET /auditoria?usuario=xxx  → filtra por usuario
  * GET /auditoria?entidad=xxx&entidadId=yyy → filtra por entidad
+ * GET /auditoria?resultado=FALLIDO → filtra por resultado
  */
 @WebServlet("/auditoria")
 public class AuditoriaController extends HttpServlet {
@@ -37,6 +38,7 @@ public class AuditoriaController extends HttpServlet {
             String usuario   = request.getParameter("usuario");
             String entidad   = request.getParameter("entidad");
             String entidadId = request.getParameter("entidadId");
+            String resultado = request.getParameter("resultado");
 
             List<AuditoriaAccion> acciones;
 
@@ -48,6 +50,14 @@ public class AuditoriaController extends HttpServlet {
                 acciones = auditoriaDAO.findByEntidad(entidad.trim(), entidadId.trim());
                 request.setAttribute("filtroEntidad", entidad.trim());
                 request.setAttribute("filtroEntidadId", entidadId.trim());
+            } else if (resultado != null && !resultado.trim().isEmpty()) {
+                try {
+                    AuditoriaDAO.Resultado r = AuditoriaDAO.Resultado.valueOf(resultado.trim().toUpperCase());
+                    acciones = auditoriaDAO.findByResultado(r, 200);
+                    request.setAttribute("filtroResultado", r.name());
+                } catch (IllegalArgumentException e) {
+                    acciones = auditoriaDAO.findAll(200);
+                }
             } else {
                 acciones = auditoriaDAO.findAll(200);
             }
