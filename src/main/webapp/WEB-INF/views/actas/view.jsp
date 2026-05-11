@@ -26,7 +26,7 @@
                 <div class="col-md-4 text-end">
                     <span class="text-white me-3 small">
                         <i class="bi bi-person-circle me-1"></i>
-                        ${sessionScope.usuarioLogueado.nombreCompleto}
+                        <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
                     </span>
                     <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
                         <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
@@ -98,7 +98,7 @@
                                 <p class="mb-2">
                                     <strong><i class="bi bi-calendar-event"></i> Fecha de Reunión:</strong>
                                     <span class="ms-2">
-                                        ${acta.fechaReunionFormateada}
+                                        <c:out value="${acta.fechaReunionFormateada}"/>
                                     </span>
                                 </p>
                             </div>
@@ -106,7 +106,7 @@
                                 <p class="mb-0 text-muted">
                                     <small>
                                         <i class="bi bi-clock-history"></i> Acta creada el: 
-                                        ${acta.fechaCreacionFormateada}
+                                        <c:out value="${acta.fechaCreacionFormateada}"/>
                                     </small>
                                 </p>
                             </div>
@@ -173,10 +173,10 @@
                                             <c:set var="hayAsistentes" value="true"/>
                                             <li class="asistio">
                                                 <i class="bi bi-person-fill text-success"></i>
-                                                <strong>${asistencia.miembro.nombreApellidos}</strong>
+                                                <strong><c:out value="${asistencia.miembro.nombreApellidos}"/></strong>
                                                 <br>
                                                 <small class="text-muted ms-3">
-                                                    <i class="bi bi-card-text"></i> ${asistencia.miembro.dniNif}
+                                                    <i class="bi bi-card-text"></i> <c:out value="${asistencia.miembro.dniNif}"/>
                                                 </small>
                                             </li>
                                         </c:if>
@@ -199,10 +199,10 @@
                                             <c:set var="hayAusentes" value="true"/>
                                             <li class="no-asistio">
                                                 <i class="bi bi-person text-danger"></i>
-                                                <strong>${asistencia.miembro.nombreApellidos}</strong>
+                                                <strong><c:out value="${asistencia.miembro.nombreApellidos}"/></strong>
                                                 <br>
                                                 <small class="text-muted ms-3">
-                                                    <i class="bi bi-card-text"></i> ${asistencia.miembro.dniNif}
+                                                    <i class="bi bi-card-text"></i> <c:out value="${asistencia.miembro.dniNif}"/>
                                                 </small>
                                                 
                                                 <!-- MOSTRAR JUSTIFICACIÓN -->
@@ -212,7 +212,7 @@
                                                             <i class="bi bi-file-earmark-text"></i> Justificación:
                                                         </div>
                                                         <div class="justificacion-text">
-                                                            "${asistencia.justificacion}"
+                                                            "<c:out value="${asistencia.justificacion}"/>"
                                                         </div>
                                                     </div>
                                                 </c:if>
@@ -238,7 +238,7 @@
                         <c:choose>
                             <c:when test="${not empty acta.observaciones}">
                                 <div class="observaciones-box">
-                                    <p class="mb-0" style="white-space: pre-wrap; line-height: 1.6;">${acta.observaciones}</p>
+                                    <p class="mb-0" style="white-space: pre-wrap; line-height: 1.6;"><c:out value="${acta.observaciones}"/></p>
                                 </div>
                             </c:when>
                             <c:otherwise>
@@ -287,7 +287,7 @@
                                                 <i class="bi bi-file-earmark-pdf-fill fs-1 text-danger me-3"></i>
                                                 <div>
                                                     <h6 class="mb-1">
-                                                        <strong><i class="bi bi-paperclip"></i> ${acta.pdfNombre}</strong>
+                                                        <strong><i class="bi bi-paperclip"></i> <c:out value="${acta.pdfNombre}"/></strong>
                                                     </h6>
                                                     <small class="text-muted">
                                                         <i class="bi bi-filetype-pdf"></i> Documento PDF adjunto a esta acta

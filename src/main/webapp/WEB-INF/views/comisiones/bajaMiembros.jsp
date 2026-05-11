@@ -26,7 +26,7 @@
                 <div class="col-md-4 text-end">
                     <span class="text-white me-3 small">
                         <i class="bi bi-person-circle me-1"></i>
-                        ${sessionScope.usuarioLogueado.nombreCompleto}
+                        <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
                     </span>
                     <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
                         <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
@@ -39,7 +39,7 @@
 <div class="container mt-4">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h3>Baja de miembros en la comisión: ${comision.nombre}</h3>
+            <h3>Baja de miembros en la comisión: <c:out value="${comision.nombre}"/></h3>
             <a href="${pageContext.request.contextPath}/comisiones/view/${comision.id}" class="btn btn-secondary">Volver a la comisión</a>
         </div>
         <div class="card-body">
@@ -61,9 +61,9 @@
                     <tbody>
                         <c:forEach var="cm" items="${miembros}">
                             <tr>
-                                <td>${cm.miembro.nombreApellidos}</td>
-                                <td>${cm.miembro.dniNif}</td>
-                                <td>${cm.miembro.email}</td>
+                                <td><c:out value="${cm.miembro.nombreApellidos}"/></td>
+                                <td><c:out value="${cm.miembro.dniNif}"/></td>
+                                <td><c:out value="${cm.miembro.email}"/></td>
                                 <td>${cm.cargo}</td>
                                 <td><fmt:formatDate value="${cm.fechaIncorporacion}" pattern="dd/MM/yyyy" /></td>
                                 <td>
