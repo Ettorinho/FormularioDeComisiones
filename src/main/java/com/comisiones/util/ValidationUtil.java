@@ -13,11 +13,19 @@ import java.util.Set;
 /**
  * Utility class for Bean Validation (JSR-380) using Hibernate Validator.
  * Provides centralized, reusable validation for model objects.
+ * <p>
+ * A single {@link ValidatorFactory} is created at class-load time and registered
+ * with a JVM shutdown hook so that its resources are released on application exit.
+ * </p>
  */
 public class ValidationUtil {
 
     private static final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     private static final Validator validator = factory.getValidator();
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(factory::close, "ValidationUtil-shutdown"));
+    }
 
     private ValidationUtil() {
         // Utility class; do not instantiate

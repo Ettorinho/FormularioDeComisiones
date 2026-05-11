@@ -18,6 +18,9 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class ValidationUtilTest {
 
+    /** 2 years expressed in milliseconds, used for "future date" test helpers. */
+    private static final long TWO_YEARS_IN_MS = 2L * 365 * 24 * 60 * 60 * 1000;
+
     // ─────────────────────────────────────────────
     // Miembro tests
     // ─────────────────────────────────────────────
@@ -136,7 +139,7 @@ public class ValidationUtilTest {
     @SuppressWarnings("deprecation")
     void comision_fechaFutura_generaError() {
         // Date two years in the future
-        Date futuro = new Date(System.currentTimeMillis() + 2L * 365 * 24 * 60 * 60 * 1000);
+        Date futuro = new Date(System.currentTimeMillis() + TWO_YEARS_IN_MS);
         Comision c = new Comision("Comisión de Calidad", futuro, null);
         c.setArea(Comision.Area.MIXTA);
         c.setTipo(Comision.Tipo.GRUPO_MEJORA);
@@ -235,7 +238,7 @@ public class ValidationUtilTest {
 
     @Test
     void comisionMiembro_fechaIncorporacionFutura_generaError() {
-        Date futuro = new Date(System.currentTimeMillis() + 2L * 365 * 24 * 60 * 60 * 1000);
+        Date futuro = new Date(System.currentTimeMillis() + TWO_YEARS_IN_MS);
         ComisionMiembro cm = new ComisionMiembro(new Comision(), new Miembro(), ComisionMiembro.Cargo.PARTICIPANTE, futuro);
         List<String> errors = ValidationUtil.validate(cm);
         assertTrue(errors.stream().anyMatch(e -> e.contains("no puede ser futura")));
