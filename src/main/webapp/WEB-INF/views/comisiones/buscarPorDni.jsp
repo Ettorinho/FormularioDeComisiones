@@ -33,7 +33,7 @@
                 <div class="col-md-4 text-end">
                     <span class="text-white me-3 small">
                         <i class="bi bi-person-circle me-1"></i>
-                        ${sessionScope.usuarioLogueado.nombreCompleto}
+                        <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
                     </span>
                     <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
                         <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
@@ -50,7 +50,7 @@
         <div class="row g-3 align-items-end">
             <div class="col-auto">
                 <label for="dni" class="form-label">DNI del miembro</label>
-                <input type="text" name="dni" id="dni" class="form-control" placeholder="Introduce DNI" required value="${dniBuscado != null ? dniBuscado : ''}" />
+                <input type="text" name="dni" id="dni" class="form-control" placeholder="Introduce DNI" required value="<c:out value='${dniBuscado != null ? dniBuscado : ""}'/>" />
             </div>
             <div class="col-auto">
                 <button type="submit" class="btn btn-primary">🔍 Buscar</button>
@@ -85,11 +85,11 @@
                 <div class="card mb-4">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0">
-                            👤 ${miembro.nombreApellidos} 
-                            <span class="badge bg-light text-dark">${miembro. dniNif}</span>
+                            👤 <c:out value="${miembro.nombreApellidos}"/> 
+                            <span class="badge bg-light text-dark"><c:out value="${miembro.dniNif}"/></span>
                         </h5>
                         <c:if test="${not empty miembro.email}">
-                            <small>📧 ${miembro.email}</small>
+                            <small>📧 <c:out value="${miembro.email}"/></small>
                         </c:if>
                     </div>
                 </div>
@@ -129,7 +129,7 @@
                                                 <a href="#" class="text-decoration-none text-dark fw-bold toggle-historial"
                                                    data-target="historial-${cm.comision.id}"
                                                    onclick="toggleHistorial('historial-${cm.comision.id}'); return false;">
-                                                    ${cm.comision.nombre}
+                                                    <c:out value="${cm.comision.nombre}"/>
                                                     <small class="text-muted ms-1">[+]</small>
                                                 </a>
                                             </td>

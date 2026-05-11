@@ -5,7 +5,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Cambiar Cargo - ${comisionMiembro.miembro.nombreApellidos}</title>
+    <title>Cambiar Cargo - <c:out value="${comisionMiembro.miembro.nombreApellidos}"/></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
@@ -25,7 +25,7 @@
                 <div class="col-md-4 text-end">
                     <span class="text-white me-3 small">
                         <i class="bi bi-person-circle me-1"></i>
-                        ${sessionScope.usuarioLogueado.nombreCompleto}
+                        <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
                     </span>
                     <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
                         <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
@@ -40,7 +40,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/comisiones/">Comisiones</a></li>
-            <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/comisiones/view/${comisionMiembro.comision.id}">${comisionMiembro.comision.nombre}</a></li>
+            <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/comisiones/view/${comisionMiembro.comision.id}"><c:out value="${comisionMiembro.comision.nombre}"/></a></li>
             <li class="breadcrumb-item active">Cambiar Cargo</li>
         </ol>
     </nav>
@@ -68,12 +68,12 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
-                    <p><strong>Nombre:</strong> ${comisionMiembro.miembro.nombreApellidos}</p>
-                    <p><strong>DNI/NIF:</strong> ${comisionMiembro.miembro.dniNif}</p>
-                    <p><strong>Email:</strong> ${comisionMiembro.miembro.email}</p>
+                    <p><strong>Nombre:</strong> <c:out value="${comisionMiembro.miembro.nombreApellidos}"/></p>
+                    <p><strong>DNI/NIF:</strong> <c:out value="${comisionMiembro.miembro.dniNif}"/></p>
+                    <p><strong>Email:</strong> <c:out value="${comisionMiembro.miembro.email}"/></p>
                 </div>
                 <div class="col-md-6">
-                    <p><strong>Comisión:</strong> ${comisionMiembro.comision.nombre}</p>
+                    <p><strong>Comisión:</strong> <c:out value="${comisionMiembro.comision.nombre}"/></p>
                     <p><strong>Cargo Actual:</strong> 
                         <span class="badge cargo-${comisionMiembro.cargo} badge-cargo">${comisionMiembro.cargo}</span>
                     </p>
@@ -211,7 +211,7 @@
                                                 <span class="text-muted fst-italic">Sin motivo especificado</span>
                                             </c:when>
                                             <c:otherwise>
-                                                ${cambio.motivo}
+                                                 <c:out value="${cambio.motivo}"/>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
@@ -221,7 +221,7 @@
                                                 <span class="text-muted fst-italic">SYSTEM</span>
                                             </c:when>
                                             <c:otherwise>
-                                                ${cambio.usuarioModificacion}
+                                                 <c:out value="${cambio.usuarioModificacion}"/>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>

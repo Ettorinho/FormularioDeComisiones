@@ -23,7 +23,7 @@
                 <div class="col-md-4 text-end">
                     <span class="text-white me-3 small">
                         <i class="bi bi-person-circle me-1"></i>
-                        ${sessionScope.usuarioLogueado.nombreCompleto}
+                        <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
                     </span>
                     <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
                         <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión

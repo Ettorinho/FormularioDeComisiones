@@ -41,10 +41,10 @@
                         <tr>
                             <td>
                                 <input type="hidden" name="miembroId" value="${miembro.id}" />
-                                <strong>${miembro.nombreApellidos}</strong>
+                                <strong><c:out value="${miembro.nombreApellidos}"/></strong>
                                 <br>
                                 <small class="text-muted">
-                                    <i class="bi bi-card-text"></i> ${miembro.dniNif}
+                                    <i class="bi bi-card-text"></i> <c:out value="${miembro.dniNif}"/>
                                 </small>
                             </td>
                             <td class="text-center">
