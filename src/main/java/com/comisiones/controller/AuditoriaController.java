@@ -37,6 +37,7 @@ public class AuditoriaController extends HttpServlet {
             String usuario   = request.getParameter("usuario");
             String entidad   = request.getParameter("entidad");
             String entidadId = request.getParameter("entidadId");
+            String resultado = request.getParameter("resultado");
 
             List<AuditoriaAccion> acciones;
 
@@ -48,6 +49,9 @@ public class AuditoriaController extends HttpServlet {
                 acciones = auditoriaDAO.findByEntidad(entidad.trim(), entidadId.trim());
                 request.setAttribute("filtroEntidad", entidad.trim());
                 request.setAttribute("filtroEntidadId", entidadId.trim());
+            } else if (resultado != null && !resultado.trim().isEmpty()) {
+                acciones = auditoriaDAO.findByResultado(resultado.trim(), 200);
+                request.setAttribute("filtroResultado", resultado.trim());
             } else {
                 acciones = auditoriaDAO.findAll(200);
             }

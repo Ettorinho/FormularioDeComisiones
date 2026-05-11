@@ -15,6 +15,13 @@ public class AuditoriaAccion implements Serializable {
     private String descripcion;
     private String ipOrigen;
 
+    // Extended security/operational metadata
+    private String userAgent;
+    private String resultado;
+    private Integer duracionMs;
+    private String mensajeError;
+    private String sesionId;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -38,4 +45,19 @@ public class AuditoriaAccion implements Serializable {
 
     public String getIpOrigen() { return ipOrigen; }
     public void setIpOrigen(String ipOrigen) { this.ipOrigen = ipOrigen; }
+
+    public String getUserAgent() { return userAgent; }
+    public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
+
+    public String getResultado() { return resultado; }
+    public void setResultado(String resultado) { this.resultado = resultado; }
+
+    public Integer getDuracionMs() { return duracionMs; }
+    public void setDuracionMs(Integer duracionMs) { this.duracionMs = duracionMs; }
+
+    public String getMensajeError() { return mensajeError; }
+    public void setMensajeError(String mensajeError) { this.mensajeError = mensajeError; }
+
+    public String getSesionId() { return sesionId; }
+    public void setSesionId(String sesionId) { this.sesionId = sesionId; }
 }

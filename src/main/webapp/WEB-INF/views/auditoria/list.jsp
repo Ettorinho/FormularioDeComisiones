@@ -41,11 +41,20 @@
         <div class="card mb-4">
             <div class="card-body">
                 <form method="get" action="${pageContext.request.contextPath}/auditoria" class="row g-2 align-items-end">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="usuario" class="form-label">Filtrar por usuario</label>
                         <input type="text" id="usuario" name="usuario" class="form-control"
                                placeholder="Nombre de usuario AD"
                                value="<c:out value='${filtroUsuario}'/>">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="resultado" class="form-label">Resultado</label>
+                        <select id="resultado" name="resultado" class="form-select">
+                            <option value="">Todos los resultados</option>
+                            <option value="EXITOSO"  <c:if test="${filtroResultado == 'EXITOSO'}">selected</c:if>>Exitoso</option>
+                            <option value="FALLIDO"  <c:if test="${filtroResultado == 'FALLIDO'}">selected</c:if>>Fallido</option>
+                            <option value="DENEGADO" <c:if test="${filtroResultado == 'DENEGADO'}">selected</c:if>>Denegado</option>
+                        </select>
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary w-100">
@@ -75,6 +84,12 @@
                 (ID: <c:out value="${filtroEntidadId}"/>)
             </div>
         </c:if>
+        <c:if test="${not empty filtroResultado}">
+            <div class="alert alert-info">
+                <i class="bi bi-funnel me-1"></i>
+                Mostrando acciones con resultado: <strong><c:out value="${filtroResultado}"/></strong>
+            </div>
+        </c:if>
 
         <!-- Tabla de auditoría -->
         <c:choose>
@@ -86,15 +101,18 @@
                                 <th>Fecha/Hora</th>
                                 <th>Usuario</th>
                                 <th>Acción</th>
+                                <th>Resultado</th>
                                 <th>Entidad</th>
                                 <th>ID Entidad</th>
                                 <th>Descripción</th>
                                 <th>IP</th>
+                                <th>Duración</th>
+                                <th>Error</th>
                             </tr>
                         </thead>
                         <tbody>
                             <c:forEach items="${acciones}" var="accion">
-                                <tr>
+                                <tr class="${(accion.resultado == 'FALLIDO' || accion.resultado == 'DENEGADO') ? 'table-danger' : ''}">
                                     <td class="text-nowrap">
                                         <c:out value="${accion.fechaHora}"/>
                                     </td>
@@ -121,10 +139,36 @@
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${accion.resultado == 'EXITOSO'}">
+                                                <span class="badge bg-success"><c:out value="${accion.resultado}"/></span>
+                                            </c:when>
+                                            <c:when test="${accion.resultado == 'FALLIDO'}">
+                                                <span class="badge bg-danger"><c:out value="${accion.resultado}"/></span>
+                                            </c:when>
+                                            <c:when test="${accion.resultado == 'DENEGADO'}">
+                                                <span class="badge bg-warning text-dark"><c:out value="${accion.resultado}"/></span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <c:out value="${accion.resultado}"/>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
                                     <td><c:out value="${accion.entidad}"/></td>
                                     <td><c:out value="${accion.entidadId}"/></td>
                                     <td><c:out value="${accion.descripcion}"/></td>
                                     <td class="text-nowrap"><c:out value="${accion.ipOrigen}"/></td>
+                                    <td class="text-nowrap">
+                                        <c:if test="${not empty accion.duracionMs}">
+                                            <c:out value="${accion.duracionMs}"/> ms
+                                        </c:if>
+                                    </td>
+                                    <td>
+                                        <c:if test="${not empty accion.mensajeError}">
+                                            <small class="text-danger"><c:out value="${accion.mensajeError}"/></small>
+                                        </c:if>
+                                    </td>
                                 </tr>
                             </c:forEach>
                         </tbody>
