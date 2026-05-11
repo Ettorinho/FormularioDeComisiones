@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PastOrPresent;
+import javax.validation.constraints.Size;
 import com.comisiones.util.DateFormatUtil;
 
 public class Comision implements Serializable {
@@ -39,12 +43,23 @@ public class Comision implements Serializable {
         public String getDescripcion() {
             return descripcion;
         }
-    }    
+    }
+
     private Long id;
+
+    @NotBlank(message = "El nombre de la comisión es obligatorio")
+    @Size(min = 3, max = 200, message = "El nombre debe tener entre 3 y 200 caracteres")
     private String nombre;
+
+    @NotNull(message = "El área es obligatoria")
     private Area area;
+
+    @NotNull(message = "El tipo es obligatorio")
     private Tipo tipo;
+
+    @PastOrPresent(message = "La fecha de constitución no puede ser futura")
     private Date fechaConstitucion;
+
     private Date fechaFin;
     private Date fechaCreacion;
     private Set<ComisionMiembro> miembros = new HashSet<>();
