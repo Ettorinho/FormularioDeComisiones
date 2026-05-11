@@ -98,6 +98,7 @@ public class CambiarCargoServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        long inicioOperacion = System.nanoTime();
         
         request.setCharacterEncoding("UTF-8");
         
@@ -158,10 +159,10 @@ public class CambiarCargoServlet extends HttpServlet {
                 if (motivo != null && !motivo.trim().isEmpty()) {
                     historialDAO.actualizarMotivoUltimoCambio(comisionId, miembroId, motivo);
                 }
-                AuditoriaService.getInstance().registrar(request, getUsuarioLogueado(request),
+                AuditoriaService.getInstance().registrarExito(request, getUsuarioLogueado(request),
                     "MODIFICAR", "CARGO", comisionId + "/" + miembroId,
                     "Cambió el cargo de " + cm.getCargo().name() + " a " + nuevoCargo
-                        + " en la comisión ID: " + comisionId);
+                        + " en la comisión ID: " + comisionId, inicioOperacion);
                 request.setAttribute("success", "Cargo cambiado exitosamente de " + 
                     cm.getCargo().name() + " a " + nuevoCargo);
             } else {
@@ -172,9 +173,15 @@ public class CambiarCargoServlet extends HttpServlet {
             doGet(request, response);
             
         } catch (NumberFormatException e) {
+            AuditoriaService.getInstance().registrarFallo(request, getUsuarioLogueado(request),
+                    "MODIFICAR", "CARGO", request.getPathInfo(),
+                    "Número inválido al cambiar cargo", inicioOperacion, e.getMessage());
             request.setAttribute("error", "ID inválido");
             doGet(request, response);
         } catch (SQLException e) {
+            AuditoriaService.getInstance().registrarFallo(request, getUsuarioLogueado(request),
+                    "MODIFICAR", "CARGO", request.getPathInfo(),
+                    "Error SQL al cambiar cargo", inicioOperacion, e.getMessage());
             throw new ServletException("Error al cambiar el cargo", e);
         }
     }

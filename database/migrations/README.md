@@ -18,6 +18,7 @@ Scripts SQL ordenados por versión.
 | 10 | `003_trigger_usuario_ad.sql` | 2026-03-17 | Trigger para usuario AD en historial |
 | 11 | `004_auditoria_acciones.sql` | 2026-03-17 | Tabla de auditoría centralizada |
 | 12 | `005_fix_historial_cargo_types.sql` | 2026-03-20 | Convierte cargo_anterior/nuevo a ENUM en historial |
+| 13 | `006_extender_auditoria_acciones.sql` | 2026-05-11 | Extiende auditoría con resultado, trazabilidad y vistas de seguridad |
 
 > **Nota:** A partir de nuevas migraciones, usar exclusivamente el formato `NNN_descripcion.sql` (ej: `005_...`, `006_...`).
 

@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 /**
@@ -34,31 +36,50 @@ public class AuditoriaController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            String usuario   = request.getParameter("usuario");
-            String entidad   = request.getParameter("entidad");
-            String entidadId = request.getParameter("entidadId");
+            String usuario = limpiar(request.getParameter("usuario"));
+            String resultado = limpiar(request.getParameter("resultado"));
+            String fechaDesdeStr = limpiar(request.getParameter("fechaDesde"));
+            String fechaHastaStr = limpiar(request.getParameter("fechaHasta"));
+            String ipAddress = limpiar(request.getParameter("ip"));
 
-            List<AuditoriaAccion> acciones;
+            LocalDate fechaDesde = parsearFecha(fechaDesdeStr);
+            LocalDate fechaHasta = parsearFecha(fechaHastaStr);
 
-            if (usuario != null && !usuario.trim().isEmpty()) {
-                acciones = auditoriaDAO.findByUsuario(usuario.trim());
-                request.setAttribute("filtroUsuario", usuario.trim());
-            } else if (entidad != null && entidadId != null
-                    && !entidad.trim().isEmpty() && !entidadId.trim().isEmpty()) {
-                acciones = auditoriaDAO.findByEntidad(entidad.trim(), entidadId.trim());
-                request.setAttribute("filtroEntidad", entidad.trim());
-                request.setAttribute("filtroEntidadId", entidadId.trim());
-            } else {
-                acciones = auditoriaDAO.findAll(200);
-            }
+            List<AuditoriaAccion> acciones = auditoriaDAO.findByFiltros(
+                    usuario, resultado, fechaDesde, fechaHasta, ipAddress, 200);
 
             request.setAttribute("acciones", acciones);
-            request.getRequestDispatcher("/WEB-INF/views/auditoria/list.jsp")
+            request.setAttribute("filtroUsuario", usuario);
+            request.setAttribute("filtroResultado", resultado);
+            request.setAttribute("filtroFechaDesde", fechaDesdeStr);
+            request.setAttribute("filtroFechaHasta", fechaHastaStr);
+            request.setAttribute("filtroIp", ipAddress);
+
+            request.getRequestDispatcher("/WEB-INF/views/admin/auditoria.jsp")
                    .forward(request, response);
 
         } catch (SQLException e) {
             AppLogger.error("Error al consultar auditoría", e);
             throw new ServletException("Error al consultar auditoría", e);
+        }
+    }
+
+    private String limpiar(String valor) {
+        if (valor == null) {
+            return null;
+        }
+        String clean = valor.trim();
+        return clean.isEmpty() ? null : clean;
+    }
+
+    private LocalDate parsearFecha(String valor) {
+        if (valor == null) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(valor);
+        } catch (DateTimeParseException ex) {
+            return null;
         }
     }
 }

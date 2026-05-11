@@ -110,6 +110,7 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        long inicioOperacion = System.nanoTime();
 
         String username = request.getParameter("username");
         String password = request.getParameter("password");
@@ -145,9 +146,9 @@ public class LoginServlet extends HttpServlet {
                     + " [" + usuario.getNombreCompleto() + "]"
                     + " roles=" + usuario.getRoles());
 
-            AuditoriaService.getInstance().registrar(request, usuario.getUsername(),
+            AuditoriaService.getInstance().registrarExito(request, usuario.getUsername(),
                 "LOGIN", "SESION", null,
-                "Login exitoso desde IP: " + request.getRemoteAddr());
+                "Login exitoso", inicioOperacion);
 
             // Redirigir a la URL solicitada originalmente o a / por defecto
             if (urlAntesDeSesion != null && esSafeRedirect(urlAntesDeSesion)) {
@@ -158,15 +159,20 @@ public class LoginServlet extends HttpServlet {
 
         } catch (AuthenticationException ae) {
             log("⚠️ Login fallido (credenciales incorrectas): " + username);
-            AuditoriaService.getInstance().registrar(request, username,
-                "LOGIN_FALLIDO", "SESION", null,
-                "Intento de login fallido (credenciales incorrectas)");
+            AuditoriaService.getInstance().registrarFallo(request, username,
+                "LOGIN", "SESION", null,
+                "Intento de login fallido (credenciales incorrectas)",
+                inicioOperacion, ae.getMessage());
             request.setAttribute("error", "Usuario o contraseña incorrectos.");
             request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
 
         } catch (NamingException ne) {
             log("❌ Error de conectividad LDAP al intentar login: " + username
                     + " → " + ne.getMessage());
+            AuditoriaService.getInstance().registrarFallo(request, username,
+                "LOGIN", "SESION", null,
+                "Error de conectividad LDAP durante login",
+                inicioOperacion, ne.getMessage());
             request.setAttribute("error",
                     "No se pudo conectar con el servidor de autenticación. Inténtelo de nuevo más tarde.");
             request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);

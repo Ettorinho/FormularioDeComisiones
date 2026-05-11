@@ -94,6 +94,7 @@ public class ActaController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        long inicioOperacion = System.nanoTime();
         String pathInfo = request.getPathInfo();
         
         try {
@@ -103,6 +104,10 @@ public class ActaController extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
         } catch (SQLException e) {
+            AuditoriaService.getInstance().registrarFallo(request, getUsuarioLogueado(request),
+                    "POST", "ACTA", pathInfo,
+                    "Error en operación POST de actas",
+                    inicioOperacion, e.getMessage());
             throw new ServletException(e);
         }
     }
@@ -146,6 +151,7 @@ public class ActaController extends HttpServlet {
     
     private void saveActa(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
+        long inicioOperacion = System.nanoTime();
         
         request.setCharacterEncoding("UTF-8");
         
@@ -272,10 +278,10 @@ public class ActaController extends HttpServlet {
         }
         
         AppLogger.info("Acta guardada con ID: " + actaId);
-        AuditoriaService.getInstance().registrar(request, getUsuarioLogueado(request),
+        AuditoriaService.getInstance().registrarExito(request, getUsuarioLogueado(request),
             "CREAR", "ACTA", actaId.toString(),
             "Creó el acta de la comisión " + comision.getNombre()
-                + " para la reunión del " + fechaReunionStr);
+                + " para la reunión del " + fechaReunionStr, inicioOperacion);
         
         // Redirigir a la vista del acta
         response.sendRedirect(request.getContextPath() + "/actas/view?id=" + actaId);
