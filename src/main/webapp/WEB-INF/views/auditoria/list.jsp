@@ -161,7 +161,9 @@
                                     <td class="text-nowrap"><c:out value="${accion.ipOrigen}"/></td>
                                     <td class="text-nowrap">
                                         <c:if test="${not empty accion.duracionMs}">
-                                            <c:out value="${accion.duracionMs}"/> ms
+                                            <span aria-label="Duración de la operación: ${accion.duracionMs} milisegundos">
+                                                <c:out value="${accion.duracionMs}"/> ms
+                                            </span>
                                         </c:if>
                                     </td>
                                     <td>
