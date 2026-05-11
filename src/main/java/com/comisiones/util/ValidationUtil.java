@@ -11,6 +11,13 @@ import java.util.stream.Collectors;
 
 /**
  * Utility class providing centralised Bean Validation (JSR-380) helpers.
+ *
+ * <p>The {@link javax.validation.ValidatorFactory} is intentionally kept as a
+ * static singleton. It is designed to be initialised once at application
+ * start-up and live for the entire JVM lifetime – matching the lifecycle of a
+ * Java EE web application. Call {@link #close()} during application shutdown
+ * (e.g. from a {@code ServletContextListener}) to release any resources held
+ * by the factory.
  */
 public class ValidationUtil {
 
@@ -19,6 +26,14 @@ public class ValidationUtil {
 
     private ValidationUtil() {
         // Utility class – no instances
+    }
+
+    /**
+     * Releases the underlying {@link ValidatorFactory}.
+     * Should be called once during application shutdown.
+     */
+    public static void close() {
+        FACTORY.close();
     }
 
     /**
