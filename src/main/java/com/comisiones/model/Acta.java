@@ -2,12 +2,22 @@ package com.comisiones.model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PastOrPresent;
+import javax.validation.constraints.Size;
 import com.comisiones.util.DateFormatUtil;
 
 public class Acta {
     private Long id;
+
+    @NotNull(message = "Debe especificar la comisión")
     private Comision comision;
+
+    @NotNull(message = "La fecha de reunión es obligatoria")
+    @PastOrPresent(message = "La fecha de reunión no puede ser futura")
     private LocalDate fechaReunion;
+
+    @Size(max = 2000, message = "Las observaciones no pueden exceder 2000 caracteres")
     private String observaciones;
     private LocalDateTime fechaCreacion;
     

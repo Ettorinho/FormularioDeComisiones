@@ -3,12 +3,26 @@ package com.comisiones.model;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 public class Miembro implements Serializable {
     
     private Long id;
+
+    @NotBlank(message = "El nombre y apellidos son obligatorios")
+    @Size(min = 2, max = 150, message = "El nombre y apellidos deben tener entre 2 y 150 caracteres")
     private String nombreApellidos;
+
+    @NotBlank(message = "El DNI/NIF es obligatorio")
+    @Pattern(regexp = "^([0-9]{8}[A-Z]|[XYZ][0-9]{7}[A-Z])$",
+             message = "Formato de DNI/NIF inválido (debe ser 12345678A o X1234567A)")
     private String dniNif;
+
+    @Email(message = "El email debe tener un formato válido")
+    @Size(max = 100, message = "El email no puede exceder 100 caracteres")
     private String email;
     private Set<ComisionMiembro> comisiones = new HashSet<>();
     
