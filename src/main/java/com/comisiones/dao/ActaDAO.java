@@ -103,7 +103,6 @@ public class ActaDAO {
                 AppLogger.debug("Asistencias guardadas: " + guardadas);
 
                 conn.commit();
-                restoreAutoCommit(conn);
                 AppLogger.info("Acta y asistencias guardadas correctamente");
 
                 return actaId;
@@ -114,7 +113,6 @@ public class ActaDAO {
                 } catch (SQLException ex) {
                     AppLogger.error("Error al hacer rollback", ex);
                 }
-                restoreAutoCommit(conn);
                 throw e;
             }
         }
@@ -268,11 +266,4 @@ public class ActaDAO {
         return asistencias;
     }
 
-    private void restoreAutoCommit(Connection conn) {
-        try {
-            conn.setAutoCommit(true);
-        } catch (SQLException ex) {
-            AppLogger.error("Error al restaurar auto-commit", ex);
-        }
-    }
 }
