@@ -67,7 +67,6 @@ public class RolFilter implements Filter {
             + " | Rol resuelto: " + rolUsuario);
         session.setAttribute("rolUsuario", rolUsuario);
         System.out.println("[RolFilter] Usuario: " + usuario.getUsername()
-                + " | Grupos AD: " + usuario.getRoles()
                 + " | Rol resuelto: " + rolUsuario);
 
         // Verificar permisos según la ruta y el método HTTP

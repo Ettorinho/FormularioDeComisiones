@@ -6,6 +6,7 @@ import com.comisiones.model.ComisionMiembro;
 import com.comisiones.model.HistorialCargo;
 import com.comisiones.model.UsuarioAD;
 import com.comisiones.service.AuditoriaService;
+import com.comisiones.util.ServletHelper;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -59,10 +60,15 @@ public class CambiarCargoServlet extends HttpServlet {
             return;
         }
         
+        Long comisionId = ServletHelper.parseIdSafely(comisionIdStr);
+        Long miembroId = ServletHelper.parseIdSafely(miembroIdStr);
+        
+        if (comisionId == null || miembroId == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "IDs inválidos");
+            return;
+        }
+        
         try {
-            Long comisionId = Long.parseLong(comisionIdStr);
-            Long miembroId = Long.parseLong(miembroIdStr);
-            
             // Obtener ComisionMiembro por clave compuesta
             ComisionMiembro cm = comisionMiembroDAO.findByCompositeKey(comisionId, miembroId);
             if (cm == null) {
@@ -81,8 +87,6 @@ public class CambiarCargoServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/comisiones/cambiarCargo.jsp")
                    .forward(request, response);
             
-        } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID inválido");
         } catch (SQLException e) {
             throw new ServletException("Error al obtener datos del miembro", e);
         }
@@ -110,10 +114,16 @@ public class CambiarCargoServlet extends HttpServlet {
             return;
         }
         
+        Long comisionId = ServletHelper.parseIdSafely(comisionIdStr);
+        Long miembroId = ServletHelper.parseIdSafely(miembroIdStr);
+        
+        if (comisionId == null || miembroId == null) {
+            request.setAttribute("error", "IDs inválidos");
+            doGet(request, response);
+            return;
+        }
+        
         try {
-            Long comisionId = Long.parseLong(comisionIdStr);
-            Long miembroId = Long.parseLong(miembroIdStr);
-            
             // Validar que el miembro existe y no está dado de baja
             ComisionMiembro cm = comisionMiembroDAO.findByCompositeKey(comisionId, miembroId);
             if (cm == null) {

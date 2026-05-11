@@ -19,9 +19,10 @@ public class ActaDAO {
      * @param conn Conexión existente (para transacciones)
      */
     private Long saveActa(Connection conn, Acta acta) throws SQLException {
-        String sql = "INSERT INTO actas (comision_id, fecha_reunion, observaciones, fecha_creacion, " +
-                     "pdf_nombre, pdf_contenido, pdf_tipo_mime) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = String.join(" ",
+                "INSERT INTO actas (comision_id, fecha_reunion, observaciones, fecha_creacion,",
+                "pdf_nombre, pdf_contenido, pdf_tipo_mime)",
+                "VALUES (?, ?, ?, ?, ?, ?, ?)");
         
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setLong(1, acta.getComision().getId());
@@ -48,8 +49,9 @@ public class ActaDAO {
      */
     private Long saveAsistencia(Connection conn, Long actaId, Long miembroId, 
                                boolean asistio, String justificacion) throws SQLException {
-        String sql = "INSERT INTO asistencias_actas (acta_id, miembro_id, asistio, justificacion, fecha_creacion) " +
-                     "VALUES (?, ?, ?, ?, ?)";
+        String sql = String.join(" ",
+                "INSERT INTO asistencias_actas (acta_id, miembro_id, asistio, justificacion, fecha_creacion)",
+                "VALUES (?, ?, ?, ?, ?)");
         
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setLong(1, actaId);
@@ -74,57 +76,44 @@ public class ActaDAO {
      */
     public Long saveActaConAsistencias(Acta acta, Map<Long, Boolean> asistencias, 
                                        Map<Long, String> justificaciones) throws SQLException {
-        
-        Connection conn = null;
-        try {
-            conn = DBUtil.getConnection();
+        try (Connection conn = DBUtil.getConnection()) {
             conn.setAutoCommit(false);
-            
-            // 1. Guardar acta
-            Long actaId = saveActa(conn, acta);
-            
-            if (actaId == null) {
-                throw new SQLException("No se pudo generar ID para el acta");
-            }
-            
-            AppLogger.debug("Acta guardada con ID: " + actaId);
-            
-            // 2. Guardar asistencias
-            int guardadas = 0;
-            for (Map.Entry<Long, Boolean> entry : asistencias.entrySet()) {
-                Long miembroId = entry.getKey();
-                Boolean asistio = entry.getValue();
-                String justificacion = justificaciones.get(miembroId);
-                
-                saveAsistencia(conn, actaId, miembroId, asistio, justificacion);
-                guardadas++;
-            }
-            
-            AppLogger.debug("Asistencias guardadas: " + guardadas);
-            
-            conn.commit();
-            AppLogger.info("Acta y asistencias guardadas correctamente");
-            
-            return actaId;
-            
-        } catch (SQLException e) {
-            if (conn != null) {
+
+            try {
+                // 1. Guardar acta
+                Long actaId = saveActa(conn, acta);
+
+                if (actaId == null) {
+                    throw new SQLException("No se pudo generar ID para el acta");
+                }
+
+                AppLogger.debug("Acta guardada con ID: " + actaId);
+
+                // 2. Guardar asistencias
+                int guardadas = 0;
+                for (Map.Entry<Long, Boolean> entry : asistencias.entrySet()) {
+                    Long miembroId = entry.getKey();
+                    Boolean asistio = entry.getValue();
+                    String justificacion = justificaciones.get(miembroId);
+
+                    saveAsistencia(conn, actaId, miembroId, asistio, justificacion);
+                    guardadas++;
+                }
+
+                AppLogger.debug("Asistencias guardadas: " + guardadas);
+
+                conn.commit();
+                AppLogger.info("Acta y asistencias guardadas correctamente");
+
+                return actaId;
+            } catch (SQLException e) {
                 try {
                     conn.rollback();
                     AppLogger.error("Transacción revertida debido a error", e);
                 } catch (SQLException ex) {
                     AppLogger.error("Error al hacer rollback", ex);
                 }
-            }
-            throw e;
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException e) {
-                    AppLogger.error("Error al cerrar conexión", e);
-                }
+                throw e;
             }
         }
     }
@@ -135,8 +124,9 @@ public class ActaDAO {
     public Long saveAsistencia(Long actaId, Long miembroId, boolean asistio, String justificacion) 
             throws SQLException {
         
-        String sql = "INSERT INTO asistencias_actas (acta_id, miembro_id, asistio, justificacion, fecha_creacion) " +
-                     "VALUES (?, ?, ?, ?, ?)";
+        String sql = String.join(" ",
+                "INSERT INTO asistencias_actas (acta_id, miembro_id, asistio, justificacion, fecha_creacion)",
+                "VALUES (?, ?, ?, ?, ?)");
         
         AppLogger.debug("Guardando asistencia para miembro ID: " + miembroId);
         
@@ -174,38 +164,40 @@ public class ActaDAO {
      * Busca un acta por ID (sin cargar el contenido del PDF para ahorrar memoria)
      */
     public Acta findById(Long id) throws SQLException {
-        String sql = "SELECT a.id, a.fecha_reunion, a.observaciones, a.fecha_creacion, " +
-                     "a.pdf_nombre, a.pdf_tipo_mime, " +
-                     "c.id as comision_id, c.nombre as comision_nombre " +
-                     "FROM actas a " +
-                     "INNER JOIN comisiones c ON a.comision_id = c.id " +
-                     "WHERE a.id = ?";
+        String sql = String.join(" ",
+                "SELECT a.id, a.fecha_reunion, a.observaciones, a.fecha_creacion,",
+                "a.pdf_nombre, a.pdf_tipo_mime,",
+                "c.id as comision_id, c.nombre as comision_nombre",
+                "FROM actas a",
+                "INNER JOIN comisiones c ON a.comision_id = c.id",
+                "WHERE a.id = ?");
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setLong(1, id);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                Acta acta = new Acta();
-                acta.setId(rs.getLong("id"));
-                acta.setFechaReunion(rs.getDate("fecha_reunion").toLocalDate());
-                acta.setObservaciones(rs.getString("observaciones"));
-                acta.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
-                
-                // Información del PDF (sin cargar el contenido)
-                acta.setPdfNombre(rs.getString("pdf_nombre"));
-                acta.setPdfTipoMime(rs.getString("pdf_tipo_mime"));
-                
-                // Crear objeto Comision
-                Comision comision = new Comision();
-                comision.setId(rs.getLong("comision_id"));
-                comision.setNombre(rs.getString("comision_nombre"));
-                
-                acta.setComision(comision);
-                
-                return acta;
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Acta acta = new Acta();
+                    acta.setId(rs.getLong("id"));
+                    acta.setFechaReunion(rs.getDate("fecha_reunion").toLocalDate());
+                    acta.setObservaciones(rs.getString("observaciones"));
+                    acta.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
+                    
+                    // Información del PDF (sin cargar el contenido)
+                    acta.setPdfNombre(rs.getString("pdf_nombre"));
+                    acta.setPdfTipoMime(rs.getString("pdf_tipo_mime"));
+                    
+                    // Crear objeto Comision
+                    Comision comision = new Comision();
+                    comision.setId(rs.getLong("comision_id"));
+                    comision.setNombre(rs.getString("comision_nombre"));
+                    
+                    acta.setComision(comision);
+                    
+                    return acta;
+                }
             }
         }
         return null;
@@ -221,10 +213,11 @@ public class ActaDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setLong(1, actaId);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                return rs.getBytes("pdf_contenido");
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBytes("pdf_contenido");
+                }
             }
         }
         return null;
@@ -236,38 +229,41 @@ public class ActaDAO {
     public List<AsistenciaActa> findAsistenciasByActaId(Long actaId) throws SQLException {
         List<AsistenciaActa> asistencias = new ArrayList<>();
         
-        String sql = "SELECT aa.id, aa.acta_id, aa.miembro_id, aa.asistio, aa.justificacion, aa.fecha_creacion, " +
-                     "m.nombre_apellidos, m.dni_nif " +
-                     "FROM asistencias_actas aa " +
-                     "INNER JOIN miembros m ON aa.miembro_id = m.id " +
-                     "WHERE aa.acta_id = ? " +
-                     "ORDER BY m.nombre_apellidos";
+        String sql = String.join(" ",
+                "SELECT aa.id, aa.acta_id, aa.miembro_id, aa.asistio, aa.justificacion, aa.fecha_creacion,",
+                "m.nombre_apellidos, m.dni_nif",
+                "FROM asistencias_actas aa",
+                "INNER JOIN miembros m ON aa.miembro_id = m.id",
+                "WHERE aa.acta_id = ?",
+                "ORDER BY m.nombre_apellidos");
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setLong(1, actaId);
-            ResultSet rs = stmt.executeQuery();
-            
-            while (rs.next()) {
-                // Crear objeto Miembro
-                Miembro miembro = new Miembro();
-                miembro.setId(rs.getLong("miembro_id"));
-                miembro.setNombreApellidos(rs.getString("nombre_apellidos"));
-                miembro.setDniNif(rs.getString("dni_nif"));
-                
-                // Crear objeto AsistenciaActa
-                AsistenciaActa asistencia = new AsistenciaActa();
-                asistencia.setId(rs.getLong("id"));
-                asistencia.setMiembro(miembro);
-                asistencia.setAsistio(rs.getBoolean("asistio"));
-                asistencia.setJustificacion(rs.getString("justificacion"));
-                asistencia.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
-                
-                asistencias.add(asistencia);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    // Crear objeto Miembro
+                    Miembro miembro = new Miembro();
+                    miembro.setId(rs.getLong("miembro_id"));
+                    miembro.setNombreApellidos(rs.getString("nombre_apellidos"));
+                    miembro.setDniNif(rs.getString("dni_nif"));
+                    
+                    // Crear objeto AsistenciaActa
+                    AsistenciaActa asistencia = new AsistenciaActa();
+                    asistencia.setId(rs.getLong("id"));
+                    asistencia.setMiembro(miembro);
+                    asistencia.setAsistio(rs.getBoolean("asistio"));
+                    asistencia.setJustificacion(rs.getString("justificacion"));
+                    asistencia.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
+                    
+                    asistencias.add(asistencia);
+                }
             }
         }
         
         return asistencias;
     }
+
 }

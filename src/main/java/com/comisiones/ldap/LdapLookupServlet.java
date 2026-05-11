@@ -123,7 +123,8 @@ public class LdapLookupServlet extends HttpServlet {
             log("❌ Error inesperado para DNI: " + dni);
             log("   Tipo: " + e.getClass().getName());
             log("   Mensaje: " + e.getMessage());
-            e.printStackTrace();
+            // Log completo solo en logs del servidor, no en consola
+            log("Stack trace disponible en logs del servidor", e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.write("{\"error\":\"Error inesperado: " + escapeJson(e. getMessage()) + "\"}");
         }

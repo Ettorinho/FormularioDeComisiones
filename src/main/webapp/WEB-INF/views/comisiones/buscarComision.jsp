@@ -25,7 +25,7 @@
                 <div class="col-md-4 text-end">
                     <span class="text-white me-3 small">
                         <i class="bi bi-person-circle me-1"></i>
-                        ${sessionScope.usuarioLogueado.nombreCompleto}
+                        <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
                     </span>
                     <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
                         <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
@@ -39,7 +39,7 @@
     <h2>Buscar Comisión o Grupo de Trabajo</h2>
     <form action="${pageContext.request.contextPath}/comisiones/buscarComision" method="post" class="row g-3 mb-4">
         <div class="col-auto">
-            <input type="text" name="nombre" class="form-control" placeholder="Nombre de comisión o grupo" required value="${nombreBuscado != null ? nombreBuscado : ''}">
+            <input type="text" name="nombre" class="form-control" placeholder="Nombre de comisión o grupo" required value="<c:out value='${nombreBuscado != null ? nombreBuscado : ""}'/>">
         </div>
         <div class="col-auto">
             <button type="submit" class="btn btn-primary mb-3">Buscar</button>
@@ -54,7 +54,7 @@
                 <c:forEach var="comision" items="${comisiones}">
                     <div class="card mb-4">
                         <div class="card-header">
-                            <strong>${comision.nombre}</strong>
+                            <strong><c:out value="${comision.nombre}"/></strong>
                         </div>
                         <div class="card-body">
                             <p>
@@ -88,9 +88,9 @@
                                     <tbody>
                                         <c:forEach var="cm" items="${comision.miembros}">
                                             <tr>
-                                                <td>${cm.miembro.nombreApellidos}</td>
-                                                <td>${cm.miembro.dniNif}</td>
-                                                <td>${cm.miembro.email}</td>
+                                                <td><c:out value="${cm.miembro.nombreApellidos}"/></td>
+                                                <td><c:out value="${cm.miembro.dniNif}"/></td>
+                                                <td><c:out value="${cm.miembro.email}"/></td>
                                                 <td>${cm.cargo}</td>
                                                 <td><fmt:formatDate value="${cm.fechaIncorporacion}" pattern="dd/MM/yyyy"/></td>
                                                 <td>

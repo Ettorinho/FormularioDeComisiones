@@ -2,6 +2,8 @@ package com.comisiones.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PastOrPresent;
 import com.comisiones.util.DateFormatUtil;
 
 public class ComisionMiembro implements Serializable {
@@ -17,10 +19,20 @@ public class ComisionMiembro implements Serializable {
     }
 
     private Long id;
+
+    @NotNull(message = "La comisión es obligatoria")
     private Comision comision;
+
+    @NotNull(message = "El miembro es obligatorio")
     private Miembro miembro;
+
+    @NotNull(message = "El cargo es obligatorio")
     private Cargo cargo;
+
+    @NotNull(message = "La fecha de incorporación es obligatoria")
+    @PastOrPresent(message = "La fecha de incorporación no puede ser futura")
     private Date fechaIncorporacion;
+
     private Date fechaBaja;
 
     public ComisionMiembro() {}

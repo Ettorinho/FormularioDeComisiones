@@ -25,7 +25,7 @@
                 <div class="col-md-4 text-end">
                     <span class="text-white me-3 small">
                         <i class="bi bi-person-circle me-1"></i>
-                        ${sessionScope.usuarioLogueado.nombreCompleto}
+                        <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
                     </span>
                     <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
                         <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
@@ -38,7 +38,7 @@
     <div class="container">
         <div class="card">
             <div class="card-header">
-                <h2>Añadir Miembro a ${comision.nombre}</h2>
+                <h2>Añadir Miembro a <c:out value="${comision.nombre}"/></h2>
             </div>
             <div class="card-body">
                 <c:if test="${not empty error}">
