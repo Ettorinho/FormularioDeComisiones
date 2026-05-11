@@ -12,12 +12,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Servlet para consultar el historial de auditoría.
  * GET /auditoria              → lista las últimas 200 acciones
  * GET /auditoria?usuario=xxx  → filtra por usuario
  * GET /auditoria?entidad=xxx&entidadId=yyy → filtra por entidad
+ * GET /auditoria?resultado=FALLIDO → filtra por resultado
  */
 @WebServlet("/auditoria")
 public class AuditoriaController extends HttpServlet {
@@ -37,6 +39,7 @@ public class AuditoriaController extends HttpServlet {
             String usuario   = request.getParameter("usuario");
             String entidad   = request.getParameter("entidad");
             String entidadId = request.getParameter("entidadId");
+            String resultado = request.getParameter("resultado");
 
             List<AuditoriaAccion> acciones;
 
@@ -48,12 +51,22 @@ public class AuditoriaController extends HttpServlet {
                 acciones = auditoriaDAO.findByEntidad(entidad.trim(), entidadId.trim());
                 request.setAttribute("filtroEntidad", entidad.trim());
                 request.setAttribute("filtroEntidadId", entidadId.trim());
+            } else if (resultado != null && !resultado.trim().isEmpty()) {
+                acciones = auditoriaDAO.findByResultado(resultado.trim().toUpperCase(), 200);
+                request.setAttribute("filtroResultado", resultado.trim().toUpperCase());
             } else {
                 acciones = auditoriaDAO.findAll(200);
             }
 
+            // Datos para el panel de seguridad (últimas 24 h de denegados, actividad por IP)
+            List<AuditoriaAccion> intentosDenegados = auditoriaDAO.obtenerIntentosDenegados(24);
+            Map<String, Long> actividadPorIp = auditoriaDAO.obtenerActividadPorIp(7);
+
             request.setAttribute("acciones", acciones);
-            request.getRequestDispatcher("/WEB-INF/views/auditoria/list.jsp")
+            request.setAttribute("intentosDenegados", intentosDenegados);
+            request.setAttribute("actividadPorIp", actividadPorIp);
+
+            request.getRequestDispatcher("/WEB-INF/views/admin/auditoria.jsp")
                    .forward(request, response);
 
         } catch (SQLException e) {

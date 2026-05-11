@@ -3,6 +3,7 @@ package com.comisiones.filter;
 import com.comisiones.model.UsuarioAD;
 import com.comisiones.security.AppRoles;
 import com.comisiones.security.RolService;
+import com.comisiones.service.AuditoriaService;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -68,6 +69,17 @@ public class RolFilter implements Filter {
         // Verificar permisos según la ruta y el método HTTP
         String rolRequerido = determinarRolRequerido(path, method);
         if (!rolService.tienePermiso(usuario, rolRequerido)) {
+            // Registrar el intento de acceso denegado en la auditoría
+            AuditoriaService.getInstance().registrarDenegado(
+                httpReq,
+                usuario.getUsername(),
+                "ACCESO_DENEGADO",
+                "SEGURIDAD",
+                null,
+                "Acceso denegado a " + path + " (rol requerido: " + rolRequerido
+                    + ", rol del usuario: " + rolUsuario + ")"
+            );
+
             httpResp.setStatus(HttpServletResponse.SC_FORBIDDEN);
             httpReq.setAttribute("rolRequerido", rolRequerido);
             httpReq.setAttribute("rolUsuario", rolUsuario);
