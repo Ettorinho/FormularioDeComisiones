@@ -351,7 +351,7 @@
         </c:choose>
     </c:if>
     
-    <a href="${pageContext.request.contextPath}/" class="btn btn-secondary mt-3">🏠 Volver al Inicio</a>
+    <a href="${pageContext.request.contextPath}/comisiones" class="btn btn-secondary mt-3"><i class="bi bi-arrow-left"></i> Volver a Comisiones</a>
 </div>
 
 <script>

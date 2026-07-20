@@ -48,12 +48,6 @@
                         <a href="${pageContext.request.contextPath}/comisiones" class="btn btn-primary btn-lg text-start">
                             <i class="bi bi-people"></i> Ver Comisiones
                         </a>
-                        <a href="${pageContext.request.contextPath}/comisiones/buscarPorDni" class="btn btn-outline-primary btn-lg text-start">
-                            <i class="bi bi-search"></i> Buscar por DNI
-                        </a>
-                        <a href="${pageContext.request.contextPath}/comisiones/buscarComision" class="btn btn-outline-primary btn-lg text-start">
-                            <i class="bi bi-building"></i> Buscar Comisión
-                        </a>
                     </c:if>
 
                     <%-- Opciones para GESTOR y ADMIN --%>

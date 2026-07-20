@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<jsp:useBean id="now" class="java.util.Date" />
 <!DOCTYPE html>
 <html>
 <head>
@@ -37,44 +38,100 @@
 
 <div class="container mt-4">
     <h2>Buscar Comisión o Grupo de Trabajo</h2>
-    <form action="${pageContext.request.contextPath}/comisiones/buscarComision" method="post" class="row g-3 mb-4">
-        <div class="col-auto">
-            <input type="text" name="nombre" class="form-control" placeholder="Nombre de comisión o grupo" required value="<c:out value='${nombreBuscado != null ? nombreBuscado : ""}'/>">
+    <form action="${pageContext.request.contextPath}/comisiones/buscarComision" method="post" class="mb-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-auto">
+                <label for="nombre" class="form-label">Nombre de comisión o grupo</label>
+                <input type="text" name="nombre" id="nombre" class="form-control"
+                       placeholder="Introduce nombre" required
+                       value="<c:out value='${nombreBuscado != null ? nombreBuscado : ""}'/>">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">🔍 Buscar</button>
+            </div>
         </div>
-        <div class="col-auto">
-            <button type="submit" class="btn btn-primary mb-3">Buscar</button>
-        </div>
+
+        <!-- Filtros de estado -->
+        <c:if test="${not empty nombreBuscado && not empty comisiones}">
+            <div class="mt-3">
+                <label class="form-label fw-bold">Filtrar por estado:</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="mostrarActivas" checked />
+                    <label class="form-check-label" for="mostrarActivas">
+                        <span class="badge badge-activa">Activas</span>
+                    </label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="mostrarFinalizadas" checked />
+                    <label class="form-check-label" for="mostrarFinalizadas">
+                        <span class="badge badge-finalizada">Finalizadas</span>
+                    </label>
+                </div>
+            </div>
+        </c:if>
     </form>
+
     <c:if test="${not empty nombreBuscado}">
         <c:choose>
             <c:when test="${empty comisiones}">
                 <div class="alert alert-warning">No se encontraron comisiones o grupos con ese nombre.</div>
             </c:when>
             <c:otherwise>
+                <!-- Contador -->
+                <div class="card mb-3">
+                    <div class="card-footer text-muted">
+                        <small>
+                            <strong>Total: </strong>
+                            <span id="totalComisiones">${comisiones.size()}</span> comisión(es) |
+                            <span id="totalActivas" class="text-success">0</span> activa(s) |
+                            <span id="totalFinalizadas" class="text-secondary">0</span> finalizada(s) |
+                            <span id="totalVisibles">0</span> visible(s)
+                        </small>
+                    </div>
+                </div>
+
                 <c:forEach var="comision" items="${comisiones}">
-                    <div class="card mb-4">
-                        <div class="card-header">
+                    <c:set var="esActiva" value="${empty comision.fechaFin || comision.fechaFin gt now}" />
+
+                    <div class="card mb-4 card-comision" data-estado="${esActiva ? 'activa' : 'finalizada'}">
+                        <div class="card-header d-flex justify-content-between align-items-center">
                             <strong><c:out value="${comision.nombre}"/></strong>
+                            <c:choose>
+                                <c:when test="${esActiva}">
+                                    <span class="badge badge-activa">Activa</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="badge badge-finalizada">Finalizada</span>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                         <div class="card-body">
-                            <p>
-                                <strong>Fecha de Constitución:</strong>
-                                <fmt:formatDate value="${comision.fechaConstitucion}" pattern="dd/MM/yyyy"/>
-                                <br/>
-                                <strong>Fecha de Fin:</strong>
-                                <c:if test="${not empty comision.fechaFin}">
-                                    <fmt:formatDate value="${comision.fechaFin}" pattern="dd/MM/yyyy"/>
-                                </c:if>
-                                <c:if test="${empty comision.fechaFin}">
-                                    -
-                                </c:if>
-                            </p>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <p class="mb-1">
+                                        <strong>Fecha de Constitución:</strong>
+                                        <fmt:formatDate value="${comision.fechaConstitucion}" pattern="dd/MM/yyyy"/>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1">
+                                        <strong>Fecha de Fin:</strong>
+                                        <c:choose>
+                                            <c:when test="${not empty comision.fechaFin}">
+                                                <fmt:formatDate value="${comision.fechaFin}" pattern="dd/MM/yyyy"/>
+                                            </c:when>
+                                            <c:otherwise>-</c:otherwise>
+                                        </c:choose>
+                                    </p>
+                                </div>
+                            </div>
+
                             <h5>Miembros:</h5>
                             <c:if test="${empty comision.miembros}">
                                 <div class="alert alert-info mb-0">No hay miembros registrados.</div>
                             </c:if>
                             <c:if test="${not empty comision.miembros}">
-                                <table class="table table-sm">
+                                <table class="table table-sm table-striped">
                                     <thead>
                                         <tr>
                                             <th>Nombre y Apellidos</th>
@@ -94,12 +151,12 @@
                                                 <td>${cm.cargo}</td>
                                                 <td><fmt:formatDate value="${cm.fechaIncorporacion}" pattern="dd/MM/yyyy"/></td>
                                                 <td>
-                                                    <c:if test ="${not empty cm.fechaBaja}">
-                                                        <fmt:formatDate value ="${cm.fechaBaja}" pattern="dd/MM/yyyy"/>
-                                                    </c:if>
-                                                    <c:if test="{empty cm.fechaBaja}">
-                                                        -
-                                                    </c:if>    
+                                                    <c:choose>
+                                                        <c:when test="${not empty cm.fechaBaja}">
+                                                            <fmt:formatDate value="${cm.fechaBaja}" pattern="dd/MM/yyyy"/>
+                                                        </c:when>
+                                                        <c:otherwise>-</c:otherwise>
+                                                    </c:choose>
                                                 </td>
                                             </tr>
                                         </c:forEach>
@@ -112,7 +169,82 @@
             </c:otherwise>
         </c:choose>
     </c:if>
-    <a href="${pageContext.request.contextPath}/" class="btn btn-secondary mt-3">Volver al Inicio</a>
+    <a href="${pageContext.request.contextPath}/comisiones" class="btn btn-secondary mt-3">
+        <i class="bi bi-arrow-left"></i> Volver a Comisiones
+    </a>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkActivas = document.getElementById('mostrarActivas');
+    const checkFinalizadas = document.getElementById('mostrarFinalizadas');
+    const cards = document.querySelectorAll('.card-comision');
+
+    function actualizarContadores() {
+        let totalActivas = 0;
+        let totalFinalizadas = 0;
+        let totalVisibles = 0;
+
+        cards.forEach(function(card) {
+            const estado = card.getAttribute('data-estado');
+            const visible = !card.classList.contains('oculto');
+
+            if (estado === 'activa') {
+                totalActivas++;
+                if (visible) totalVisibles++;
+            } else {
+                totalFinalizadas++;
+                if (visible) totalVisibles++;
+            }
+        });
+
+        const elemTotalActivas = document.getElementById('totalActivas');
+        const elemTotalFinalizadas = document.getElementById('totalFinalizadas');
+        const elemTotalVisibles = document.getElementById('totalVisibles');
+
+        if (elemTotalActivas) elemTotalActivas.textContent = totalActivas;
+        if (elemTotalFinalizadas) elemTotalFinalizadas.textContent = totalFinalizadas;
+        if (elemTotalVisibles) elemTotalVisibles.textContent = totalVisibles;
+    }
+
+    function filtrarComisiones() {
+        if (!checkActivas || !checkFinalizadas) return;
+
+        const mostrarActivas = checkActivas.checked;
+        const mostrarFinalizadas = checkFinalizadas.checked;
+
+        cards.forEach(function(card) {
+            const estado = card.getAttribute('data-estado');
+            let mostrar = false;
+
+            if (estado === 'activa' && mostrarActivas) {
+                mostrar = true;
+            } else if (estado === 'finalizada' && mostrarFinalizadas) {
+                mostrar = true;
+            }
+
+            if (mostrar) {
+                card.classList.remove('oculto');
+            } else {
+                card.classList.add('oculto');
+            }
+        });
+
+        actualizarContadores();
+    }
+
+    if (checkActivas) {
+        checkActivas.addEventListener('change', filtrarComisiones);
+    }
+
+    if (checkFinalizadas) {
+        checkFinalizadas.addEventListener('change', filtrarComisiones);
+    }
+
+    if (cards.length > 0) {
+        actualizarContadores();
+    }
+});
+</script>
 </body>
 </html>
