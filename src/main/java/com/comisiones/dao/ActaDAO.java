@@ -20,18 +20,19 @@ public class ActaDAO {
      */
     private Long saveActa(Connection conn, Acta acta) throws SQLException {
         String sql = String.join(" ",
-                "INSERT INTO actas (comision_id, fecha_reunion, observaciones, fecha_creacion,",
+                "INSERT INTO actas (comision_id, titulo, fecha_reunion, observaciones, fecha_creacion,",
                 "pdf_nombre, pdf_contenido, pdf_tipo_mime)",
-                "VALUES (?, ?, ?, ?, ?, ?, ?)");
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setLong(1, acta.getComision().getId());
-            stmt.setDate(2, java.sql.Date.valueOf(acta.getFechaReunion()));
-            stmt.setString(3, acta.getObservaciones());
-            stmt.setTimestamp(4, java.sql.Timestamp.valueOf(acta.getFechaCreacion()));
-            stmt.setString(5, acta.getPdfNombre());
-            stmt.setBytes(6, acta.getPdfContenido());
-            stmt.setString(7, acta.getPdfTipoMime());
+            stmt.setString(2, acta.getTitulo());
+            stmt.setDate(3, java.sql.Date.valueOf(acta.getFechaReunion()));
+            stmt.setString(4, acta.getObservaciones());
+            stmt.setTimestamp(5, java.sql.Timestamp.valueOf(acta.getFechaCreacion()));
+            stmt.setString(6, acta.getPdfNombre());
+            stmt.setBytes(7, acta.getPdfContenido());
+            stmt.setString(8, acta.getPdfTipoMime());
             
             stmt.executeUpdate();
             
@@ -165,7 +166,7 @@ public class ActaDAO {
      */
     public Acta findById(Long id) throws SQLException {
         String sql = String.join(" ",
-                "SELECT a.id, a.fecha_reunion, a.observaciones, a.fecha_creacion,",
+                "SELECT a.id, a.titulo, a.fecha_reunion, a.observaciones, a.fecha_creacion,",
                 "a.pdf_nombre, a.pdf_tipo_mime,",
                 "c.id as comision_id, c.nombre as comision_nombre",
                 "FROM actas a",
@@ -181,6 +182,7 @@ public class ActaDAO {
                 if (rs.next()) {
                     Acta acta = new Acta();
                     acta.setId(rs.getLong("id"));
+                    acta.setTitulo(rs.getString("titulo"));
                     acta.setFechaReunion(rs.getDate("fecha_reunion").toLocalDate());
                     acta.setObservaciones(rs.getString("observaciones"));
                     acta.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
@@ -212,7 +214,7 @@ public class ActaDAO {
         List<Acta> actas = new ArrayList<>();
 
         String sql = String.join(" ",
-                "SELECT a.id, a.comision_id, a.fecha_reunion, a.observaciones,",
+                "SELECT a.id, a.comision_id, a.titulo, a.fecha_reunion, a.observaciones,",
                 "a.fecha_creacion, a.pdf_nombre, a.pdf_tipo_mime,",
                 "c.nombre as comision_nombre",
                 "FROM actas a",
@@ -229,6 +231,7 @@ public class ActaDAO {
                 while (rs.next()) {
                     Acta acta = new Acta();
                     acta.setId(rs.getLong("id"));
+                    acta.setTitulo(rs.getString("titulo"));
                     acta.setFechaReunion(rs.getDate("fecha_reunion").toLocalDate());
                     acta.setObservaciones(rs.getString("observaciones"));
                     acta.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());

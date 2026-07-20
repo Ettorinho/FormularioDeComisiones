@@ -58,9 +58,14 @@
         <c:if test="${not empty acta}">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h3 class="mb-0">
-                        <i class="bi bi-file-earmark-text"></i> Acta de Reunión #${acta.id}
-                    </h3>
+                    <div>
+                        <h3 class="mb-0">
+                            <i class="bi bi-file-earmark-text"></i> <c:out value="${acta.titulo}"/>
+                        </h3>
+                        <p class="mb-0 text-white-50">
+                            <small><i class="bi bi-hash"></i> Acta #${acta.id}</small>
+                        </p>
+                    </div>
                     <div class="no-print">
                         <button onclick="window.print()" class="btn btn-light btn-sm me-2">
                             <i class="bi bi-printer"></i> Imprimir

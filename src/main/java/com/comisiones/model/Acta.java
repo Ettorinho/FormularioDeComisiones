@@ -2,6 +2,7 @@ package com.comisiones.model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PastOrPresent;
 import javax.validation.constraints.Size;
@@ -9,6 +10,10 @@ import com.comisiones.util.DateFormatUtil;
 
 public class Acta {
     private Long id;
+
+    @NotBlank(message = "El título del acta es obligatorio")
+    @Size(min = 5, max = 200, message = "El título debe tener entre 5 y 200 caracteres")
+    private String titulo;
 
     @NotNull(message = "La comisión es obligatoria")
     private Comision comision;
@@ -37,6 +42,14 @@ public class Acta {
     
     public void setId(Long id) {
         this.id = id;
+    }
+    
+    public String getTitulo() {
+        return titulo;
+    }
+    
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
     }
     
     public Comision getComision() {

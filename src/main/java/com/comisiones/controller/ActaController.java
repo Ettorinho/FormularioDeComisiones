@@ -166,6 +166,7 @@ public class ActaController extends HttpServlet {
         String comisionIdStr = request.getParameter("comisionId");
         String fechaReunionStr = request.getParameter("fechaReunion");
         String observaciones = request.getParameter("observaciones");
+        String titulo = request.getParameter("titulo");
         
         // Procesar archivo PDF
         Part pdfPart = null;
@@ -214,6 +215,11 @@ public class ActaController extends HttpServlet {
             return;
         }
         
+        if (titulo == null || titulo.trim().isEmpty()) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "El título del acta es obligatorio");
+            return;
+        }
+        
         Long comisionId = ServletHelper.parseIdSafely(comisionIdStr);
         if (comisionId == null) {
             ServletHelper.sendBadRequest(response, "ID de comisión no válido: " + comisionIdStr);
@@ -241,6 +247,7 @@ public class ActaController extends HttpServlet {
         // Crear acta
         Acta acta = new Acta();
         acta.setComision(comision);
+        acta.setTitulo(titulo.trim());
         acta.setFechaReunion(fechaReunion);
         acta.setObservaciones(observaciones);
         acta.setFechaCreacion(LocalDateTime.now());

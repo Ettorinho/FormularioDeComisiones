@@ -134,27 +134,16 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>Título</th>
                                 <th>Fecha de Reunión</th>
-                                <th>Observaciones</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             <c:forEach var="acta" items="${actas}">
                                 <tr>
-                                    <td>#${acta.id}</td>
+                                    <td><strong><c:out value="${acta.titulo}"/></strong></td>
                                     <td>${acta.fechaReunionFormateada}</td>
-                                    <td>
-                                        <c:choose>
-                                            <c:when test="${not empty acta.observaciones}">
-                                                <c:out value="${acta.observaciones}"/>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span class="text-muted">Sin observaciones</span>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </td>
                                     <td>
                                         <a href="${pageContext.request.contextPath}/actas/view?id=${acta.id}"
                                            class="btn btn-primary btn-sm">
