@@ -35,41 +35,6 @@
             </div>
         </div>
     </header>
-
-    <%-- Navbar (comentado temporalmente)
-    <nav class="navbar navbar-expand-lg navbar-custom no-print">
-        <div class="container">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/">
-                            <i class="bi bi-house-door"></i> Inicio
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/comisiones">
-                            <i class="bi bi-people"></i> Comisiones
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="${pageContext.request.contextPath}/actas/new">
-                            <i class="bi bi-file-earmark-plus"></i> Nueva Acta
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/comisiones/buscarPorDni">
-                            <i class="bi bi-search"></i> Buscar Miembros
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    --%>
-
     <!-- Contenido Principal -->
     <div class="container mt-4 mb-5">
         
