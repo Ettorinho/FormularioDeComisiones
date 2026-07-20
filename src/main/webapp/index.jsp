@@ -50,13 +50,6 @@
                         </a>
                     </c:if>
 
-                    <%-- Opciones para GESTOR y ADMIN --%>
-                    <c:if test="${sessionScope.rolUsuario == 'GESTOR' || sessionScope.rolUsuario == 'ADMIN'}">
-                        <a href="${pageContext.request.contextPath}/actas/new" class="btn btn-outline-secondary btn-lg text-start">
-                            <i class="bi bi-file-earmark-plus"></i> Nueva Acta
-                        </a>
-                    </c:if>
-
                     <%-- Fallback: sin rol asignado --%>
                     <c:if test="${empty sessionScope.rolUsuario}">
                         <div class="alert alert-warning">
