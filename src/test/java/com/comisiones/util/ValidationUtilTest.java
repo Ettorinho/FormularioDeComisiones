@@ -156,6 +156,7 @@ public class ValidationUtilTest {
         Acta a = new Acta();
         Comision c = new Comision("Comisión X", new Date(), null);
         a.setComision(c);
+        a.setTitulo("Reunión ordinaria enero 2026");
         a.setFechaReunion(LocalDate.now());
         a.setObservaciones("Sin incidencias.");
         assertTrue(ValidationUtil.isValid(a));

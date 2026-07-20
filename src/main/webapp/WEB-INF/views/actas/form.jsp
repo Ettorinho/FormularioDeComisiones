@@ -80,6 +80,23 @@
                         </select>
                     </div>
 
+                    <!-- Título del Acta -->
+                    <div class="mb-3">
+                        <label for="titulo" class="form-label">
+                            <i class="bi bi-card-heading"></i> Título del Acta <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="titulo" 
+                               name="titulo" 
+                               placeholder="Ej: Reunión ordinaria de enero 2026"
+                               maxlength="200"
+                               required>
+                        <div class="form-text">
+                            Título descriptivo para identificar el acta (5-200 caracteres)
+                        </div>
+                    </div>
+
                     <!-- Fecha de Reunión -->
                     <div class="mb-3">
                         <label for="fechaReunion" class="form-label">
@@ -280,11 +297,19 @@ document.getElementById('comisionId').addEventListener('change', function() {
 document.getElementById('formActa').addEventListener('submit', function(e) {
     const comisionId = document.getElementById('comisionId').value;
     const fechaReunion = document.getElementById('fechaReunion').value;
+    const titulo = document.getElementById('titulo').value.trim();
     
     // Validar comisión
     if (!comisionId) {
         e.preventDefault();
         alert('Por favor, seleccione una comisión');
+        return false;
+    }
+    
+    // Validar título
+    if (!titulo || titulo.length < 5) {
+        e.preventDefault();
+        alert('Por favor, introduzca un título para el acta (mínimo 5 caracteres)');
         return false;
     }
     
