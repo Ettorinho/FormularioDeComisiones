@@ -67,7 +67,8 @@ public class ComisionController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String pathInfo = request.getPathInfo();
         if (pathInfo == null || pathInfo.equals("/")) {
-            pathInfo = "/list";
+            showIndexView(request, response);
+            return;
         }
         try {
             if (pathInfo.equals("/buscarPorDni")) {
@@ -88,14 +89,22 @@ public class ComisionController extends HttpServlet {
                         showNewForm(request, response);
                         break;
                     case "/list":
-                    default:
                         listComisiones(request, response);
+                        break;
+                    default:
+                        showIndexView(request, response);
                         break;
                 }
             }
         } catch (SQLException e) {
             throw new ServletException("Error en la operación GET", e);
         }
+    }
+
+    private void showIndexView(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/comisiones/index.jsp");
+        dispatcher.forward(request, response);
     }
 
     @Override
