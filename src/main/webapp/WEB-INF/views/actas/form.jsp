@@ -65,7 +65,7 @@
                         <select class="form-select" id="comisionId" name="comisionId" required>
                             <option value="">Seleccione una comisión...</option>
                             <c:forEach var="comision" items="${comisiones}">
-                                <option value="${comision.id}">
+                                <option value="${comision.id}" ${comisionPreseleccionada != null && comisionPreseleccionada == comision.id ? 'selected' : ''}>
                                     <c:out value="${comision.nombre}"/>
                                     <c:if test="${not empty comision.area}">
                                         - <c:choose>
@@ -409,6 +409,12 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // Establecer fecha máxima (no se pueden seleccionar fechas futuras)
     fechaInput.setAttribute('max', today);
+
+    // Si hay una comisión preseleccionada, cargar sus miembros automáticamente
+    const comisionSelect = document.getElementById('comisionId');
+    if (comisionSelect.value) {
+        comisionSelect.dispatchEvent(new Event('change'));
+    }
 });
     </script>
 </body>

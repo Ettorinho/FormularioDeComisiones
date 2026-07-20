@@ -109,11 +109,22 @@ public class ActaController extends HttpServlet {
     
     private void showForm(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
-        
-        // Usar el método que tengas disponible en ComisionDAO
+
+        AppLogger.debug("showForm iniciado");
+
         List<Comision> comisiones = comisionDAO.findAll();
         request.setAttribute("comisiones", comisiones);
-        
+
+        // Si viene comisionId como parámetro (desde view.jsp de comisión), preseleccionar
+        String comisionIdStr = request.getParameter("comisionId");
+        if (comisionIdStr != null && !comisionIdStr.isEmpty()) {
+            Long comisionId = ServletHelper.parseIdSafely(comisionIdStr);
+            if (comisionId != null) {
+                AppLogger.debug("Comisión preseleccionada: " + comisionId);
+                request.setAttribute("comisionPreseleccionada", comisionId);
+            }
+        }
+
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/actas/form.jsp");
         dispatcher.forward(request, response);
     }

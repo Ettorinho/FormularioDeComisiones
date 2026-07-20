@@ -70,6 +70,9 @@
                 <h4>Miembros</h4>
                 <c:if test="${(empty comision.fechaFin || comision.fechaFin > now) && (rolUsuario == 'ADMIN' || rolUsuario == 'GESTOR')}">
                     <div>
+                        <a href="${pageContext.request.contextPath}/actas/new?comisionId=${comision.id}" class="btn btn-success me-2">
+                            <i class="bi bi-file-earmark-plus"></i> Crear Acta
+                        </a>
                         <a href="${pageContext.request.contextPath}/comisiones/addMember/${comision.id}" class="btn btn-primary me-2">Añadir Miembro</a>
                         <a href="${pageContext.request.contextPath}/comisiones/bajaMiembros/${comision.id}" class="btn btn-warning">Dar de baja a Miembros</a>
                     </div>
@@ -120,6 +123,50 @@
                     </tbody>
                 </table>
             </c:if>
+
+            <hr/>
+            <div class="mt-4">
+                <h4>Actas de Reuniones</h4>
+                <c:if test="${empty actas}">
+                    <div class="alert alert-info">No hay actas registradas para esta comisión.</div>
+                </c:if>
+                <c:if test="${not empty actas}">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Fecha de Reunión</th>
+                                <th>Observaciones</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="acta" items="${actas}">
+                                <tr>
+                                    <td>#${acta.id}</td>
+                                    <td>${acta.fechaReunionFormateada}</td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${not empty acta.observaciones}">
+                                                <c:out value="${acta.observaciones}"/>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="text-muted">Sin observaciones</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td>
+                                        <a href="${pageContext.request.contextPath}/actas/view?id=${acta.id}"
+                                           class="btn btn-primary btn-sm">
+                                            <i class="bi bi-eye"></i> Ver
+                                        </a>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </c:if>
+            </div>
         </div>
     </div>
 </div>

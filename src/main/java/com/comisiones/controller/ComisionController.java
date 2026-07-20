@@ -1,9 +1,11 @@
 package com.comisiones.controller;
 
+import com.comisiones.dao.ActaDAO;
 import com.comisiones.dao.ComisionDAO;
 import com.comisiones.dao.ComisionMiembroDAO;
 import com.comisiones.dao.HistorialCargoDAO;
 import com.comisiones.dao.MiembroDAO;
+import com.comisiones.model.Acta;
 import com.comisiones.dto.ComisionDTO;
 import com.comisiones.dto.MiembroDTO;
 import com.comisiones.model.Comision;
@@ -39,6 +41,7 @@ public class ComisionController extends HttpServlet {
     private ComisionDAO comisionDAO;
     private ComisionMiembroDAO comisionMiembroDAO;
     private MiembroDAO miembroDAO;
+    private ActaDAO actaDAO;
     private ObjectMapper objectMapper;
 
     @Override
@@ -46,6 +49,7 @@ public class ComisionController extends HttpServlet {
         comisionDAO = new ComisionDAO();
         comisionMiembroDAO = new ComisionMiembroDAO();
         miembroDAO = new MiembroDAO();
+        actaDAO = new ActaDAO();
         objectMapper = new ObjectMapper();
         AppLogger.info("ComisionController INICIALIZADO");
     }
@@ -141,8 +145,10 @@ public class ComisionController extends HttpServlet {
 
         Comision comision = comisionDAO.findById(id);
         List<ComisionMiembro> miembros = comisionMiembroDAO.findByComisionId(id);
+        List<Acta> actas = actaDAO.findByComisionId(id);
         request.setAttribute("comision", comision);
         request.setAttribute("miembros", miembros);
+        request.setAttribute("actas", actas);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/comisiones/view.jsp");
         dispatcher.forward(request, response);
     }

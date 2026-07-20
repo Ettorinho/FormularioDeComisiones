@@ -204,6 +204,51 @@ public class ActaDAO {
     }
     
     /**
+     * Obtiene todas las actas de una comisión específica
+     * @param comisionId ID de la comisión
+     * @return Lista de actas ordenadas por fecha de reunión descendente
+     */
+    public List<Acta> findByComisionId(Long comisionId) throws SQLException {
+        List<Acta> actas = new ArrayList<>();
+
+        String sql = String.join(" ",
+                "SELECT a.id, a.comision_id, a.fecha_reunion, a.observaciones,",
+                "a.fecha_creacion, a.pdf_nombre, a.pdf_tipo_mime,",
+                "c.nombre as comision_nombre",
+                "FROM actas a",
+                "INNER JOIN comisiones c ON a.comision_id = c.id",
+                "WHERE a.comision_id = ?",
+                "ORDER BY a.fecha_reunion DESC");
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, comisionId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Acta acta = new Acta();
+                    acta.setId(rs.getLong("id"));
+                    acta.setFechaReunion(rs.getDate("fecha_reunion").toLocalDate());
+                    acta.setObservaciones(rs.getString("observaciones"));
+                    acta.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
+                    acta.setPdfNombre(rs.getString("pdf_nombre"));
+                    acta.setPdfTipoMime(rs.getString("pdf_tipo_mime"));
+
+                    Comision comision = new Comision();
+                    comision.setId(rs.getLong("comision_id"));
+                    comision.setNombre(rs.getString("comision_nombre"));
+                    acta.setComision(comision);
+
+                    actas.add(acta);
+                }
+            }
+        }
+
+        return actas;
+    }
+
+    /**
      * Obtiene solo el contenido del PDF (para descarga)
      */
     public byte[] getPdfContenido(Long actaId) throws SQLException {
