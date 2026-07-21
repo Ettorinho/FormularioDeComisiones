@@ -7,7 +7,11 @@ import com.comisiones.util.AppLogger;
 import com.comisiones.util.DBUtil;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
 
 public class ComisionMiembroDAO {
 
@@ -83,6 +87,50 @@ public class ComisionMiembroDAO {
             }
         }
         return lista;
+    }
+
+    public Map<Long, List<ComisionMiembro>> findByComisionIds(Collection<Long> comisionIds) throws SQLException {
+        Map<Long, List<ComisionMiembro>> miembrosPorComision = new LinkedHashMap<>();
+        if (comisionIds == null || comisionIds.isEmpty()) {
+            return miembrosPorComision;
+        }
+
+        StringJoiner placeholders = new StringJoiner(", ");
+        for (int i = 0; i < comisionIds.size(); i++) {
+            placeholders.add("?");
+        }
+
+        String sql = String.join(" ",
+                "SELECT cm.cargo, cm.fecha_incorporacion, cm.fecha_baja,",
+                "cm.comision_id, cm.miembro_id,",
+                "m.dni_nif, m.nombre_apellidos, m.correo_electronico,",
+                "c.nombre as comision_nombre, c.area, c.tipo, c.fecha_constitucion, c.fecha_fin",
+                "FROM comision_miembros cm",
+                "INNER JOIN miembros m ON cm.miembro_id = m.id",
+                "INNER JOIN comisiones c ON cm.comision_id = c.id",
+                "WHERE cm.comision_id IN (" + placeholders + ")",
+                "ORDER BY cm.comision_id, cm.cargo, m.nombre_apellidos");
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            int index = 1;
+            for (Long comisionId : comisionIds) {
+                stmt.setLong(index++, comisionId);
+                miembrosPorComision.putIfAbsent(comisionId, new ArrayList<>());
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    ComisionMiembro comisionMiembro = extractComisionMiembroFromResultSet(rs);
+                    miembrosPorComision
+                            .computeIfAbsent(comisionMiembro.getComision().getId(), ignored -> new ArrayList<>())
+                            .add(comisionMiembro);
+                }
+            }
+        }
+
+        return miembrosPorComision;
     }
     
     public void darDeBaja(Long comisionId, Long miembroId, java.sql.Date fechaBaja) throws SQLException {

@@ -9,39 +9,9 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <jsp:useBean id="now" class="java.util.Date" />
-<! DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Buscar Comisiones por DNI</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
-</head>
-<body>
-    <!-- Header -->
-    <header class="header-app">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="h3 mb-0">
-                        <i class="bi bi-file-earmark-text"></i>
-                        Sistema de Gestión de Comisiones
-                    </h1>
-                    <p class="mb-0 mt-1 header-subtitle">Gobierno de Aragón</p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <span class="text-white me-3 small">
-                        <i class="bi bi-person-circle me-1"></i>
-                        <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
-                    </span>
-                    <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
-                        <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
+<c:set var="pageTitle" value="Buscar Comisiones por DNI" />
+<c:set var="headerSubtitle" value="Gobierno de Aragón" />
+<%@ include file="/WEB-INF/views/common/header.jspf" %>
 
 <div class="container mt-4">
     <h2>Buscar Miembro</h2>
@@ -134,64 +104,13 @@
                                                 </a>
                                             </td>
                                             <td>
-                                                <c:choose>
-                                                    <c:when test="${cm.comision.area == 'ATENCION_ESPECIALIZADA'}">
-                                                        <span class="badge bg-info">Atención Especializada</span>
-                                                    </c:when>
-                                                    <c:when test="${cm.comision.area == 'ATENCION_PRIMARIA'}">
-                                                        <span class="badge bg-success">Atención Primaria</span>
-                                                    </c:when>
-                                                    <c:when test="${cm.comision.area == 'MIXTA'}">
-                                                        <span class="badge bg-warning text-dark">Mixta</span>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        ${cm.comision.area}
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                <span class="badge bg-info"><c:out value="${cm.comision.area.descripcion}"/></span>
                                             </td>
                                             <td>
-                                                <c:choose>
-                                                    <c:when test="${cm.comision.tipo == 'COMISION'}">
-                                                        Comisión
-                                                    </c:when>
-                                                    <c:when test="${cm.comision.tipo == 'GRUPO_TRABAJO'}">
-                                                        Grupo de Trabajo
-                                                    </c:when>
-                                                    <c:when test="${cm.comision.tipo == 'GRUPO_MEJORA'}">
-                                                        Grupo de Mejora
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        ${cm.comision.tipo}
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                <c:out value="${cm.comision.tipo.descripcion}"/>
                                             </td>
                                             <td>
-                                                <c:choose>
-                                                    <c:when test="${cm.cargo == 'PRESIDENTE'}">
-                                                        <span class="badge bg-danger">Presidente</span>
-                                                    </c:when>
-                                                    <c:when test="${cm.cargo == 'SECRETARIO'}">
-                                                        <span class="badge bg-warning text-dark">Secretario</span>
-                                                    </c:when>
-                                                    <c:when test="${cm. cargo == 'RESPONSABLE'}">
-                                                        <span class="badge bg-primary">Responsable</span>
-                                                    </c:when>
-                                                    <c:when test="${cm.cargo == 'REFERENTE'}">
-                                                        <span class="badge bg-secondary">Referente</span>
-                                                    </c:when>
-                                                    <c:when test="${cm.cargo == 'INVESTIGADOR_PRINCIPAL'}">
-                                                        <span class="badge bg-dark">Investigador Principal</span>
-                                                    </c:when>
-                                                    <c:when test="${cm.cargo == 'INVESTIGADOR_COLABORADOR'}">
-                                                        <span class="badge bg-dark">Investigador Colaborador</span>
-                                                    </c:when>
-                                                    <c:when test="${cm.cargo == 'PARTICIPANTE'}">
-                                                        <span class="badge bg-light text-dark">Participante</span>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        ${cm.cargo}
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                <span class="badge bg-primary"><c:out value="${cm.cargo.descripcion}"/></span>
                                             </td>
                                             <td>
                                                 <fmt:formatDate value="${cm.fechaIncorporacion}" pattern="dd/MM/yyyy" />
@@ -354,135 +273,5 @@
     <a href="${pageContext.request.contextPath}/comisiones" class="btn btn-secondary mt-3"><i class="bi bi-arrow-left"></i> Volver a Comisiones</a>
 </div>
 
-<script>
-function toggleHistorial(id) {
-    const fila = document.getElementById(id);
-    if (fila) {
-        fila.classList.toggle('oculto');
-        // Cambiar el icono +/-
-        const link = document.querySelector('[data-target="' + id + '"]');
-        if (link) {
-            const icono = link.querySelector('small');
-            if (icono) {
-                icono.textContent = fila.classList.contains('oculto') ? '[+]' : '[-]';
-            }
-        }
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const checkActivas = document.getElementById('mostrarActivas');
-    const checkFinalizadas = document.getElementById('mostrarFinalizadas');
-    const filas = document.querySelectorAll('.fila-comision');
-    
-    console.log('Checkboxes encontrados:', {
-        activas: checkActivas !== null,
-        finalizadas:  checkFinalizadas !== null,
-        totalFilas: filas.length
-    });
-    
-    // Función para actualizar contadores
-    function actualizarContadores() {
-        let totalActivas = 0;
-        let totalFinalizadas = 0;
-        let totalVisibles = 0;
-        
-        filas.forEach(fila => {
-            const estado = fila.getAttribute('data-estado');
-            const visible = ! fila.classList.contains('oculto');
-            
-            if (estado === 'activa') {
-                totalActivas++;
-                if (visible) totalVisibles++;
-            } else {
-                totalFinalizadas++;
-                if (visible) totalVisibles++;
-            }
-        });
-        
-        const elemTotalActivas = document.getElementById('totalActivas');
-        const elemTotalFinalizadas = document.getElementById('totalFinalizadas');
-        const elemTotalVisibles = document.getElementById('totalVisibles');
-        
-        if (elemTotalActivas) elemTotalActivas.textContent = totalActivas;
-        if (elemTotalFinalizadas) elemTotalFinalizadas.textContent = totalFinalizadas;
-        if (elemTotalVisibles) elemTotalVisibles.textContent = totalVisibles;
-        
-        console.log('Contadores actualizados:', {
-            activas: totalActivas,
-            finalizadas: totalFinalizadas,
-            visibles: totalVisibles
-        });
-    }
-    
-    // Función para filtrar filas
-    function filtrarComisiones() {
-        if (!checkActivas || !checkFinalizadas) {
-            console.log('Checkboxes no encontrados, saliendo...');
-            return;
-        }
-        
-        const mostrarActivas = checkActivas. checked;
-        const mostrarFinalizadas = checkFinalizadas. checked;
-        
-        console.log('Filtrando:', {
-            mostrarActivas:  mostrarActivas,
-            mostrarFinalizadas: mostrarFinalizadas
-        });
-        
-        let ocultadas = 0;
-        let mostradas = 0;
-        
-        filas.forEach(fila => {
-            const estado = fila.getAttribute('data-estado');
-            let mostrar = false;
-            
-            if (estado === 'activa' && mostrarActivas) {
-                mostrar = true;
-            } else if (estado === 'finalizada' && mostrarFinalizadas) {
-                mostrar = true;
-            }
-            
-            if (mostrar) {
-                fila.classList.remove('oculto');
-                mostradas++;
-            } else {
-                fila.classList.add('oculto');
-                ocultadas++;
-            }
-        });
-        
-        console.log('Resultado filtrado:', {
-            mostradas: mostradas,
-            ocultadas: ocultadas
-        });
-        
-        actualizarContadores();
-    }
-    
-    // Event listeners
-    if (checkActivas) {
-        checkActivas.addEventListener('change', function() {
-            console.log('Checkbox Activas cambiado a:', this.checked);
-            filtrarComisiones();
-        });
-    }
-    
-    if (checkFinalizadas) {
-        checkFinalizadas.addEventListener('change', function() {
-            console.log('Checkbox Finalizadas cambiado a:', this. checked);
-            filtrarComisiones();
-        });
-    }
-    
-    // Inicializar contadores al cargar la página
-    if (filas.length > 0) {
-        console.log('Inicializando contadores...');
-        actualizarContadores();
-    }
-});
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<script src="${pageContext.request.contextPath}/resources/js/comisiones.js"></script>
+<%@ include file="/WEB-INF/views/common/footer.jspf" %>

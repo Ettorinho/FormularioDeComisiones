@@ -4,7 +4,9 @@ import com.comisiones.model.HistorialCargo;
 import com.comisiones.util.DBUtil;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DAO para gestionar el historial de cambios de cargo de miembros en comisiones.
@@ -153,6 +155,33 @@ public class HistorialCargoDAO {
         }
         
         return historial;
+    }
+
+    public Map<Long, List<HistorialCargo>> getHistorialAgrupadoPorMiembro(Long miembroId) throws SQLException {
+        Map<Long, List<HistorialCargo>> historialPorComision = new LinkedHashMap<>();
+        String sql = String.join(" ",
+                "SELECT id, comision_id, miembro_id, cargo_anterior, cargo_nuevo,",
+                "fecha_cambio, motivo, usuario_modificacion, created_at, created_by",
+                "FROM comision_miembro_historial_cargos",
+                "WHERE miembro_id = ?",
+                "ORDER BY comision_id, fecha_cambio DESC");
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, miembroId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    HistorialCargo historialCargo = extractHistorialCargoFromResultSet(rs);
+                    historialPorComision
+                            .computeIfAbsent(historialCargo.getComisionId(), ignored -> new ArrayList<>())
+                            .add(historialCargo);
+                }
+            }
+        }
+
+        return historialPorComision;
     }
     
     /**

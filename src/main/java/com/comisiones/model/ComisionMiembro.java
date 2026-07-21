@@ -9,13 +9,23 @@ import com.comisiones.util.DateFormatUtil;
 public class ComisionMiembro implements Serializable {
 
     public enum Cargo {
-        REFERENTE, 
-        RESPONSABLE, 
-        PRESIDENTE, 
-        PARTICIPANTE,              // ⭐ CAMBIADO: antes era MIEMBRO
-        SECRETARIO,
-        INVESTIGADOR_PRINCIPAL,    // ⭐ NUEVO
-        INVESTIGADOR_COLABORADOR   // ⭐ NUEVO
+        REFERENTE("Referente"),
+        RESPONSABLE("Responsable"),
+        PRESIDENTE("Presidente"),
+        PARTICIPANTE("Participante"),
+        SECRETARIO("Secretario"),
+        INVESTIGADOR_PRINCIPAL("Investigador Principal"),
+        INVESTIGADOR_COLABORADOR("Investigador Colaborador");
+
+        private final String descripcion;
+
+        Cargo(String descripcion) {
+            this.descripcion = descripcion;
+        }
+
+        public String getDescripcion() {
+            return descripcion;
+        }
     }
 
     private Long id;

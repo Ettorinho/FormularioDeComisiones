@@ -1,39 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Cambiar Cargo - <c:out value="${comisionMiembro.miembro.nombreApellidos}"/></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
-</head>
-<body>
-    <!-- Header -->
-    <header class="header-app">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="h3 mb-0">
-                        <i class="bi bi-file-earmark-text"></i>
-                        Sistema de Gestión de Comisiones
-                    </h1>
-                    <p class="mb-0 mt-1 header-subtitle">Gobierno de Aragón</p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <span class="text-white me-3 small">
-                        <i class="bi bi-person-circle me-1"></i>
-                        <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
-                    </span>
-                    <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
-                        <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
+<c:set var="pageTitle" value="Cambiar Cargo" />
+<c:set var="headerSubtitle" value="Gobierno de Aragón" />
+<%@ include file="/WEB-INF/views/common/header.jspf" %>
 
 <div class="container mt-4">
     <!-- Breadcrumb -->
@@ -75,7 +45,7 @@
                 <div class="col-md-6">
                     <p><strong>Comisión:</strong> <c:out value="${comisionMiembro.comision.nombre}"/></p>
                     <p><strong>Cargo Actual:</strong> 
-                        <span class="badge cargo-${comisionMiembro.cargo} badge-cargo">${comisionMiembro.cargo}</span>
+                        <span class="badge cargo-${comisionMiembro.cargo} badge-cargo"><c:out value="${comisionMiembro.cargo.descripcion}"/></span>
                     </p>
                     <p><strong>Fecha de Incorporación:</strong> 
                         <fmt:formatDate value="${comisionMiembro.fechaIncorporacion}" pattern="dd/MM/yyyy" />
@@ -108,15 +78,13 @@
                             <label for="nuevoCargo" class="form-label">Nuevo Cargo <span class="text-danger">*</span></label>
                             <select class="form-select" id="nuevoCargo" name="nuevoCargo" required>
                                 <option value="">-- Seleccione un cargo --</option>
-                                <option value="REFERENTE" ${comisionMiembro.cargo == 'REFERENTE' ? 'disabled' : ''}>REFERENTE</option>
-                                <option value="RESPONSABLE" ${comisionMiembro.cargo == 'RESPONSABLE' ? 'disabled' : ''}>RESPONSABLE</option>
-                                <option value="PRESIDENTE" ${comisionMiembro.cargo == 'PRESIDENTE' ? 'disabled' : ''}>PRESIDENTE</option>
-                                <option value="SECRETARIO" ${comisionMiembro.cargo == 'SECRETARIO' ? 'disabled' : ''}>SECRETARIO</option>
-                                <option value="PARTICIPANTE" ${comisionMiembro.cargo == 'PARTICIPANTE' ? 'disabled' : ''}>PARTICIPANTE</option>
-                                <option value="INVESTIGADOR_PRINCIPAL" ${comisionMiembro.cargo == 'INVESTIGADOR_PRINCIPAL' ? 'disabled' : ''}>INVESTIGADOR PRINCIPAL</option>
-                                <option value="INVESTIGADOR_COLABORADOR" ${comisionMiembro.cargo == 'INVESTIGADOR_COLABORADOR' ? 'disabled' : ''}>INVESTIGADOR COLABORADOR</option>
+                                <c:forEach var="cargo" items="${cargos}">
+                                    <option value="${cargo}" ${comisionMiembro.cargo == cargo ? 'disabled' : ''}>
+                                        <c:out value="${cargo.descripcion}"/>
+                                    </option>
+                                </c:forEach>
                             </select>
-                            <div class="form-text">El cargo actual (${comisionMiembro.cargo}) está deshabilitado.</div>
+                            <div class="form-text">El cargo actual (<c:out value="${comisionMiembro.cargo.descripcion}"/>) está deshabilitado.</div>
                         </div>
                         
                         <div class="col-md-6">
@@ -238,6 +206,4 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<%@ include file="/WEB-INF/views/common/footer.jspf" %>
