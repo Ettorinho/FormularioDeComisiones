@@ -145,19 +145,16 @@ public class CambiarCargoServlet extends HttpServlet {
                 return;
             }
             
-            // Cambiar cargo (el trigger registrará automáticamente en el historial)
+            // Cambiar cargo y registrar motivo en una única transacción atómica
             HttpSession session = request.getSession(false);
             UsuarioAD usuarioLogueado = (session != null)
                 ? (UsuarioAD) session.getAttribute("usuarioLogueado")
                 : null;
             String usernameAD = (usuarioLogueado != null) ? usuarioLogueado.getUsername() : "SYSTEM";
-            boolean success = comisionMiembroDAO.cambiarCargo(comisionId, miembroId, nuevoCargo, usernameAD);
+            boolean success = comisionMiembroDAO.cambiarCargoConMotivo(
+                    comisionId, miembroId, nuevoCargo, motivo, usernameAD);
             
             if (success) {
-                // Si hay motivo, actualizar en el historial
-                if (motivo != null && !motivo.trim().isEmpty()) {
-                    historialDAO.actualizarMotivoUltimoCambio(comisionId, miembroId, motivo);
-                }
                 AuditoriaService.getInstance().registrar(request, getUsuarioLogueado(request),
                     "MODIFICAR", "CARGO", comisionId + "/" + miembroId,
                     "Cambió el cargo de " + cm.getCargo().name() + " a " + nuevoCargo

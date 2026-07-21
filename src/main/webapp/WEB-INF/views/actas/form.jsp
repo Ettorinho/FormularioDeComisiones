@@ -280,13 +280,22 @@ document.getElementById('comisionId').addEventListener('change', function() {
         })
         .catch(error => {
             console.error('❌ Error completo:', error);
-            container.innerHTML = `
-                <div class="alert alert-danger">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    <strong>Error al cargar los miembros:</strong> ${error.message}
-                    <br><small>Revise la consola del navegador (F12) para más detalles</small>
-                </div>
-            `;
+            container.textContent = '';
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger';
+            const icon = document.createElement('i');
+            icon.className = 'bi bi-exclamation-triangle';
+            const strong = document.createElement('strong');
+            strong.textContent = 'Error al cargar los miembros: ';
+            const small = document.createElement('small');
+            small.textContent = 'Revise la consola del navegador (F12) para más detalles';
+            alertDiv.appendChild(icon);
+            alertDiv.appendChild(document.createTextNode(' '));
+            alertDiv.appendChild(strong);
+            alertDiv.appendChild(document.createTextNode(error.message));
+            alertDiv.appendChild(document.createElement('br'));
+            alertDiv.appendChild(small);
+            container.appendChild(alertDiv);
         });
 });
 
@@ -381,41 +390,45 @@ document.getElementById('formActa').addEventListener('submit', function(e) {
 document.getElementById('pdfFile').addEventListener('change', function(e) {
     const file = e.target.files[0];
     const pdfInfo = document.getElementById('pdfInfo');
-    
+
     if (file) {
         const fileName = file.name;
         const fileSize = (file.size / 1024).toFixed(2) + ' KB';
-        
+
         document.getElementById('pdfFileName').textContent = fileName;
         document.getElementById('pdfFileSize').textContent = fileSize;
         pdfInfo.style.display = 'block';
-        
-        // Validación en tiempo real
+        pdfInfo.className = 'mt-2';
+        pdfInfo.textContent = '';
+
+        // Validación en tiempo real — construir el mensaje sin innerHTML
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert mb-0';
+        const icon = document.createElement('i');
+        const text = document.createTextNode(' ');
+
         if (file.size > 5 * 1024 * 1024) {
-            pdfInfo.className = 'mt-2';
-            pdfInfo.innerHTML = `
-                <div class="alert alert-danger mb-0">
-                    <i class="bi bi-exclamation-triangle"></i> 
-                    El archivo es demasiado grande (${fileSize}). Máximo: 5MB
-                </div>
-            `;
+            alertDiv.classList.add('alert-danger');
+            icon.className = 'bi bi-exclamation-triangle';
+            alertDiv.appendChild(icon);
+            alertDiv.appendChild(document.createTextNode(' El archivo es demasiado grande (' + fileSize + '). Máximo: 5MB'));
         } else if (!fileName.toLowerCase().endsWith('.pdf')) {
-            pdfInfo.className = 'mt-2';
-            pdfInfo.innerHTML = `
-                <div class="alert alert-danger mb-0">
-                    <i class="bi bi-exclamation-triangle"></i> 
-                    Solo se permiten archivos PDF
-                </div>
-            `;
+            alertDiv.classList.add('alert-danger');
+            icon.className = 'bi bi-exclamation-triangle';
+            alertDiv.appendChild(icon);
+            alertDiv.appendChild(document.createTextNode(' Solo se permiten archivos PDF'));
         } else {
-            pdfInfo.className = 'mt-2';
-            pdfInfo.innerHTML = `
-                <div class="alert alert-success mb-0">
-                    <i class="bi bi-file-earmark-pdf-fill"></i> 
-                    <strong>Archivo seleccionado:</strong> ${fileName} (${fileSize})
-                </div>
-            `;
+            alertDiv.classList.add('alert-success');
+            icon.className = 'bi bi-file-earmark-pdf-fill';
+            const strong = document.createElement('strong');
+            strong.textContent = 'Archivo seleccionado: ';
+            alertDiv.appendChild(icon);
+            alertDiv.appendChild(text);
+            alertDiv.appendChild(strong);
+            alertDiv.appendChild(document.createTextNode(fileName + ' (' + fileSize + ')'));
         }
+
+        pdfInfo.appendChild(alertDiv);
     } else {
         pdfInfo.style.display = 'none';
     }

@@ -122,11 +122,15 @@ function validarDNI(dni) {
 // Función para mostrar mensajes
 function mostrarMensaje(mensaje, tipo) {
     const messageDiv = document.getElementById('ldapMessage');
-    messageDiv.innerHTML = '<div class="ldap-' + tipo + '">' + mensaje + '</div>';
-    
+    messageDiv.textContent = '';
+    const div = document.createElement('div');
+    div.className = 'ldap-' + tipo;
+    div.textContent = mensaje;
+    messageDiv.appendChild(div);
+
     if (tipo === 'info') {
         setTimeout(() => {
-            messageDiv. innerHTML = '';
+            messageDiv.textContent = '';
         }, 5000);
     }
 }
@@ -134,7 +138,7 @@ function mostrarMensaje(mensaje, tipo) {
 // Función para mostrar información de debug
 function mostrarDebug(mensaje) {
     const debugDiv = document.getElementById('debugInfo');
-    debugDiv.innerHTML = mensaje;
+    debugDiv.textContent = mensaje;
     console.log('[DEBUG]', mensaje);
 }
 
@@ -149,8 +153,8 @@ document.getElementById('buscarDniBtn').addEventListener('click', function () {
     const dni = dniInput.value.trim().toUpperCase();
     
     // Limpiar mensajes previos
-    document.getElementById('ldapMessage').innerHTML = '';
-    document.getElementById('debugInfo').innerHTML = '';
+    document.getElementById('ldapMessage').textContent = '';
+    document.getElementById('debugInfo').textContent = '';
     
     console.log('=== Iniciando búsqueda LDAP ===');
     console.log('DNI introducido:', dni);
