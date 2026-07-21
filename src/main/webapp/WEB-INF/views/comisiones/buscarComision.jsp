@@ -39,6 +39,7 @@
     <div class="container mt-4">
         <h2>Buscar Comisión o Grupo de Trabajo</h2>
         <form action="${pageContext.request.contextPath}/comisiones/buscarComision" method="post" class="mb-4">
+            <input type="hidden" name="csrfToken" value="${csrfToken}" />
             <div class="row g-3 align-items-end">
                 <div class="col-auto">
                     <label for="nombre" class="form-label">Nombre de comisión o grupo</label>

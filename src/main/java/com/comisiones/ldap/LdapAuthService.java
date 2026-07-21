@@ -167,6 +167,7 @@ public class LdapAuthService {
             if (results != null) {
                 try { results.close(); } catch (NamingException e) {
                     AppLogger.warn("Error al cerrar resultados LDAP");
+                    AppLogger.error("Detalle al cerrar NamingEnumeration<SearchResult>", e);
                 }
             }
         }
@@ -204,6 +205,7 @@ public class LdapAuthService {
         } finally {
             try { valores.close(); } catch (NamingException e) {
                 AppLogger.warn("Error al cerrar enumeración LDAP");
+                AppLogger.error("Detalle al cerrar NamingEnumeration de memberOf", e);
             }
         }
         return roles;

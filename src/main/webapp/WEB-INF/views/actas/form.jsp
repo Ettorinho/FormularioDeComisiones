@@ -26,6 +26,7 @@
                 
                 <!-- Formulario con enctype para archivos -->
                 <form id="formActa" method="post" action="${pageContext.request.contextPath}/actas/save" enctype="multipart/form-data">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}" />
                     
                     <!-- Selección de Comisión -->
                     <div class="mb-3">

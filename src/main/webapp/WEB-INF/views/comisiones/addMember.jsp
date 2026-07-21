@@ -16,6 +16,7 @@
                 </c:if>
                 
                 <form id="addMemberForm" action="${pageContext.request.contextPath}/comisiones/addMember/${comision.id}" method="POST">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}" />
                     
                     <div class="form-group mb-3">
                         <label for="dni">DNI/NIF *</label>

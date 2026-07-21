@@ -16,6 +16,7 @@
         </c:if>
         
         <form action="${pageContext.request.contextPath}/comisiones" method="post" id="formComision">
+            <input type="hidden" name="csrfToken" value="${csrfToken}" />
             
             <!-- Sección 1: Selección de Área y Tipo -->
             <div class="card card-custom">

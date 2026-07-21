@@ -12,6 +12,7 @@ import com.comisiones.service.AuditoriaService;
 import com.comisiones.util.AppConstants;
 import com.comisiones.util.AppLogger;
 import com.comisiones.util.ServletHelper;
+import com.comisiones.util.ValidationUtil;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -30,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @WebServlet("/actas/*")
 @MultipartConfig(
@@ -245,6 +247,13 @@ public class ActaController extends HttpServlet {
         acta.setPdfNombre(pdfNombre);
         acta.setPdfContenido(pdfContenido);
         acta.setPdfTipoMime(pdfTipoMime);
+
+        Map<String, String> erroresValidacionActa = ValidationUtil.validateWithFields(acta);
+        if (!erroresValidacionActa.isEmpty()) {
+            request.setAttribute("error", "Datos de acta inválidos: " + formatValidationErrors(erroresValidacionActa));
+            showForm(request, response);
+            return;
+        }
         
         // Preparar datos de asistencia
         Map<Long, Boolean> asistencias = new HashMap<>();
@@ -286,6 +295,12 @@ public class ActaController extends HttpServlet {
         
         // Redirigir a la vista del acta
         response.sendRedirect(request.getContextPath() + "/actas/view?id=" + actaId);
+    }
+
+    private String formatValidationErrors(Map<String, String> fieldErrors) {
+        return fieldErrors.entrySet().stream()
+                .map(entry -> entry.getKey() + ": " + entry.getValue())
+                .collect(Collectors.joining("; "));
     }
     
     private void viewActa(HttpServletRequest request, HttpServletResponse response) 
