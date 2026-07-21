@@ -7,7 +7,6 @@ import com.comisiones.model.Acta;
 import com.comisiones.model.AsistenciaActa;
 import com.comisiones.model.Comision;
 import com.comisiones.model.Miembro;
-import com.comisiones.model.UsuarioAD;
 import com.comisiones.service.ActaGeneratorService;
 import com.comisiones.service.AuditoriaService;
 import com.comisiones.util.AppConstants;
@@ -21,7 +20,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,15 +50,6 @@ public class ActaController extends HttpServlet {
         comisionDAO = new ComisionDAO();
         miembroDAO = new MiembroDAO();
         AppLogger.info("ActaController inicializado");
-    }
-
-    private String getUsuarioLogueado(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            UsuarioAD u = (UsuarioAD) session.getAttribute("usuarioLogueado");
-            if (u != null) return u.getUsername();
-        }
-        return "SISTEMA";
     }
 
     @Override
@@ -290,7 +279,7 @@ public class ActaController extends HttpServlet {
         }
         
         AppLogger.info("Acta guardada con ID: " + actaId);
-        AuditoriaService.getInstance().registrar(request, getUsuarioLogueado(request),
+        AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
             "CREAR", "ACTA", actaId.toString(),
             "Creó el acta de la comisión " + comision.getNombre()
                 + " para la reunión del " + fechaReunionStr);

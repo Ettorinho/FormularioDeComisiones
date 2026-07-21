@@ -4,7 +4,6 @@ import com.comisiones.dao.ComisionMiembroDAO;
 import com.comisiones.dao.HistorialCargoDAO;
 import com.comisiones.model.ComisionMiembro;
 import com.comisiones.model.HistorialCargo;
-import com.comisiones.model.UsuarioAD;
 import com.comisiones.service.AuditoriaService;
 import com.comisiones.util.ServletHelper;
 
@@ -13,7 +12,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -32,15 +30,6 @@ public class CambiarCargoServlet extends HttpServlet {
     public void init() {
         comisionMiembroDAO = new ComisionMiembroDAO();
         historialDAO = new HistorialCargoDAO();
-    }
-
-    private String getUsuarioLogueado(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            UsuarioAD u = (UsuarioAD) session.getAttribute("usuarioLogueado");
-            if (u != null) return u.getUsername();
-        }
-        return "SISTEMA";
     }
 
     /**
@@ -83,6 +72,7 @@ public class CambiarCargoServlet extends HttpServlet {
             // Pasar datos a la vista
             request.setAttribute("comisionMiembro", cm);
             request.setAttribute("historial", historial);
+            request.setAttribute("cargos", ComisionMiembro.Cargo.values());
             
             request.getRequestDispatcher("/WEB-INF/views/comisiones/cambiarCargo.jsp")
                    .forward(request, response);
@@ -146,16 +136,11 @@ public class CambiarCargoServlet extends HttpServlet {
             }
             
             // Cambiar cargo y registrar motivo en una única transacción atómica
-            HttpSession session = request.getSession(false);
-            UsuarioAD usuarioLogueado = (session != null)
-                ? (UsuarioAD) session.getAttribute("usuarioLogueado")
-                : null;
-            String usernameAD = (usuarioLogueado != null) ? usuarioLogueado.getUsername() : "SYSTEM";
             boolean success = comisionMiembroDAO.cambiarCargoConMotivo(
-                    comisionId, miembroId, nuevoCargo, motivo, usernameAD);
+                    comisionId, miembroId, nuevoCargo, motivo, ServletHelper.getUsuarioLogueado(request));
             
             if (success) {
-                AuditoriaService.getInstance().registrar(request, getUsuarioLogueado(request),
+                AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
                     "MODIFICAR", "CARGO", comisionId + "/" + miembroId,
                     "Cambió el cargo de " + cm.getCargo().name() + " a " + nuevoCargo
                         + " en la comisión ID: " + comisionId);

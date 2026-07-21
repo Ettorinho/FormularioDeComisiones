@@ -1,6 +1,7 @@
 package com.comisiones.ldap;
 
 import com.comisiones.model.UsuarioAD;
+import com.comisiones.util.AppLogger;
 
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
@@ -110,7 +111,7 @@ public class LdapAuthService {
                     ctxBusqueda.close();
                 } catch (NamingException e) {
                     // Se registra pero no se propaga para no ocultar una excepción original
-                    System.err.println("[LdapAuthService] Advertencia: error al cerrar el contexto LDAP: " + e.getMessage());
+                    AppLogger.warn("Error al cerrar el contexto LDAP");
                 }
             }
         }
@@ -165,7 +166,7 @@ public class LdapAuthService {
         } finally {
             if (results != null) {
                 try { results.close(); } catch (NamingException e) {
-                    System.err.println("[LdapAuthService] Advertencia: error al cerrar resultados LDAP: " + e.getMessage());
+                    AppLogger.warn("Error al cerrar resultados LDAP");
                 }
             }
         }
@@ -202,7 +203,7 @@ public class LdapAuthService {
             }
         } finally {
             try { valores.close(); } catch (NamingException e) {
-                System.err.println("[LdapAuthService] Advertencia: error al cerrar enumeración LDAP: " + e.getMessage());
+                AppLogger.warn("Error al cerrar enumeración LDAP");
             }
         }
         return roles;

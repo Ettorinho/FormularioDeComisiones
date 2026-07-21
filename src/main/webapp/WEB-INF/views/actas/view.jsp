@@ -1,40 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acta de Reunión - Gobierno de Aragón</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
-</head>
-<body>
-    <!-- Header -->
-    <header class="header-app no-print">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="h3 mb-0">
-                        <i class="bi bi-file-earmark-text"></i>
-                        Sistema de Gestión de Comisiones
-                    </h1>
-                    <p class="mb-0 mt-1 header-subtitle">Gestión de Actas</p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <span class="text-white me-3 small">
-                        <i class="bi bi-person-circle me-1"></i>
-                        <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
-                    </span>
-                    <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
-                        <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
+<c:set var="pageTitle" value="Acta de Reunión - Gobierno de Aragón" />
+<c:set var="headerSubtitle" value="Gestión de Actas" />
+<c:set var="headerClass" value="no-print" />
+<%@ include file="/WEB-INF/views/common/header.jspf" %>
 
     <!-- Contenido Principal -->
     <div class="container mt-4 mb-5">
@@ -90,14 +60,7 @@
                                 <c:if test="${not empty acta.comision.area}">
                                     <p class="mb-2">
                                         <strong><i class="bi bi-diagram-3"></i> Área: </strong>
-                                        <span class="badge bg-info ms-2">
-                                            <c:choose>
-                                                <c:when test="${acta.comision.area == 'ATENCION_ESPECIALIZADA'}">Atención Especializada</c:when>
-                                                <c:when test="${acta.comision.area == 'ATENCION_PRIMARIA'}">Atención Primaria</c:when>
-                                                <c:when test="${acta.comision.area == 'MIXTA'}">Mixta</c:when>
-                                                <c:otherwise>${acta.comision.area}</c:otherwise>
-                                            </c:choose>
-                                        </span>
+                                       <span class="badge bg-info ms-2"><c:out value="${acta.comision.area.descripcion}"/></span>
                                     </p>
                                 </c:if>
                                 <p class="mb-2">
@@ -341,6 +304,4 @@
         
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<%@ include file="/WEB-INF/views/common/footer.jspf" %>

@@ -3,6 +3,7 @@ package com.comisiones.filter;
 import com.comisiones.model.UsuarioAD;
 import com.comisiones.security.AppRoles;
 import com.comisiones.security.RolService;
+import com.comisiones.util.AppLogger;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -61,13 +62,9 @@ public class RolFilter implements Filter {
 
         // Resolver rol del usuario y guardarlo en sesión para los JSP
         String rolUsuario = rolService.resolverRol(usuario);
-        // Diagnóstico temporal:
-        System.out.println("[RolFilter] Usuario: " + usuario.getUsername()
-            + " | Grupos AD: " + usuario.getRoles()
-            + " | Rol resuelto: " + rolUsuario);
         session.setAttribute("rolUsuario", rolUsuario);
-        System.out.println("[RolFilter] Usuario: " + usuario.getUsername()
-                + " | Rol resuelto: " + rolUsuario);
+        AppLogger.debug("Rol resuelto para usuario autenticado: " + usuario.getUsername()
+                + " -> " + rolUsuario);
 
         // Verificar permisos según la ruta y el método HTTP
         String rolRequerido = determinarRolRequerido(path, method);

@@ -1,6 +1,7 @@
 package com.comisiones.security;
 
 import com.comisiones.model.UsuarioAD;
+import com.comisiones.util.AppLogger;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -28,9 +29,9 @@ public class RolService {
             cargarRol(envCtx, "roles/gestor",  AppRoles.GESTOR);
             cargarRol(envCtx, "roles/lectura", AppRoles.LECTURA);
         } catch (NamingException e) {
-            System.err.println("[RolService] ERROR: no se pudo obtener el contexto JNDI java:comp/env — " + e.getMessage());
+            AppLogger.error("No se pudo obtener el contexto JNDI java:comp/env", e);
         }
-        System.out.println("[RolService] Mapa de roles cargado: " + grupoAdARol);
+        AppLogger.info("Mapa de roles cargado con " + grupoAdARol.size() + " entradas");
     }
 
     private void cargarRol(Context envCtx, String jndiKey, String rolInterno) {
@@ -38,10 +39,10 @@ public class RolService {
             String grupoAd = (String) envCtx.lookup(jndiKey);
             if (grupoAd != null && !grupoAd.isBlank()) {
                 grupoAdARol.put(grupoAd.trim(), rolInterno);
-                System.out.println("[RolService] Rol cargado: '" + grupoAd.trim() + "' → " + rolInterno);
+                AppLogger.debug("Rol cargado desde JNDI " + jndiKey + " -> " + rolInterno);
             }
         } catch (NamingException e) {
-            System.err.println("[RolService] WARN: parámetro JNDI '" + jndiKey + "' no encontrado en context.xml — ese rol no se asignará");
+            AppLogger.warn("Parámetro JNDI '" + jndiKey + "' no encontrado en context.xml; ese rol no se asignará");
         }
     }
 
@@ -52,14 +53,12 @@ public class RolService {
     public String resolverRol(UsuarioAD usuario) {
         if (usuario == null) return AppRoles.LECTURA;
         List<String> grupos = usuario.getRoles();
-        System.out.println("[RolService] Resolviendo rol para grupos: " + grupos + " | Mapa disponible: " + grupoAdARol);
         if (grupos == null || grupos.isEmpty()) return AppRoles.LECTURA;
         // Prioridad: ADMIN > GESTOR > LECTURA — buscamos el rol de mayor prioridad
         String mejorRol = null;
         for (String grupoAd : grupos) {
             String rol = grupoAdARol.get(grupoAd);
             if (AppRoles.ADMIN.equals(rol)) {
-                System.out.println("[RolService] Rol resuelto: " + AppRoles.ADMIN);
                 return AppRoles.ADMIN; // Máxima prioridad, no hay que seguir
             }
             if (AppRoles.GESTOR.equals(rol) && !AppRoles.GESTOR.equals(mejorRol)) {
@@ -70,7 +69,7 @@ public class RolService {
         }
         // Fallback: cualquier usuario autenticado puede leer
         String rolFinal = mejorRol != null ? mejorRol : AppRoles.LECTURA;
-        System.out.println("[RolService] Rol resuelto: " + rolFinal);
+        AppLogger.debug("Rol resuelto para usuario autenticado: " + rolFinal);
         return rolFinal;
     }
 

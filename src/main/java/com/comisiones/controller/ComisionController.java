@@ -12,7 +12,6 @@ import com.comisiones.model.Comision;
 import com.comisiones.model.ComisionMiembro;
 import com.comisiones.model.HistorialCargo;
 import com.comisiones.model.Miembro;
-import com.comisiones.model.UsuarioAD;
 import com.comisiones.service.AuditoriaService;
 import com.comisiones.util.AppLogger;
 import com.comisiones.util.ServletHelper;
@@ -24,7 +23,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -34,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @WebServlet("/comisiones/*")
 public class ComisionController extends HttpServlet {
@@ -52,15 +51,6 @@ public class ComisionController extends HttpServlet {
         actaDAO = new ActaDAO();
         objectMapper = new ObjectMapper();
         AppLogger.info("ComisionController INICIALIZADO");
-    }
-
-    private String getUsuarioLogueado(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            UsuarioAD u = (UsuarioAD) session.getAttribute("usuarioLogueado");
-            if (u != null) return u.getUsername();
-        }
-        return "SISTEMA";
     }
 
     @Override
@@ -135,20 +125,16 @@ public class ComisionController extends HttpServlet {
     }
 
     private void showNewForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        cargarCatalogos(request);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/comisiones/form.jsp");
         dispatcher.forward(request, response);
     }
 
     private void viewComision(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
-        String pathInfo = request.getPathInfo();
-        String idStr = pathInfo.substring(6);
-
-        AppLogger.debug("viewComision - pathInfo: " + pathInfo + ", id: " + idStr);
-
-        Long id = ServletHelper.parseIdSafely(idStr);
+        Long id = ServletHelper.parsePathId(request, "/view/");
         if (id == null) {
-            request.setAttribute("error", "ID de comisión no válido en la URL: " + idStr);
-            request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+            ServletHelper.forwardError(request, response, HttpServletResponse.SC_BAD_REQUEST,
+                    "ID de comisión no válido en la URL");
             return;
         }
 
@@ -163,15 +149,15 @@ public class ComisionController extends HttpServlet {
     }
 
     private void showAddMemberForm(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
-        String pathSuffix = request.getPathInfo().substring(11);
-        Long comisionId = ServletHelper.parseIdSafely(pathSuffix);
+        Long comisionId = ServletHelper.parsePathId(request, "/addMember/");
         if (comisionId == null) {
-            request.setAttribute("error", "ID de comisión no válido: " + pathSuffix);
-            request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+            ServletHelper.forwardError(request, response, HttpServletResponse.SC_BAD_REQUEST,
+                    "ID de comisión no válido");
             return;
         }
         Comision comision = comisionDAO.findById(comisionId);
         request.setAttribute("comision", comision);
+        request.setAttribute("cargos", ComisionMiembro.Cargo.values());
         String error = request.getParameter("error");
         if (error != null) {
             request.setAttribute("error", error);
@@ -181,11 +167,10 @@ public class ComisionController extends HttpServlet {
     }
 
     private void showBajaMiembrosForm(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
-        String pathSuffix = request.getPathInfo().substring(14);
-        Long comisionId = ServletHelper.parseIdSafely(pathSuffix);
+        Long comisionId = ServletHelper.parsePathId(request, "/bajaMiembros/");
         if (comisionId == null) {
-            request.setAttribute("error", "ID de comisión no válido: " + pathSuffix);
-            request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+            ServletHelper.forwardError(request, response, HttpServletResponse.SC_BAD_REQUEST,
+                    "ID de comisión no válido");
             return;
         }
         Comision comision = comisionDAO.findById(comisionId);
@@ -270,7 +255,7 @@ public class ComisionController extends HttpServlet {
             comisionDAO.save(nuevaComision);
             comisionId = nuevaComision.getId();
             AppLogger.info("Nueva comisión creada con ID: " + comisionId);
-            AuditoriaService.getInstance().registrar(request, getUsuarioLogueado(request),
+            AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
                 "CREAR", "COMISION", nuevaComision.getId().toString(),
                 "Creó la comisión: " + nuevaComision.getNombre());
         }
@@ -280,7 +265,7 @@ public class ComisionController extends HttpServlet {
             AppLogger.debug("Procesando miembros JSON");
             procesarMiembrosJSON(comisionId, miembrosJSON);
             if ("existente".equals(opcionCreacion)) {
-                AuditoriaService.getInstance().registrar(request, getUsuarioLogueado(request),
+                AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
                     "MODIFICAR", "COMISION", comisionId.toString(),
                     "Agregó miembros a la comisión ID: " + comisionId);
             }
@@ -292,7 +277,7 @@ public class ComisionController extends HttpServlet {
     }
 
     private void saveMemberInComision(HttpServletRequest request, HttpServletResponse response) throws SQLException, ParseException, IOException {
-        Long comisionId = ServletHelper.parseIdSafely(request.getPathInfo().substring(11));
+        Long comisionId = ServletHelper.parsePathId(request, "/addMember/");
         if (comisionId == null) {
             response.sendRedirect(request.getContextPath() + "/comisiones?error=ID+invalido");
             return;
@@ -332,7 +317,7 @@ public class ComisionController extends HttpServlet {
         comisionMiembro.setFechaIncorporacion(new java.sql.Date(fechaIncorp.getTime()));
 
         comisionMiembroDAO.save(comisionMiembro);
-        AuditoriaService.getInstance().registrar(request, getUsuarioLogueado(request),
+        AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
             "CREAR", "MIEMBRO", comisionId + "/" + miembro.getId(),
             "Agregó al miembro " + miembro.getNombreApellidos() + " (DNI: " + miembro.getDniNif()
                 + ") a la comisión ID: " + comisionId + " con cargo: " + cargoStr);
@@ -353,13 +338,13 @@ public class ComisionController extends HttpServlet {
 
         if (miembro != null) {
             comisiones = comisionMiembroDAO.findByMiembroId(miembro.getId());
-            if (comisiones != null) {
+            if (comisiones != null && !comisiones.isEmpty()) {
                 HistorialCargoDAO historialDAO = new HistorialCargoDAO();
+                Map<Long, List<HistorialCargo>> historialAgrupado = historialDAO.getHistorialAgrupadoPorMiembro(miembro.getId());
                 for (ComisionMiembro cm : comisiones) {
-                    List<HistorialCargo> historial = historialDAO.getHistorialByComisionMiembro(
-                        cm.getComision().getId(), miembro.getId()
-                    );
-                    historialPorComision.put(cm.getComision().getId().toString(), historial);
+                    historialPorComision.put(
+                            cm.getComision().getId().toString(),
+                            historialAgrupado.getOrDefault(cm.getComision().getId(), new ArrayList<>()));
                 }
             }
         }
@@ -379,9 +364,11 @@ public class ComisionController extends HttpServlet {
     private void buscarComisionPorNombre(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException {
         String nombre = request.getParameter("nombre");
         List<Comision> comisiones = comisionDAO.findByNombreLike(nombre);
-        
+
+        Map<Long, List<ComisionMiembro>> miembrosPorComision = comisionMiembroDAO.findByComisionIds(
+                comisiones.stream().map(Comision::getId).collect(Collectors.toList()));
         for (Comision comision : comisiones) {
-            List<ComisionMiembro> miembros = comisionMiembroDAO.findByComisionId(comision.getId());
+            List<ComisionMiembro> miembros = miembrosPorComision.getOrDefault(comision.getId(), new ArrayList<>());
             comision.setMiembros(new HashSet<>(miembros));
         }
         request.setAttribute("comisiones", comisiones);
@@ -391,9 +378,9 @@ public class ComisionController extends HttpServlet {
     }
 
     private void bajaMiembro(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ParseException {
-        String[] parts = request.getPathInfo().split("/");
-        Long comisionId = ServletHelper.parseIdSafely(parts[2]);
-        Long miembroId = ServletHelper.parseIdSafely(parts[3]);
+        Long[] ids = ServletHelper.parsePathIds(request, "/bajaMiembro/", 2);
+        Long comisionId = ids != null ? ids[0] : null;
+        Long miembroId = ids != null ? ids[1] : null;
         
         if (comisionId == null || miembroId == null) {
             response.sendRedirect(request.getContextPath() + "/comisiones?error=IDs+invalidos");
@@ -407,7 +394,7 @@ public class ComisionController extends HttpServlet {
         Date fechaBajaUtil = new SimpleDateFormat("yyyy-MM-dd").parse(fechaBajaStr);
         java.sql.Date fechaBaja = new java.sql.Date(fechaBajaUtil.getTime());
         comisionMiembroDAO.darDeBaja(comisionId, miembroId, fechaBaja);
-        AuditoriaService.getInstance().registrar(request, getUsuarioLogueado(request),
+        AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
             "BAJA", "MIEMBRO", comisionId + "/" + miembroId,
             "Dio de baja al miembro ID: " + miembroId + " de la comisión ID: " + comisionId
                 + " con fecha: " + fechaBajaStr);
@@ -465,6 +452,7 @@ public class ComisionController extends HttpServlet {
         try {
             // Deserializar con Jackson
             MiembroDTO[] miembros = objectMapper.readValue(miembrosJSON, MiembroDTO[].class);
+            Comision comision = comisionDAO.findById(comisionId);
             
             int agregados = 0;
             int duplicados = 0;
@@ -506,9 +494,8 @@ public class ComisionController extends HttpServlet {
                         duplicados++;
                         continue;
                     }
-                    
                     // Agregar a la comisión
-                    Comision comision = comisionDAO.findById(comisionId);
+                    // Agregar a la comisión
                     ComisionMiembro cm = new ComisionMiembro();
                     cm.setComision(comision);
                     cm.setMiembro(miembro);
@@ -536,5 +523,11 @@ public class ComisionController extends HttpServlet {
             AppLogger.error("ERROR al parsear JSON de miembros", e);
             throw new SQLException("Error al procesar miembros desde JSON: " + e.getMessage(), e);
         }
+    }
+
+    private void cargarCatalogos(HttpServletRequest request) {
+        request.setAttribute("areas", Comision.Area.values());
+        request.setAttribute("tipos", Comision.Tipo.values());
+        request.setAttribute("cargos", ComisionMiembro.Cargo.values());
     }
 }
