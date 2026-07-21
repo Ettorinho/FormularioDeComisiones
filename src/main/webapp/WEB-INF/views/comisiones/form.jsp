@@ -564,15 +564,34 @@
                 console.log('  nombre:', nombre, '(length:', nombre.length + ')');
                 console.log('  rol:', rol, '(length:', rol. length + ')');
                 
-                // Crear fila manualmente con innerHTML (más confiable)
+                // Crear fila con nodos DOM seguros (evita XSS con datos de usuario/servidor)
                 const tr = document.createElement('tr');
-                
-                // Método:  innerHTML directo
-                tr.innerHTML = 
-                    '<td>' + dni + '</td>' +
-                    '<td>' + nombre + '</td>' +
-                    '<td><span class="badge bg-primary">' + rol + '</span></td>' +
-                    '<td><button type="button" class="btn btn-sm btn-danger" onclick="eliminarMiembro(' + i + ')">🗑️ Eliminar</button></td>';
+
+                const tdDni = document.createElement('td');
+                tdDni.textContent = dni;
+                tr.appendChild(tdDni);
+
+                const tdNombre = document.createElement('td');
+                tdNombre.textContent = nombre;
+                tr.appendChild(tdNombre);
+
+                const tdRol = document.createElement('td');
+                const badge = document.createElement('span');
+                badge.className = 'badge bg-primary';
+                badge.textContent = rol;
+                tdRol.appendChild(badge);
+                tr.appendChild(tdRol);
+
+                const tdAccion = document.createElement('td');
+                const btnEliminar = document.createElement('button');
+                btnEliminar.type = 'button';
+                btnEliminar.className = 'btn btn-sm btn-danger';
+                btnEliminar.textContent = '🗑️ Eliminar';
+                btnEliminar.addEventListener('click', (function(idx) {
+                    return function() { eliminarMiembro(idx); };
+                })(i));
+                tdAccion.appendChild(btnEliminar);
+                tr.appendChild(tdAccion);
                 
                 console.log('HTML generado:', tr.innerHTML);
                 

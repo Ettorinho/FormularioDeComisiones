@@ -326,4 +326,71 @@ public class ComisionMiembroDAO {
     public boolean cambiarCargo(Long comisionId, Long miembroId, String nuevoCargo) throws SQLException {
         return cambiarCargo(comisionId, miembroId, nuevoCargo, "SYSTEM");
     }
+
+    /**
+     * Cambia el cargo de un miembro y actualiza el motivo en el historial dentro de
+     * una única transacción atómica.
+     *
+     * Si {@code motivo} es nulo o vacío, solo se cambia el cargo (el trigger registra
+     * automáticamente el cambio en el historial sin motivo).
+     * Si {@code motivo} tiene contenido, se actualiza también la columna motivo del
+     * registro de historial recién insertado por el trigger — todo en el mismo commit.
+     *
+     * @param comisionId ID de la comisión
+     * @param miembroId  ID del miembro
+     * @param nuevoCargo Nuevo cargo a asignar
+     * @param motivo     Motivo del cambio (puede ser nulo o vacío)
+     * @param usuarioAD  Username del usuario AD que realiza el cambio
+     * @return true si el cargo fue actualizado correctamente
+     */
+    public boolean cambiarCargoConMotivo(Long comisionId, Long miembroId,
+                                         String nuevoCargo, String motivo,
+                                         String usuarioAD) throws SQLException {
+        try (Connection conn = DBUtil.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                // 1. Propagar el usuario AD al trigger de historial
+                try (PreparedStatement setUser = conn.prepareStatement("SET LOCAL app.usuario_modificacion = ?")) {
+                    setUser.setString(1, usuarioAD != null ? usuarioAD : "SYSTEM");
+                    setUser.execute();
+                }
+
+                // 2. Cambiar cargo (el trigger inserta la fila de historial)
+                String updateCargo = "UPDATE comision_miembros SET cargo = CAST(? AS cargo_type) "
+                                   + "WHERE comision_id = ? AND miembro_id = ?";
+                int rowsAffected;
+                try (PreparedStatement stmt = conn.prepareStatement(updateCargo)) {
+                    stmt.setString(1, nuevoCargo);
+                    stmt.setLong(2, comisionId);
+                    stmt.setLong(3, miembroId);
+                    rowsAffected = stmt.executeUpdate();
+                }
+
+                // 3. Actualizar el motivo en el historial recién insertado (misma transacción)
+                if (rowsAffected > 0 && motivo != null && !motivo.trim().isEmpty()) {
+                    String updateMotivo = "UPDATE comision_miembro_historial_cargos "
+                                       + "SET motivo = ? "
+                                       + "WHERE id = ("
+                                       + "  SELECT id FROM comision_miembro_historial_cargos "
+                                       + "  WHERE comision_id = ? AND miembro_id = ? "
+                                       + "  ORDER BY fecha_cambio DESC LIMIT 1"
+                                       + ")";
+                    try (PreparedStatement stmt = conn.prepareStatement(updateMotivo)) {
+                        stmt.setString(1, motivo.trim());
+                        stmt.setLong(2, comisionId);
+                        stmt.setLong(3, miembroId);
+                        stmt.executeUpdate();
+                    }
+                }
+
+                conn.commit();
+                AppLogger.debug("cambiarCargoConMotivo - Usuario: " + usuarioAD + " - Filas afectadas: " + rowsAffected);
+                return rowsAffected > 0;
+
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        }
+    }
 }
