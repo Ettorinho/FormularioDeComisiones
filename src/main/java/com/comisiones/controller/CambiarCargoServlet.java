@@ -6,6 +6,7 @@ import com.comisiones.model.ComisionMiembro;
 import com.comisiones.model.HistorialCargo;
 import com.comisiones.service.AuditoriaService;
 import com.comisiones.util.ServletHelper;
+import com.comisiones.util.ValidationUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -15,6 +16,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Servlet para gestionar el cambio de cargo de miembros en comisiones.
@@ -127,25 +130,48 @@ public class CambiarCargoServlet extends HttpServlet {
                 doGet(request, response);
                 return;
             }
+
+            ComisionMiembro.Cargo nuevoCargoEnum;
+            try {
+                nuevoCargoEnum = ComisionMiembro.Cargo.valueOf(nuevoCargo.trim().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                request.setAttribute("error", "El cargo seleccionado no es válido");
+                doGet(request, response);
+                return;
+            }
             
             // Validar que el cargo sea diferente al actual
-            if (cm.getCargo().name().equals(nuevoCargo)) {
+            if (cm.getCargo() == nuevoCargoEnum) {
                 request.setAttribute("error", "El cargo seleccionado es el mismo que el actual");
+                doGet(request, response);
+                return;
+            }
+
+            ComisionMiembro validacionCambio = new ComisionMiembro();
+            validacionCambio.setComision(cm.getComision());
+            validacionCambio.setMiembro(cm.getMiembro());
+            validacionCambio.setCargo(nuevoCargoEnum);
+            validacionCambio.setFechaIncorporacion(cm.getFechaIncorporacion());
+            validacionCambio.setFechaBaja(cm.getFechaBaja());
+
+            Map<String, String> erroresValidacion = ValidationUtil.validateWithFields(validacionCambio);
+            if (!erroresValidacion.isEmpty()) {
+                request.setAttribute("error", "Datos inválidos para cambiar cargo: " + formatValidationErrors(erroresValidacion));
                 doGet(request, response);
                 return;
             }
             
             // Cambiar cargo y registrar motivo en una única transacción atómica
             boolean success = comisionMiembroDAO.cambiarCargoConMotivo(
-                    comisionId, miembroId, nuevoCargo, motivo, ServletHelper.getUsuarioLogueado(request));
+                    comisionId, miembroId, nuevoCargoEnum.name(), motivo, ServletHelper.getUsuarioLogueado(request));
             
             if (success) {
                 AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
                     "MODIFICAR", "CARGO", comisionId + "/" + miembroId,
-                    "Cambió el cargo de " + cm.getCargo().name() + " a " + nuevoCargo
+                    "Cambió el cargo de " + cm.getCargo().name() + " a " + nuevoCargoEnum.name()
                         + " en la comisión ID: " + comisionId);
                 request.setAttribute("success", "Cargo cambiado exitosamente de " + 
-                    cm.getCargo().name() + " a " + nuevoCargo);
+                    cm.getCargo().name() + " a " + nuevoCargoEnum.name());
             } else {
                 request.setAttribute("error", "No se pudo cambiar el cargo. Inténtelo nuevamente.");
             }
@@ -159,5 +185,11 @@ public class CambiarCargoServlet extends HttpServlet {
         } catch (SQLException e) {
             throw new ServletException("Error al cambiar el cargo", e);
         }
+    }
+
+    private String formatValidationErrors(Map<String, String> fieldErrors) {
+        return fieldErrors.entrySet().stream()
+                .map(entry -> entry.getKey() + ": " + entry.getValue())
+                .collect(Collectors.joining("; "));
     }
 }

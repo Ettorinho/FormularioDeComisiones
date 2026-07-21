@@ -70,6 +70,7 @@
             </div>
             <div class="card-body">
                 <form method="post" action="${pageContext.request.contextPath}/comisiones/cambiarCargo">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}" />
                     <input type="hidden" name="comisionId" value="${comisionMiembro.comision.id}">
                     <input type="hidden" name="miembroId" value="${comisionMiembro.miembro.id}">
                     

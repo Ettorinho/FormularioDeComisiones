@@ -68,6 +68,7 @@
                                 <td><fmt:formatDate value="${cm.fechaIncorporacion}" pattern="dd/MM/yyyy" /></td>
                                 <td>
                                     <form action="${pageContext.request.contextPath}/comisiones/bajaMiembro/${comision.id}/${cm.miembro.id}" method="post" class="form-inline-action">
+                                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
                                         <input type="date" name="fechaBaja" 
                                                value="<fmt:formatDate value='${now}' pattern='yyyy-MM-dd'/>" 
                                                max="<fmt:formatDate value='${now}' pattern='yyyy-MM-dd'/>" required />

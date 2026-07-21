@@ -46,6 +46,7 @@
 
                         <!-- Formulario de login -->
                         <form method="post" action="${pageContext.request.contextPath}/login">
+                            <input type="hidden" name="csrfToken" value="${csrfToken}" />
 
                             <div class="mb-3">
                                 <label for="username" class="form-label">Usuario</label>

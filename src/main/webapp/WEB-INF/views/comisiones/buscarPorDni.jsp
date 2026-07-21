@@ -17,6 +17,7 @@
     <h2>Buscar Miembro</h2>
     
     <form action="${pageContext.request.contextPath}/comisiones/buscarPorDni" method="post" class="mb-4">
+        <input type="hidden" name="csrfToken" value="${csrfToken}" />
         <div class="row g-3 align-items-end">
             <div class="col-auto">
                 <label for="dni" class="form-label">DNI del miembro</label>
