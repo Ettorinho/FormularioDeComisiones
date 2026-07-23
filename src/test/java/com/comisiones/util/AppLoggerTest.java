@@ -24,6 +24,11 @@ public class AppLoggerTest {
     }
 
     @Test
+    public void testWarnMethodExists() {
+        assertDoesNotThrow(() -> AppLogger.warn("Test message"));
+    }
+
+    @Test
     public void testErrorMethodExists() {
         assertDoesNotThrow(() -> AppLogger.error("Test message", null));
     }

@@ -2,24 +2,47 @@ package com.comisiones.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PastOrPresent;
+import com.comisiones.util.DateFormatUtil;
 
 public class ComisionMiembro implements Serializable {
 
     public enum Cargo {
-        REFERENTE, 
-        RESPONSABLE, 
-        PRESIDENTE, 
-        PARTICIPANTE,              // ⭐ CAMBIADO: antes era MIEMBRO
-        SECRETARIO,
-        INVESTIGADOR_PRINCIPAL,    // ⭐ NUEVO
-        INVESTIGADOR_COLABORADOR   // ⭐ NUEVO
+        REFERENTE("Referente"),
+        RESPONSABLE("Responsable"),
+        PRESIDENTE("Presidente"),
+        PARTICIPANTE("Participante"),
+        SECRETARIO("Secretario"),
+        INVESTIGADOR_PRINCIPAL("Investigador Principal"),
+        INVESTIGADOR_COLABORADOR("Investigador Colaborador");
+
+        private final String descripcion;
+
+        Cargo(String descripcion) {
+            this.descripcion = descripcion;
+        }
+
+        public String getDescripcion() {
+            return descripcion;
+        }
     }
 
     private Long id;
+
+    @NotNull(message = "La comisión es obligatoria")
     private Comision comision;
+
+    @NotNull(message = "El miembro es obligatorio")
     private Miembro miembro;
+
+    @NotNull(message = "El cargo es obligatorio")
     private Cargo cargo;
+
+    @NotNull(message = "La fecha de incorporación es obligatoria")
+    @PastOrPresent(message = "La fecha de incorporación no puede ser futura")
     private Date fechaIncorporacion;
+
     private Date fechaBaja;
 
     public ComisionMiembro() {}
@@ -78,6 +101,22 @@ public class ComisionMiembro implements Serializable {
 
     public void setFechaBaja(Date fechaBaja) {
         this.fechaBaja = fechaBaja;
+    }
+
+    /**
+     * Devuelve fechaIncorporacion formateada como "dd/MM/yyyy".
+     * Retorna cadena vacía si el valor es null (evita NPE en JSP).
+     */
+    public String getFechaIncorporacionFormateada() {
+        return DateFormatUtil.formatUtilDate(fechaIncorporacion);
+    }
+
+    /**
+     * Devuelve fechaBaja formateada como "dd/MM/yyyy".
+     * Retorna cadena vacía si el valor es null (evita NPE en JSP).
+     */
+    public String getFechaBajaFormateada() {
+        return DateFormatUtil.formatUtilDate(fechaBaja);
     }
 
     @Override

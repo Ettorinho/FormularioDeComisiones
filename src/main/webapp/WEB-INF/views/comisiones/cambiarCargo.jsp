@@ -1,40 +1,16 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Cambiar Cargo - ${comisionMiembro.miembro.nombreApellidos}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
-</head>
-<body>
-    <!-- Header -->
-    <header class="header-comisiones">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="h3 mb-0">
-                        <i class="bi bi-file-earmark-text"></i>
-                        Sistema de Gestión de Comisiones
-                    </h1>
-                    <p class="mb-0 mt-1 header-subtitle">Gobierno de Aragón</p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <fmt:formatDate value="<%= new java.util.Date() %>" pattern="dd/MM/yyyy" />
-                </div>
-            </div>
-        </div>
-    </header>
+<c:set var="pageTitle" value="Cambiar Cargo" />
+<c:set var="headerSubtitle" value="Gobierno de Aragón" />
+<%@ include file="/WEB-INF/views/common/header.jspf" %>
 
 <div class="container mt-4">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/comisiones/">Comisiones</a></li>
-            <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/comisiones/view/${comisionMiembro.comision.id}">${comisionMiembro.comision.nombre}</a></li>
+            <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/comisiones/view/${comisionMiembro.comision.id}"><c:out value="${comisionMiembro.comision.nombre}"/></a></li>
             <li class="breadcrumb-item active">Cambiar Cargo</li>
         </ol>
     </nav>
@@ -62,14 +38,14 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
-                    <p><strong>Nombre:</strong> ${comisionMiembro.miembro.nombreApellidos}</p>
-                    <p><strong>DNI/NIF:</strong> ${comisionMiembro.miembro.dniNif}</p>
-                    <p><strong>Email:</strong> ${comisionMiembro.miembro.email}</p>
+                    <p><strong>Nombre:</strong> <c:out value="${comisionMiembro.miembro.nombreApellidos}"/></p>
+                    <p><strong>DNI/NIF:</strong> <c:out value="${comisionMiembro.miembro.dniNif}"/></p>
+                    <p><strong>Email:</strong> <c:out value="${comisionMiembro.miembro.email}"/></p>
                 </div>
                 <div class="col-md-6">
-                    <p><strong>Comisión:</strong> ${comisionMiembro.comision.nombre}</p>
+                    <p><strong>Comisión:</strong> <c:out value="${comisionMiembro.comision.nombre}"/></p>
                     <p><strong>Cargo Actual:</strong> 
-                        <span class="badge cargo-${comisionMiembro.cargo} badge-cargo">${comisionMiembro.cargo}</span>
+                        <span class="badge cargo-${comisionMiembro.cargo} badge-cargo"><c:out value="${comisionMiembro.cargo.descripcion}"/></span>
                     </p>
                     <p><strong>Fecha de Incorporación:</strong> 
                         <fmt:formatDate value="${comisionMiembro.fechaIncorporacion}" pattern="dd/MM/yyyy" />
@@ -94,6 +70,7 @@
             </div>
             <div class="card-body">
                 <form method="post" action="${pageContext.request.contextPath}/comisiones/cambiarCargo">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}" />
                     <input type="hidden" name="comisionId" value="${comisionMiembro.comision.id}">
                     <input type="hidden" name="miembroId" value="${comisionMiembro.miembro.id}">
                     
@@ -102,15 +79,13 @@
                             <label for="nuevoCargo" class="form-label">Nuevo Cargo <span class="text-danger">*</span></label>
                             <select class="form-select" id="nuevoCargo" name="nuevoCargo" required>
                                 <option value="">-- Seleccione un cargo --</option>
-                                <option value="REFERENTE" ${comisionMiembro.cargo == 'REFERENTE' ? 'disabled' : ''}>REFERENTE</option>
-                                <option value="RESPONSABLE" ${comisionMiembro.cargo == 'RESPONSABLE' ? 'disabled' : ''}>RESPONSABLE</option>
-                                <option value="PRESIDENTE" ${comisionMiembro.cargo == 'PRESIDENTE' ? 'disabled' : ''}>PRESIDENTE</option>
-                                <option value="SECRETARIO" ${comisionMiembro.cargo == 'SECRETARIO' ? 'disabled' : ''}>SECRETARIO</option>
-                                <option value="PARTICIPANTE" ${comisionMiembro.cargo == 'PARTICIPANTE' ? 'disabled' : ''}>PARTICIPANTE</option>
-                                <option value="INVESTIGADOR_PRINCIPAL" ${comisionMiembro.cargo == 'INVESTIGADOR_PRINCIPAL' ? 'disabled' : ''}>INVESTIGADOR PRINCIPAL</option>
-                                <option value="INVESTIGADOR_COLABORADOR" ${comisionMiembro.cargo == 'INVESTIGADOR_COLABORADOR' ? 'disabled' : ''}>INVESTIGADOR COLABORADOR</option>
+                                <c:forEach var="cargo" items="${cargos}">
+                                    <option value="${cargo}" ${comisionMiembro.cargo == cargo ? 'disabled' : ''}>
+                                        <c:out value="${cargo.descripcion}"/>
+                                    </option>
+                                </c:forEach>
                             </select>
-                            <div class="form-text">El cargo actual (${comisionMiembro.cargo}) está deshabilitado.</div>
+                            <div class="form-text">El cargo actual (<c:out value="${comisionMiembro.cargo.descripcion}"/>) está deshabilitado.</div>
                         </div>
                         
                         <div class="col-md-6">
@@ -205,7 +180,7 @@
                                                 <span class="text-muted fst-italic">Sin motivo especificado</span>
                                             </c:when>
                                             <c:otherwise>
-                                                ${cambio.motivo}
+                                                <c:out value="${cambio.motivo}"/>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
@@ -215,7 +190,7 @@
                                                 <span class="text-muted fst-italic">SYSTEM</span>
                                             </c:when>
                                             <c:otherwise>
-                                                ${cambio.usuarioModificacion}
+                                                <c:out value="${cambio.usuarioModificacion}"/>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
@@ -232,6 +207,4 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<%@ include file="/WEB-INF/views/common/footer.jspf" %>

@@ -4,15 +4,15 @@ import com.comisiones.model.HistorialCargo;
 import com.comisiones.util.DBUtil;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DAO para gestionar el historial de cambios de cargo de miembros en comisiones.
  */
 public class HistorialCargoDAO {
-    
-    private static final String TABLE_NAME = "comision_miembro_historial_cargos";
-    
+
     /**
      * Obtiene el historial completo de cambios de cargo de un miembro en una comisión.
      * Usa la clave compuesta (comision_id, miembro_id) para identificar al miembro.
@@ -24,11 +24,12 @@ public class HistorialCargoDAO {
     public List<HistorialCargo> getHistorialByComisionMiembro(Long comisionId, Long miembroId) throws SQLException {
         List<HistorialCargo> historial = new ArrayList<>();
         
-        String sql = "SELECT id, comision_id, miembro_id, cargo_anterior, cargo_nuevo, " +
-                     "fecha_cambio, motivo, usuario_modificacion, created_at, created_by " +
-                     "FROM " + TABLE_NAME + " " +
-                     "WHERE comision_id = ? AND miembro_id = ? " +
-                     "ORDER BY fecha_cambio DESC";
+        String sql = String.join(" ",
+                "SELECT id, comision_id, miembro_id, cargo_anterior, cargo_nuevo,",
+                "fecha_cambio, motivo, usuario_modificacion, created_at, created_by",
+                "FROM comision_miembro_historial_cargos",
+                "WHERE comision_id = ? AND miembro_id = ?",
+                "ORDER BY fecha_cambio DESC");
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -54,12 +55,13 @@ public class HistorialCargoDAO {
      * @return El último cambio registrado, o null si no hay cambios
      */
     public HistorialCargo getUltimoCambio(Long comisionId, Long miembroId) throws SQLException {
-        String sql = "SELECT id, comision_id, miembro_id, cargo_anterior, cargo_nuevo, " +
-                     "fecha_cambio, motivo, usuario_modificacion, created_at, created_by " +
-                     "FROM " + TABLE_NAME + " " +
-                     "WHERE comision_id = ? AND miembro_id = ? " +
-                     "ORDER BY fecha_cambio DESC " +
-                     "LIMIT 1";
+        String sql = String.join(" ",
+                "SELECT id, comision_id, miembro_id, cargo_anterior, cargo_nuevo,",
+                "fecha_cambio, motivo, usuario_modificacion, created_at, created_by",
+                "FROM comision_miembro_historial_cargos",
+                "WHERE comision_id = ? AND miembro_id = ?",
+                "ORDER BY fecha_cambio DESC",
+                "LIMIT 1");
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -86,13 +88,14 @@ public class HistorialCargoDAO {
     public List<HistorialCargo> getHistorialByComision(Long comisionId) throws SQLException {
         List<HistorialCargo> historial = new ArrayList<>();
         
-        String sql = "SELECT h.id, h.comision_id, h.miembro_id, h.cargo_anterior, h.cargo_nuevo, " +
-                     "h.fecha_cambio, h.motivo, h.usuario_modificacion, h.created_at, h.created_by, " +
-                     "m.nombre_apellidos " +
-                     "FROM " + TABLE_NAME + " h " +
-                     "INNER JOIN miembros m ON h.miembro_id = m.id " +
-                     "WHERE h.comision_id = ? " +
-                     "ORDER BY h.fecha_cambio DESC";
+        String sql = String.join(" ",
+                "SELECT h.id, h.comision_id, h.miembro_id, h.cargo_anterior, h.cargo_nuevo,",
+                "h.fecha_cambio, h.motivo, h.usuario_modificacion, h.created_at, h.created_by,",
+                "m.nombre_apellidos",
+                "FROM comision_miembro_historial_cargos h",
+                "INNER JOIN miembros m ON h.miembro_id = m.id",
+                "WHERE h.comision_id = ?",
+                "ORDER BY h.fecha_cambio DESC");
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -124,13 +127,14 @@ public class HistorialCargoDAO {
     public List<HistorialCargo> getHistorialByMiembro(Long miembroId) throws SQLException {
         List<HistorialCargo> historial = new ArrayList<>();
         
-        String sql = "SELECT h.id, h.comision_id, h.miembro_id, h.cargo_anterior, h.cargo_nuevo, " +
-                     "h.fecha_cambio, h.motivo, h.usuario_modificacion, h.created_at, h.created_by, " +
-                     "c.nombre as nombre_comision " +
-                     "FROM " + TABLE_NAME + " h " +
-                     "INNER JOIN comisiones c ON h.comision_id = c.id " +
-                     "WHERE h.miembro_id = ? " +
-                     "ORDER BY h.fecha_cambio DESC";
+        String sql = String.join(" ",
+                "SELECT h.id, h.comision_id, h.miembro_id, h.cargo_anterior, h.cargo_nuevo,",
+                "h.fecha_cambio, h.motivo, h.usuario_modificacion, h.created_at, h.created_by,",
+                "c.nombre as nombre_comision",
+                "FROM comision_miembro_historial_cargos h",
+                "INNER JOIN comisiones c ON h.comision_id = c.id",
+                "WHERE h.miembro_id = ?",
+                "ORDER BY h.fecha_cambio DESC");
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -152,6 +156,33 @@ public class HistorialCargoDAO {
         
         return historial;
     }
+
+    public Map<Long, List<HistorialCargo>> getHistorialAgrupadoPorMiembro(Long miembroId) throws SQLException {
+        Map<Long, List<HistorialCargo>> historialPorComision = new LinkedHashMap<>();
+        String sql = String.join(" ",
+                "SELECT id, comision_id, miembro_id, cargo_anterior, cargo_nuevo,",
+                "fecha_cambio, motivo, usuario_modificacion, created_at, created_by",
+                "FROM comision_miembro_historial_cargos",
+                "WHERE miembro_id = ?",
+                "ORDER BY comision_id, fecha_cambio DESC");
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, miembroId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    HistorialCargo historialCargo = extractHistorialCargoFromResultSet(rs);
+                    historialPorComision
+                            .computeIfAbsent(historialCargo.getComisionId(), ignored -> new ArrayList<>())
+                            .add(historialCargo);
+                }
+            }
+        }
+
+        return historialPorComision;
+    }
     
     /**
      * Actualiza el motivo del último cambio de cargo.
@@ -163,14 +194,15 @@ public class HistorialCargoDAO {
      */
     public void actualizarMotivoUltimoCambio(Long comisionId, Long miembroId, String motivo) throws SQLException {
         // PostgreSQL no permite ORDER BY en UPDATE directamente, así que usamos un subquery
-        String sql = "UPDATE " + TABLE_NAME + " " +
-                     "SET motivo = ? " +
-                     "WHERE id = (" +
-                     "  SELECT id FROM " + TABLE_NAME + " " +
-                     "  WHERE comision_id = ? AND miembro_id = ? " +
-                     "  ORDER BY fecha_cambio DESC " +
-                     "  LIMIT 1" +
-                     ")";
+        String sql = String.join(" ",
+                "UPDATE comision_miembro_historial_cargos",
+                "SET motivo = ?",
+                "WHERE id = (",
+                "SELECT id FROM comision_miembro_historial_cargos",
+                "WHERE comision_id = ? AND miembro_id = ?",
+                "ORDER BY fecha_cambio DESC",
+                "LIMIT 1",
+                ")");
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {

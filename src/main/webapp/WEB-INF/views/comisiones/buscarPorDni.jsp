@@ -9,42 +9,19 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <jsp:useBean id="now" class="java.util.Date" />
-<! DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Buscar Comisiones por DNI</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
-</head>
-<body>
-    <!-- Header -->
-    <header class="header-comisiones">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="h3 mb-0">
-                        <i class="bi bi-file-earmark-text"></i>
-                        Sistema de Gestión de Comisiones
-                    </h1>
-                    <p class="mb-0 mt-1 header-subtitle">Gobierno de Aragón</p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <fmt:formatDate value="<%= new java.util.Date() %>" pattern="dd/MM/yyyy" />
-                </div>
-            </div>
-        </div>
-    </header>
+<c:set var="pageTitle" value="Buscar Comisiones por DNI" />
+<c:set var="headerSubtitle" value="Gobierno de Aragón" />
+<%@ include file="/WEB-INF/views/common/header.jspf" %>
 
 <div class="container mt-4">
     <h2>Buscar Miembro</h2>
     
     <form action="${pageContext.request.contextPath}/comisiones/buscarPorDni" method="post" class="mb-4">
+        <input type="hidden" name="csrfToken" value="${csrfToken}" />
         <div class="row g-3 align-items-end">
             <div class="col-auto">
                 <label for="dni" class="form-label">DNI del miembro</label>
-                <input type="text" name="dni" id="dni" class="form-control" placeholder="Introduce DNI" required value="${dniBuscado != null ? dniBuscado : ''}" />
+                <input type="text" name="dni" id="dni" class="form-control" placeholder="Introduce DNI" required value="<c:out value='${dniBuscado != null ? dniBuscado : ""}'/>" />
             </div>
             <div class="col-auto">
                 <button type="submit" class="btn btn-primary">🔍 Buscar</button>
@@ -79,11 +56,11 @@
                 <div class="card mb-4">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0">
-                            👤 ${miembro.nombreApellidos} 
-                            <span class="badge bg-light text-dark">${miembro. dniNif}</span>
+                            👤 <c:out value="${miembro.nombreApellidos}"/> 
+                            <span class="badge bg-light text-dark"><c:out value="${miembro.dniNif}"/></span>
                         </h5>
                         <c:if test="${not empty miembro.email}">
-                            <small>📧 ${miembro.email}</small>
+                            <small>📧 <c:out value="${miembro.email}"/></small>
                         </c:if>
                     </div>
                 </div>
@@ -123,69 +100,18 @@
                                                 <a href="#" class="text-decoration-none text-dark fw-bold toggle-historial"
                                                    data-target="historial-${cm.comision.id}"
                                                    onclick="toggleHistorial('historial-${cm.comision.id}'); return false;">
-                                                    ${cm.comision.nombre}
+                                                    <c:out value="${cm.comision.nombre}"/>
                                                     <small class="text-muted ms-1">[+]</small>
                                                 </a>
                                             </td>
                                             <td>
-                                                <c:choose>
-                                                    <c:when test="${cm.comision.area == 'ATENCION_ESPECIALIZADA'}">
-                                                        <span class="badge bg-info">Atención Especializada</span>
-                                                    </c:when>
-                                                    <c:when test="${cm.comision.area == 'ATENCION_PRIMARIA'}">
-                                                        <span class="badge bg-success">Atención Primaria</span>
-                                                    </c:when>
-                                                    <c:when test="${cm.comision.area == 'MIXTA'}">
-                                                        <span class="badge bg-warning text-dark">Mixta</span>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        ${cm.comision.area}
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                <span class="badge bg-info"><c:out value="${cm.comision.area.descripcion}"/></span>
                                             </td>
                                             <td>
-                                                <c:choose>
-                                                    <c:when test="${cm.comision.tipo == 'COMISION'}">
-                                                        Comisión
-                                                    </c:when>
-                                                    <c:when test="${cm.comision.tipo == 'GRUPO_TRABAJO'}">
-                                                        Grupo de Trabajo
-                                                    </c:when>
-                                                    <c:when test="${cm.comision.tipo == 'GRUPO_MEJORA'}">
-                                                        Grupo de Mejora
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        ${cm.comision.tipo}
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                <c:out value="${cm.comision.tipo.descripcion}"/>
                                             </td>
                                             <td>
-                                                <c:choose>
-                                                    <c:when test="${cm.cargo == 'PRESIDENTE'}">
-                                                        <span class="badge bg-danger">Presidente</span>
-                                                    </c:when>
-                                                    <c:when test="${cm.cargo == 'SECRETARIO'}">
-                                                        <span class="badge bg-warning text-dark">Secretario</span>
-                                                    </c:when>
-                                                    <c:when test="${cm. cargo == 'RESPONSABLE'}">
-                                                        <span class="badge bg-primary">Responsable</span>
-                                                    </c:when>
-                                                    <c:when test="${cm.cargo == 'REFERENTE'}">
-                                                        <span class="badge bg-secondary">Referente</span>
-                                                    </c:when>
-                                                    <c:when test="${cm.cargo == 'INVESTIGADOR_PRINCIPAL'}">
-                                                        <span class="badge bg-dark">Investigador Principal</span>
-                                                    </c:when>
-                                                    <c:when test="${cm.cargo == 'INVESTIGADOR_COLABORADOR'}">
-                                                        <span class="badge bg-dark">Investigador Colaborador</span>
-                                                    </c:when>
-                                                    <c:when test="${cm.cargo == 'PARTICIPANTE'}">
-                                                        <span class="badge bg-light text-dark">Participante</span>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        ${cm.cargo}
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                <span class="badge bg-primary"><c:out value="${cm.cargo.descripcion}"/></span>
                                             </td>
                                             <td>
                                                 <fmt:formatDate value="${cm.fechaIncorporacion}" pattern="dd/MM/yyyy" />
@@ -345,138 +271,8 @@
         </c:choose>
     </c:if>
     
-    <a href="${pageContext.request.contextPath}/" class="btn btn-secondary mt-3">🏠 Volver al Inicio</a>
+    <a href="${pageContext.request.contextPath}/comisiones" class="btn btn-secondary mt-3"><i class="bi bi-arrow-left"></i> Volver a Comisiones</a>
 </div>
 
-<script>
-function toggleHistorial(id) {
-    const fila = document.getElementById(id);
-    if (fila) {
-        fila.classList.toggle('oculto');
-        // Cambiar el icono +/-
-        const link = document.querySelector('[data-target="' + id + '"]');
-        if (link) {
-            const icono = link.querySelector('small');
-            if (icono) {
-                icono.textContent = fila.classList.contains('oculto') ? '[+]' : '[-]';
-            }
-        }
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const checkActivas = document.getElementById('mostrarActivas');
-    const checkFinalizadas = document.getElementById('mostrarFinalizadas');
-    const filas = document.querySelectorAll('.fila-comision');
-    
-    console.log('Checkboxes encontrados:', {
-        activas: checkActivas !== null,
-        finalizadas:  checkFinalizadas !== null,
-        totalFilas: filas.length
-    });
-    
-    // Función para actualizar contadores
-    function actualizarContadores() {
-        let totalActivas = 0;
-        let totalFinalizadas = 0;
-        let totalVisibles = 0;
-        
-        filas.forEach(fila => {
-            const estado = fila.getAttribute('data-estado');
-            const visible = ! fila.classList.contains('oculto');
-            
-            if (estado === 'activa') {
-                totalActivas++;
-                if (visible) totalVisibles++;
-            } else {
-                totalFinalizadas++;
-                if (visible) totalVisibles++;
-            }
-        });
-        
-        const elemTotalActivas = document.getElementById('totalActivas');
-        const elemTotalFinalizadas = document.getElementById('totalFinalizadas');
-        const elemTotalVisibles = document.getElementById('totalVisibles');
-        
-        if (elemTotalActivas) elemTotalActivas.textContent = totalActivas;
-        if (elemTotalFinalizadas) elemTotalFinalizadas.textContent = totalFinalizadas;
-        if (elemTotalVisibles) elemTotalVisibles.textContent = totalVisibles;
-        
-        console.log('Contadores actualizados:', {
-            activas: totalActivas,
-            finalizadas: totalFinalizadas,
-            visibles: totalVisibles
-        });
-    }
-    
-    // Función para filtrar filas
-    function filtrarComisiones() {
-        if (!checkActivas || !checkFinalizadas) {
-            console.log('Checkboxes no encontrados, saliendo...');
-            return;
-        }
-        
-        const mostrarActivas = checkActivas. checked;
-        const mostrarFinalizadas = checkFinalizadas. checked;
-        
-        console.log('Filtrando:', {
-            mostrarActivas:  mostrarActivas,
-            mostrarFinalizadas: mostrarFinalizadas
-        });
-        
-        let ocultadas = 0;
-        let mostradas = 0;
-        
-        filas.forEach(fila => {
-            const estado = fila.getAttribute('data-estado');
-            let mostrar = false;
-            
-            if (estado === 'activa' && mostrarActivas) {
-                mostrar = true;
-            } else if (estado === 'finalizada' && mostrarFinalizadas) {
-                mostrar = true;
-            }
-            
-            if (mostrar) {
-                fila.classList.remove('oculto');
-                mostradas++;
-            } else {
-                fila.classList.add('oculto');
-                ocultadas++;
-            }
-        });
-        
-        console.log('Resultado filtrado:', {
-            mostradas: mostradas,
-            ocultadas: ocultadas
-        });
-        
-        actualizarContadores();
-    }
-    
-    // Event listeners
-    if (checkActivas) {
-        checkActivas.addEventListener('change', function() {
-            console.log('Checkbox Activas cambiado a:', this.checked);
-            filtrarComisiones();
-        });
-    }
-    
-    if (checkFinalizadas) {
-        checkFinalizadas.addEventListener('change', function() {
-            console.log('Checkbox Finalizadas cambiado a:', this. checked);
-            filtrarComisiones();
-        });
-    }
-    
-    // Inicializar contadores al cargar la página
-    if (filas.length > 0) {
-        console.log('Inicializando contadores...');
-        actualizarContadores();
-    }
-});
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<script src="${pageContext.request.contextPath}/resources/js/comisiones.js"></script>
+<%@ include file="/WEB-INF/views/common/footer.jspf" %>

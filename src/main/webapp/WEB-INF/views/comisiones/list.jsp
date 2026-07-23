@@ -8,12 +8,12 @@
     <meta charset="UTF-8">
     <title>Listado de Comisiones</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
     <!-- Header -->
-    <header class="header-comisiones">
+    <header class="header-app">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
@@ -24,7 +24,13 @@
                     <p class="mb-0 mt-1 header-subtitle">Gobierno de Aragón</p>
                 </div>
                 <div class="col-md-4 text-end">
-                    <fmt:formatDate value="<%= new java.util.Date() %>" pattern="dd/MM/yyyy" />
+                    <span class="text-white me-3 small">
+                        <i class="bi bi-person-circle me-1"></i>
+                        <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
+                    </span>
+                    <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+                    </a>
                 </div>
             </div>
         </div>
@@ -33,7 +39,9 @@
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2>Comisiones y Grupos</h2>
-            <a href="${pageContext.request.contextPath}/comisiones/new" class="btn btn-primary">Nueva Comisión</a>
+            <c:if test="${sessionScope.rolUsuario == 'ADMIN'}">
+                <a href="${pageContext.request.contextPath}/comisiones/new" class="btn btn-primary">Nueva Comisión</a>
+            </c:if>
         </div>
         <c:if test="${not empty comisiones}">
             <table class="table table-striped">

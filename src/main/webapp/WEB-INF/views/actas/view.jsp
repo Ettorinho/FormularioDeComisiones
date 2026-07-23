@@ -1,68 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acta de Reunión - Gobierno de Aragón</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
-</head>
-<body>
-    <!-- Header -->
-    <header class="header-aragon no-print">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="h3 mb-0">
-                        <i class="bi bi-file-earmark-text"></i>
-                        Sistema de Gestión de Comisiones
-                    </h1>
-                    <p class="mb-0 mt-1 header-subtitle">Gestión de Actas</p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <fmt:formatDate value="<%= new java.util.Date() %>" pattern="dd/MM/yyyy" />
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <%-- Navbar (comentado temporalmente)
-    <nav class="navbar navbar-expand-lg navbar-custom no-print">
-        <div class="container">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/">
-                            <i class="bi bi-house-door"></i> Inicio
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/comisiones">
-                            <i class="bi bi-people"></i> Comisiones
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="${pageContext.request.contextPath}/actas/new">
-                            <i class="bi bi-file-earmark-plus"></i> Actas
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/comisiones/buscarPorDni">
-                            <i class="bi bi-search"></i> Buscar Miembros
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    --%>
+<c:set var="pageTitle" value="Acta de Reunión - Gobierno de Aragón" />
+<c:set var="headerSubtitle" value="Gestión de Actas" />
+<c:set var="headerClass" value="no-print" />
+<%@ include file="/WEB-INF/views/common/header.jspf" %>
 
     <!-- Contenido Principal -->
     <div class="container mt-4 mb-5">
@@ -86,16 +28,23 @@
         <c:if test="${not empty acta}">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h3 class="mb-0">
-                        <i class="bi bi-file-earmark-text"></i> Acta de Reunión #${acta.id}
-                    </h3>
+                    <div>
+                        <h3 class="mb-0">
+                            <i class="bi bi-file-earmark-text"></i> <c:out value="${acta.titulo}"/>
+                        </h3>
+                        <p class="mb-0 text-white-50">
+                            <small><i class="bi bi-hash"></i> Acta #${acta.id}</small>
+                        </p>
+                    </div>
                     <div class="no-print">
                         <button onclick="window.print()" class="btn btn-light btn-sm me-2">
                             <i class="bi bi-printer"></i> Imprimir
                         </button>
+                        <c:if test="${rolUsuario == 'ADMIN' || rolUsuario == 'GESTOR'}">
                         <a href="${pageContext.request.contextPath}/actas/new" class="btn btn-light btn-sm">
                             <i class="bi bi-plus-circle"></i> Nueva Acta
                         </a>
+                        </c:if>
                     </div>
                 </div>
                 
@@ -104,27 +53,20 @@
                     <!-- Información General -->
                     <div class="acta-header mb-4">
                         <h4 class="text-primary mb-3">
-                            <i class="bi bi-building"></i> ${acta.comision.nombre}
+                            <i class="bi bi-building"></i> <c:out value="${acta.comision.nombre}"/>
                         </h4>
                         <div class="row">
                             <div class="col-md-6">
                                 <c:if test="${not empty acta.comision.area}">
                                     <p class="mb-2">
                                         <strong><i class="bi bi-diagram-3"></i> Área: </strong>
-                                        <span class="badge bg-info ms-2">
-                                            <c:choose>
-                                                <c:when test="${acta.comision.area == 'ATENCION_ESPECIALIZADA'}">Atención Especializada</c:when>
-                                                <c:when test="${acta.comision.area == 'ATENCION_PRIMARIA'}">Atención Primaria</c:when>
-                                                <c:when test="${acta.comision.area == 'MIXTA'}">Mixta</c:when>
-                                                <c:otherwise>${acta.comision.area}</c:otherwise>
-                                            </c:choose>
-                                        </span>
+                                       <span class="badge bg-info ms-2"><c:out value="${acta.comision.area.descripcion}"/></span>
                                     </p>
                                 </c:if>
                                 <p class="mb-2">
                                     <strong><i class="bi bi-calendar-event"></i> Fecha de Reunión:</strong>
                                     <span class="ms-2">
-                                        <fmt:formatDate value="${acta.fechaReunion}" pattern="dd/MM/yyyy" />
+                                        <c:out value="${acta.fechaReunionFormateada}"/>
                                     </span>
                                 </p>
                             </div>
@@ -132,7 +74,7 @@
                                 <p class="mb-0 text-muted">
                                     <small>
                                         <i class="bi bi-clock-history"></i> Acta creada el: 
-                                        <fmt:formatDate value="${acta.fechaCreacion}" pattern="dd/MM/yyyy 'a las' HH:mm" />
+                                        <c:out value="${acta.fechaCreacionFormateada}"/>
                                     </small>
                                 </p>
                             </div>
@@ -199,10 +141,10 @@
                                             <c:set var="hayAsistentes" value="true"/>
                                             <li class="asistio">
                                                 <i class="bi bi-person-fill text-success"></i>
-                                                <strong>${asistencia.miembro.nombreApellidos}</strong>
+                                                <strong><c:out value="${asistencia.miembro.nombreApellidos}"/></strong>
                                                 <br>
                                                 <small class="text-muted ms-3">
-                                                    <i class="bi bi-card-text"></i> ${asistencia.miembro.dniNif}
+                                                    <i class="bi bi-card-text"></i> <c:out value="${asistencia.miembro.dniNif}"/>
                                                 </small>
                                             </li>
                                         </c:if>
@@ -225,10 +167,10 @@
                                             <c:set var="hayAusentes" value="true"/>
                                             <li class="no-asistio">
                                                 <i class="bi bi-person text-danger"></i>
-                                                <strong>${asistencia.miembro.nombreApellidos}</strong>
+                                                <strong><c:out value="${asistencia.miembro.nombreApellidos}"/></strong>
                                                 <br>
                                                 <small class="text-muted ms-3">
-                                                    <i class="bi bi-card-text"></i> ${asistencia.miembro.dniNif}
+                                                    <i class="bi bi-card-text"></i> <c:out value="${asistencia.miembro.dniNif}"/>
                                                 </small>
                                                 
                                                 <!-- MOSTRAR JUSTIFICACIÓN -->
@@ -238,7 +180,7 @@
                                                             <i class="bi bi-file-earmark-text"></i> Justificación:
                                                         </div>
                                                         <div class="justificacion-text">
-                                                            "${asistencia.justificacion}"
+                                                            "<c:out value="${asistencia.justificacion}"/>"
                                                         </div>
                                                     </div>
                                                 </c:if>
@@ -264,7 +206,7 @@
                         <c:choose>
                             <c:when test="${not empty acta.observaciones}">
                                 <div class="observaciones-box">
-                                    <p class="mb-0" style="white-space: pre-wrap; line-height: 1.6;">${acta.observaciones}</p>
+                                    <p class="mb-0" style="white-space: pre-wrap; line-height: 1.6;"><c:out value="${acta.observaciones}"/></p>
                                 </div>
                             </c:when>
                             <c:otherwise>
@@ -313,7 +255,7 @@
                                                 <i class="bi bi-file-earmark-pdf-fill fs-1 text-danger me-3"></i>
                                                 <div>
                                                     <h6 class="mb-1">
-                                                        <strong><i class="bi bi-paperclip"></i> ${acta.pdfNombre}</strong>
+                                                        <strong><i class="bi bi-paperclip"></i> <c:out value="${acta.pdfNombre}"/></strong>
                                                     </h6>
                                                     <small class="text-muted">
                                                         <i class="bi bi-filetype-pdf"></i> Documento PDF adjunto a esta acta
@@ -346,9 +288,11 @@
                             <a href="${pageContext.request.contextPath}/" class="btn btn-secondary">
                                 <i class="bi bi-house"></i> Inicio
                             </a>
+                            <c:if test="${rolUsuario == 'ADMIN' || rolUsuario == 'GESTOR'}">
                             <a href="${pageContext.request.contextPath}/actas/new" class="btn btn-primary">
                                 <i class="bi bi-plus-circle"></i> Nueva Acta
                             </a>
+                            </c:if>
                         </div>
                         <button onclick="window.print()" class="btn btn-outline-primary">
                             <i class="bi bi-printer"></i> Imprimir
@@ -360,18 +304,4 @@
         
     </div>
 
-    <%-- Footer --%>
-    <%--
-    <footer class="bg-dark text-white py-3 mt-5 no-print">
-        <div class="container text-center">
-            <p class="mb-0">
-                &copy; <fmt:formatDate value="<%= new java.util.Date() %>" pattern="yyyy" /> 
-                Gobierno de Aragón - Departamento de Sanidad
-            </p>
-        </div>
-    </footer>
-    --%>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<%@ include file="/WEB-INF/views/common/footer.jspf" %>

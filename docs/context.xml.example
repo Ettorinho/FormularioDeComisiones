@@ -13,12 +13,20 @@
                  value="ldap://IP_SERVIDOR:389" override="false"/>
     <Environment name="ldap/baseDn"       type="java.lang.String"
                  value="OU=UnidadOrg,DC=dominio,DC=es" override="false"/>
+    <!--
+        ldap/bindDn y ldap/bindPassword: cuenta de servicio con permisos para leer memberOf.
+        Usada por LdapLookupServlet (búsqueda de usuarios por DNI) y por LoginServlet
+        (lectura de memberOf tras autenticación, necesario para asignar el rol correcto).
+    -->
     <Environment name="ldap/bindDn"       type="java.lang.String"
                  value="CN=Usuario,OU=Org,DC=dominio,DC=es" override="false"/>
     <Environment name="ldap/bindPassword" type="java.lang.String"
                  value="PASSWORD_LDAP" override="false"/>
     <Environment name="ldap/dniAttr"      type="java.lang.String"
                  value="cn" override="false"/>
+    <!-- Dominio AD para construir el userPrincipalName en el login (ej: empresa.com) -->
+    <Environment name="ldap/dominio"      type="java.lang.String"
+                 value="CONFIGURAR_DOMINIO_AD" override="false"/>
 
     <!-- ====== BASE DE DATOS (ya usado por DBUtil.java) ====== -->
     <Environment name="db/url"      type="java.lang.String"
@@ -27,5 +35,15 @@
                  value="USUARIO_BD" override="false"/>
     <Environment name="db/password" type="java.lang.String"
                  value="PASSWORD_BD" override="false"/>
+
+    <!-- ====== ROLES AD (grupos del Active Directory) ====== -->
+    <!-- Sustituir los valores por los nombres reales de los grupos AD (CN=...) -->
+    <!-- Si un parámetro no está configurado, ese rol simplemente no se asigna -->
+    <Environment name="roles/admin"   type="java.lang.String"
+                 value="CONFIGURAR_GRUPO_AD_ADMIN"   override="false"/>
+    <Environment name="roles/gestor"  type="java.lang.String"
+                 value="CONFIGURAR_GRUPO_AD_GESTOR"  override="false"/>
+    <Environment name="roles/lectura" type="java.lang.String"
+                 value="CONFIGURAR_GRUPO_AD_LECTURA" override="false"/>
 
 </Context>

@@ -1,261 +1,122 @@
 # Migraciones de base de datos
 
-Scripts SQL ordenados por versión. Formato: V{n}__{descripcion}.sql
+Scripts SQL ordenados por versión, siguiendo la convención de nombrado **Flyway** (`V<N>__<descripcion>.sql`).
 
-<<<<<<< copilot/improve-maintainability
-| Fichero | Descripción |
-|---|---|
-| V1__esquema_inicial.sql | Esquema inicial |
-| V2__add_pdf_support.sql | Soporte PDF |
-| V3__updated_schema.sql | Actualizaciones del esquema |
-=======
-## Migraciones de esquema base (V-numeradas)
+## 📐 Convención adoptada
 
-| Fichero | Descripción |
-|---|---|
-| `V1__esquema_inicial.sql` | Esquema inicial de la base de datos |
-| `V2__add_pdf_support.sql` | Añade soporte para almacenamiento de PDFs |
-| `V3__updated_schema.sql` | Actualizaciones del esquema |
+Todos los scripts de migración siguen el formato:
 
-### Convención de nombres
-
-Los ficheros siguen el formato `V{número}__{descripción}.sql` para facilitar
-la aplicación ordenada de migraciones.
-
----
-
-## 📋 Migraciones Disponibles
-
-### **001_mejoras_criticas.sql** - Mejoras Críticas y Correcciones
-**Fecha**: 2026-02-05  
-**Estado**: Listo para ejecutar  
-**Reversible**: Sí (ver 001_rollback.sql)
-
-#### 🎯 Objetivos
-
-Esta migración implementa correcciones críticas, mejoras de escalabilidad, auditoría y validaciones de integridad.
-
-#### 📊 Cambios Incluidos
-
-##### 1️⃣ **CORRECCIONES CRÍTICAS** (Prioridad Alta)
-- ✅ Renombra tabla `asistencias_acta` → `asistencias_actas` (consistencia con código Java)
-- ✅ Añade `PARTICIPANTE` y otros cargos al constraint de validación (`check_cargo`)
-
-##### 2️⃣ **MEJORAS DE ESCALABILIDAD** (Prioridad Media)
-- ✅ Estandariza todos los IDs a `BIGINT` (comisiones, miembros, relaciones)
-- ✅ Actualiza secuencias a `BIGINT`
-
-##### 3️⃣ **MEJORAS DE AUDITORÍA** (Prioridad Media)
-- ✅ Añade campos `fecha_creacion` y `fecha_modificacion` donde faltan
-- ✅ Crea función `actualizar_fecha_modificacion()` para auto-actualización
-- ✅ Implementa triggers automáticos en todas las tablas
-
-##### 4️⃣ **VALIDACIONES DE INTEGRIDAD** (Prioridad Baja)
-- ✅ Amplía `dni_nif` de VARCHAR(10) a VARCHAR(15) para NIE/pasaportes
-- ✅ Añade validación de formato de email con regex
-- ✅ Añade validación de `fecha_reunion` (no permite fechas futuras)
-
----
-
-## 🚀 Instrucciones de Ejecución
-
-### Pre-requisitos
-
-1. **PostgreSQL 12 o superior** instalado
-2. **Permisos de administrador** en la base de datos
-3. **Backup completo** de la base de datos (OBLIGATORIO)
-
-### Paso 1: Crear Backup
-
-```bash
-# Reemplazar 'nombre_bd' con el nombre real de tu base de datos
-pg_dump -U postgres -d nombre_bd > backup_pre_migracion_$(date +%Y%m%d_%H%M%S).sql
+```
+V<N>__<descripcion>.sql
 ```
 
-**⚠️ IMPORTANTE**: Verifica que el backup se creó correctamente antes de continuar:
+- `V` — prefijo obligatorio (letra mayúscula V)
+- `<N>` — número de versión entero, empieza en 1, sin ceros a la izquierda
+- `__` — doble guión bajo como separador
+- `<descripcion>` — descripción corta en minúsculas con guiones bajos
 
-```bash
-# Verificar que el archivo de backup no está vacío
-ls -lh backup_pre_migracion_*.sql
+Los scripts de rollback (no aplicados por Flyway) siguen el formato:
+
+```
+V<N>__rollback.sql
 ```
 
-### Paso 2: Ejecutar la Migración
+## 📋 Migraciones disponibles
 
+| Versión | Archivo | Descripción | Estado |
+|---------|---------|-------------|--------|
+| V1 | `V1__esquema_inicial.sql` | Esquema original de la base de datos (dump pg_dump) | Baseline |
+| V2 | `V2__add_pdf_support.sql` | Soporte para almacenamiento de PDFs en actas | Incremental |
+| V3 | `V3__updated_schema.sql` | Esquema actualizado completo (incluye todos los tipos ENUM, tablas y constraints actualizados). Usar para instalaciones nuevas. | Baseline alternativo |
+| V4 | `V4__cargo_enum_fixed.sql` | Convierte columna `cargo` de VARCHAR a ENUM `cargo_type`. Maneja correctamente el trigger existente (drop + recreate). **Reemplaza** la versión original rota. | Incremental |
+| V5 | `V5__mejoras_criticas.sql` | Renombra tabla asistencias, conversión de IDs a BIGINT, triggers de auditoría, constraints de validación | Incremental |
+| V6 | `V6__historial_cargos.sql` | Crea tabla `comision_miembro_historial_cargos` con trigger automático de auditoría de cambios de cargo | Incremental |
+| V7 | `V7__fix_duplicate_indexes.sql` | Elimina índices duplicados en tablas `actas` y `miembros` | Incremental |
+| V8 | `V8__agregar_area_mixta.sql` | Agrega el valor `MIXTA` al enum `area_type` (idempotente) | Incremental |
+| V9 | `V9__fix_historial_cargo_constraints.sql` | Añade CHECK constraints a `comision_miembro_historial_cargos` | Incremental |
+| V10 | `V10__trigger_usuario_ad.sql` | Trigger para propagar `app.usuario_modificacion` al historial de cargos | Incremental |
+| V11 | `V11__auditoria_acciones.sql` | Crea tabla `auditoria_acciones` para registro centralizado de auditoría | Incremental |
+| V12 | `V12__fix_historial_cargo_types.sql` | Convierte `cargo_anterior`/`cargo_nuevo` de VARCHAR a `cargo_type` ENUM en historial | Incremental |
+| V13 | `V13__extend_auditoria_acciones.sql` | Añade columnas de seguridad a `auditoria_acciones` (user_agent, resultado, duracion_ms, etc.) | Incremental |
+| V14 | `V14__add_titulo_to_actas.sql` | Añade columna `titulo` (VARCHAR 200) a la tabla `actas` | Incremental |
+
+## ⚠️ Nota sobre V4: resolución del conflicto de versión duplicada
+
+Existían dos archivos con versión V4:
+- `V4__cargo_enum.sql` — versión original, **fallaba** con el error "no se puede alterar el tipo de una columna usada en trigger"
+- `V4__cargo_enum _fixed.sql` — versión corregida (tenía un espacio en el nombre)
+
+**Resolución**: Se eliminó el archivo roto (`V4__cargo_enum.sql`) y se renombró el corregido a `V4__cargo_enum_fixed.sql`. Este es ahora el único V4.
+
+Si tu base de datos ya tiene aplicado el V4 original (y falló), aplica V4__cargo_enum_fixed.sql manualmente y actualiza el checksum en `flyway_schema_history`.
+
+## 🔄 Rutas de instalación
+
+### Instalación nueva (desde cero)
 ```bash
-# Opción 1: Desde línea de comandos
-psql -U postgres -d nombre_bd -f database/migrations/001_mejoras_criticas.sql
+# Opción A: Flyway aplica V1 → V14 en orden
+flyway migrate
 
-# Opción 2: Desde psql interactivo
-psql -U postgres -d nombre_bd
-\i database/migrations/001_mejoras_criticas.sql
+# Opción B: Usar V3 como baseline (esquema completo) + V4 en adelante
+flyway baseline -baselineVersion=3
+flyway migrate
 ```
 
-### Paso 3: Verificar la Migración
+### Actualización de instalación existente
+```bash
+# Flyway aplica solo las versiones no registradas en flyway_schema_history
+flyway migrate
+```
 
-El script incluye verificaciones automáticas que se ejecutan al final. Revisa la salida para confirmar:
-
-- ✓ Tabla `asistencias_actas` renombrada correctamente
-- ✓ 5 triggers creados correctamente
-- ✓ Constraints de validación creados
-
-También puedes ejecutar estas verificaciones manualmente:
-
+### Ejecución manual (sin Flyway)
 ```sql
--- Verificar tabla renombrada
-SELECT EXISTS (
-    SELECT 1 FROM information_schema.tables 
-    WHERE table_schema = 'public' AND table_name = 'asistencias_actas'
-);
-
--- Listar triggers creados
-SELECT trigger_name, event_object_table 
-FROM information_schema.triggers 
-WHERE trigger_name LIKE 'trigger_%_modificacion'
-ORDER BY event_object_table;
-
--- Verificar constraints
-SELECT table_name, constraint_name, check_clause
-FROM information_schema.check_constraints
-WHERE constraint_schema = 'public'
-  AND constraint_name IN ('check_cargo', 'check_email', 'check_fecha_reunion');
+-- Ejecutar en orden:
+\i V1__esquema_inicial.sql
+\i V2__add_pdf_support.sql
+-- (o usar V3 como base completa + continuar desde V4)
+\i V4__cargo_enum_fixed.sql
+\i V5__mejoras_criticas.sql
+\i V6__historial_cargos.sql
+\i V7__fix_duplicate_indexes.sql
+\i V8__agregar_area_mixta.sql
+\i V9__fix_historial_cargo_constraints.sql
+\i V10__trigger_usuario_ad.sql
+\i V11__auditoria_acciones.sql
+\i V12__fix_historial_cargo_types.sql
+\i V13__extend_auditoria_acciones.sql
+\i V14__add_titulo_to_actas.sql
 ```
 
----
+## ⏪ Rollbacks disponibles
 
-## ⏪ Rollback (Revertir Cambios)
+Los rollbacks **NO son migraciones Flyway** y deben ejecutarse manualmente si se necesita revertir:
 
-Si necesitas revertir la migración, ejecuta el script de rollback:
+| Script | Revierte |
+|--------|----------|
+| `V5__rollback.sql` | Migración V5 (mejoras críticas) |
+| `V6__rollback.sql` | Migración V6 (historial cargos) |
+| `V8__rollback.sql` | Migración V8 (área MIXTA — solo si no hay datos) |
 
-### ⚠️ ADVERTENCIAS ANTES DE EJECUTAR ROLLBACK
+> ⚠️ **ADVERTENCIA**: Algunos rollbacks contienen operaciones `CASCADE`. Revisa el script antes de ejecutar y asegúrate de tener un backup.
 
-1. **DNI/NIF**: Si algún miembro tiene un DNI/NIF con más de 10 caracteres, el rollback fallará al intentar revertir a VARCHAR(10). En ese caso, mantén VARCHAR(15).
+## 📝 Registro de migraciones
 
-2. **IDs grandes**: Si algún ID supera 2,147,483,647 (límite de INTEGER), el rollback fallará. En ese caso, mantén BIGINT.
+Una vez aplicadas mediante Flyway, el historial se almacena automáticamente en la tabla `flyway_schema_history`.
 
-3. **Triggers y auditoría**: Los campos `fecha_modificacion` dejarán de actualizarse automáticamente.
-
-### Ejecutar Rollback
-
-```bash
-# Crear backup antes del rollback (por si acaso)
-pg_dump -U postgres -d nombre_bd > backup_pre_rollback_$(date +%Y%m%d_%H%M%S).sql
-
-# Ejecutar rollback
-psql -U postgres -d nombre_bd -f database/migrations/001_rollback.sql
-```
-
----
-
-## 🧪 Testing Post-Migración
-
-### 1. Verificar Integridad de Datos
-
+Para consultar el estado:
 ```sql
--- Contar registros en todas las tablas
-SELECT 'comisiones' AS tabla, COUNT(*) AS registros FROM comisiones
-UNION ALL
-SELECT 'miembros', COUNT(*) FROM miembros
-UNION ALL
-SELECT 'comision_miembros', COUNT(*) FROM comision_miembros
-UNION ALL
-SELECT 'actas', COUNT(*) FROM actas
-UNION ALL
-SELECT 'asistencias_actas', COUNT(*) FROM asistencias_actas;
+SELECT version, description, installed_on, success
+FROM flyway_schema_history
+ORDER BY installed_rank;
 ```
 
-### 2. Probar Triggers
+## 🔒 Antes de ejecutar cualquier migración
 
-```sql
--- Actualizar un miembro y verificar que fecha_modificacion cambia
-UPDATE miembros SET correo_electronico = correo_electronico WHERE id = 1;
-SELECT id, nombre_apellidos, fecha_modificacion FROM miembros WHERE id = 1;
-```
-
-### 3. Probar Validaciones
-
-```sql
--- Intentar insertar email inválido (debe fallar)
-INSERT INTO miembros (nombre_apellidos, dni_nif, correo_electronico) 
-VALUES ('Test Usuario', '12345678X', 'email_invalido');
-
--- Intentar insertar fecha futura en acta (debe fallar)
-INSERT INTO actas (comision_id, fecha_reunion, observaciones)
-VALUES (1, CURRENT_DATE + INTERVAL '1 day', 'Prueba');
-
--- Insertar miembro con cargo PARTICIPANTE (debe funcionar)
-INSERT INTO comision_miembros (comision_id, miembro_id, cargo, fecha_incorporacion)
-VALUES (1, 1, 'PARTICIPANTE', CURRENT_DATE);
-```
-
-### 4. Verificar Referencias en Java
-
-Asegúrate de que el código Java se ha actualizado para usar `asistencias_actas` (con 's'):
-
-```bash
-# Buscar referencias al nombre antiguo
-grep -r "asistencias_acta" src/main/java/
-```
+1. **Backup**: `pg_dump -U postgres -d nombre_bd > backup_$(date +%Y%m%d_%H%M%S).sql`
+2. **Entorno de prueba**: validar en staging antes de producción
+3. **Verificar estado**: revisar `flyway_schema_history` para conocer la versión actual
 
 ---
 
-## 📝 Registro de Migraciones Aplicadas
-
-| Versión | Fecha Aplicación | Aplicado Por | Estado | Rollback Disponible |
-|---------|------------------|--------------|--------|---------------------|
-| 001     | YYYY-MM-DD       | [Tu Nombre]  | ✅ OK  | Sí                  |
-
----
-
-## 🔒 Consideraciones de Seguridad
-
-1. **Backups**: Siempre crea un backup antes de ejecutar migraciones
-2. **Entorno de prueba**: Ejecuta primero en un ambiente de desarrollo/staging
-3. **Horario**: Ejecuta migraciones en ventanas de mantenimiento programadas
-4. **Monitoreo**: Supervisa el rendimiento de la BD después de la migración
-5. **Validación**: Ejecuta tests completos después de la migración
-
----
-
-## 📞 Soporte
-
-Si encuentras problemas durante la migración:
-
-1. **NO REINTENTAR** si hay errores críticos
-2. Conserva el log de error completo
-3. Verifica el estado actual de la BD con las consultas de verificación
-4. Si es necesario, ejecuta el rollback
-5. Contacta al equipo de desarrollo con:
-   - Log completo del error
-   - Resultado de las verificaciones
-   - Versión de PostgreSQL
-   - Estado de los datos (counts de tablas)
-
----
-
-## 📚 Referencias
-
-- **Esquema actual**: `esquema.sql`
-- **Código Java**: `src/main/java/com/comisiones/`
-- **Documentación PostgreSQL**: https://www.postgresql.org/docs/
-
----
-
-## 🔄 Versionado
-
-Este sistema de migraciones usa numeración secuencial:
-- `001_*.sql` - Primera migración
-- `002_*.sql` - Segunda migración (futura)
-- etc.
-
-Cada migración debe:
-- ✅ Ser auto-documentada (comentarios claros)
-- ✅ Incluir verificaciones post-ejecución
-- ✅ Tener script de rollback correspondiente
-- ✅ Preservar datos existentes
-- ✅ Ser idempotente cuando sea posible (usar `IF EXISTS`, `IF NOT EXISTS`)
-
----
-
-**Última actualización**: 2026-02-05  
-**Versión**: 1.0
->>>>>>> main
+**Convención adoptada**: Flyway `V<N>__<descripcion>.sql`  
+**Última actualización**: 2026-07-21

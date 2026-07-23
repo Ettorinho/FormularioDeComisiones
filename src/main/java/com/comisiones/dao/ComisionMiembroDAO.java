@@ -1,25 +1,27 @@
 package com.comisiones.dao;
 
 import com.comisiones.model.ComisionMiembro;
-import com.comisiones.model. Comision;
+import com.comisiones.model.Comision;
 import com.comisiones.model.Miembro;
 import com.comisiones.util.AppLogger;
 import com.comisiones.util.DBUtil;
-import java. sql.*;
-import java.util. ArrayList;
-import java.util. List;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
 
 public class ComisionMiembroDAO {
-    
-    private static final String TABLE_NAME = "comision_miembros";
-    
+
     public void save(ComisionMiembro comisionMiembro) throws SQLException {
-        String sql = "INSERT INTO " + TABLE_NAME + " (comision_id, miembro_id, cargo, fecha_incorporacion) VALUES (?, ?, ? :: cargo_type, ?)";
+        String sql = "INSERT INTO comision_miembros (comision_id, miembro_id, cargo, fecha_incorporacion) VALUES (?, ?, CAST(? AS cargo_type), ?)";
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt. setLong(1, comisionMiembro.getComision().getId());
+            stmt.setLong(1, comisionMiembro.getComision().getId());
             stmt.setLong(2, comisionMiembro.getMiembro().getId());
             stmt.setString(3, comisionMiembro.getCargo().name());
             stmt.setDate(4, new java.sql.Date(comisionMiembro.getFechaIncorporacion().getTime()));
@@ -34,15 +36,16 @@ public class ComisionMiembroDAO {
     public List<ComisionMiembro> findByComisionId(Long comisionId) throws SQLException {
         List<ComisionMiembro> lista = new ArrayList<>();
         // ⭐ SIN cm.id - solo seleccionar las columnas que existen
-        String sql = "SELECT cm.cargo, cm.fecha_incorporacion, cm.fecha_baja, " +
-                     "cm.comision_id, cm.miembro_id, " +
-                     "m.dni_nif, m.nombre_apellidos, m.correo_electronico, " +
-                     "c.nombre as comision_nombre " +
-                     "FROM " + TABLE_NAME + " cm " +
-                     "INNER JOIN miembros m ON cm.miembro_id = m. id " +
-                     "INNER JOIN comisiones c ON cm.comision_id = c.id " +
-                     "WHERE cm.comision_id = ? " +
-                     "ORDER BY cm.cargo, m.nombre_apellidos";
+        String sql = String.join(" ",
+                "SELECT cm.cargo, cm.fecha_incorporacion, cm.fecha_baja,",
+                "cm.comision_id, cm.miembro_id,",
+                "m.dni_nif, m.nombre_apellidos, m.correo_electronico,",
+                "c.nombre as comision_nombre",
+                "FROM comision_miembros cm",
+                "INNER JOIN miembros m ON cm.miembro_id = m.id",
+                "INNER JOIN comisiones c ON cm.comision_id = c.id",
+                "WHERE cm.comision_id = ?",
+                "ORDER BY cm.cargo, m.nombre_apellidos");
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -61,18 +64,19 @@ public class ComisionMiembroDAO {
     public List<ComisionMiembro> findByMiembroId(Long miembroId) throws SQLException {
         List<ComisionMiembro> lista = new ArrayList<>();
         // ⭐ SIN cm.id
-        String sql = "SELECT cm. cargo, cm.fecha_incorporacion, cm.fecha_baja, " +
-                     "cm. comision_id, cm.miembro_id, " +
-                     "m.dni_nif, m.nombre_apellidos, m.correo_electronico, " +
-                     "c. nombre as comision_nombre, c.area, c.tipo, c.fecha_constitucion, c.fecha_fin " +
-                     "FROM " + TABLE_NAME + " cm " +
-                     "INNER JOIN miembros m ON cm.miembro_id = m.id " +
-                     "INNER JOIN comisiones c ON cm.comision_id = c.id " +
-                     "WHERE cm.miembro_id = ? " +
-                     "ORDER BY c.nombre";
+        String sql = String.join(" ",
+                "SELECT cm.cargo, cm.fecha_incorporacion, cm.fecha_baja,",
+                "cm.comision_id, cm.miembro_id,",
+                "m.dni_nif, m.nombre_apellidos, m.correo_electronico,",
+                "c.nombre as comision_nombre, c.area, c.tipo, c.fecha_constitucion, c.fecha_fin",
+                "FROM comision_miembros cm",
+                "INNER JOIN miembros m ON cm.miembro_id = m.id",
+                "INNER JOIN comisiones c ON cm.comision_id = c.id",
+                "WHERE cm.miembro_id = ?",
+                "ORDER BY c.nombre");
         
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement stmt = conn. prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setLong(1, miembroId);
             
@@ -84,9 +88,53 @@ public class ComisionMiembroDAO {
         }
         return lista;
     }
+
+    public Map<Long, List<ComisionMiembro>> findByComisionIds(Collection<Long> comisionIds) throws SQLException {
+        Map<Long, List<ComisionMiembro>> miembrosPorComision = new LinkedHashMap<>();
+        if (comisionIds == null || comisionIds.isEmpty()) {
+            return miembrosPorComision;
+        }
+
+        StringJoiner placeholders = new StringJoiner(", ");
+        for (int i = 0; i < comisionIds.size(); i++) {
+            placeholders.add("?");
+        }
+
+        String sql = String.join(" ",
+                "SELECT cm.cargo, cm.fecha_incorporacion, cm.fecha_baja,",
+                "cm.comision_id, cm.miembro_id,",
+                "m.dni_nif, m.nombre_apellidos, m.correo_electronico,",
+                "c.nombre as comision_nombre, c.area, c.tipo, c.fecha_constitucion, c.fecha_fin",
+                "FROM comision_miembros cm",
+                "INNER JOIN miembros m ON cm.miembro_id = m.id",
+                "INNER JOIN comisiones c ON cm.comision_id = c.id",
+                "WHERE cm.comision_id IN (" + placeholders + ")",
+                "ORDER BY cm.comision_id, cm.cargo, m.nombre_apellidos");
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            int index = 1;
+            for (Long comisionId : comisionIds) {
+                stmt.setLong(index++, comisionId);
+                miembrosPorComision.putIfAbsent(comisionId, new ArrayList<>());
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    ComisionMiembro comisionMiembro = extractComisionMiembroFromResultSet(rs);
+                    miembrosPorComision
+                            .computeIfAbsent(comisionMiembro.getComision().getId(), ignored -> new ArrayList<>())
+                            .add(comisionMiembro);
+                }
+            }
+        }
+
+        return miembrosPorComision;
+    }
     
     public void darDeBaja(Long comisionId, Long miembroId, java.sql.Date fechaBaja) throws SQLException {
-        String sql = "UPDATE " + TABLE_NAME + " SET fecha_baja = ? WHERE comision_id = ? AND miembro_id = ?";
+        String sql = "UPDATE comision_miembros SET fecha_baja = ? WHERE comision_id = ? AND miembro_id = ?";
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -104,16 +152,16 @@ public class ComisionMiembroDAO {
      * Verifica si un miembro ya está asignado a una comisión específica (activo)
      */
     public boolean existeEnComision(Long comisionId, Long miembroId) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE comision_id = ? AND miembro_id = ?  AND fecha_baja IS NULL";
+        String sql = "SELECT COUNT(*) FROM comision_miembros WHERE comision_id = ? AND miembro_id = ? AND fecha_baja IS NULL";
         
-        try (Connection conn = DBUtil. getConnection();
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setLong(1, comisionId);
             stmt.setLong(2, miembroId);
             
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs. next()) {
+                if (rs.next()) {
                     int count = rs.getInt(1);
                     AppLogger.debug("existeEnComision(comisionId=" + comisionId + ", miembroId=" + miembroId + ") = " + (count > 0));
                     return count > 0;
@@ -128,10 +176,10 @@ public class ComisionMiembroDAO {
      */
     public List<Long> getComisionesByMiembroId(Long miembroId) throws SQLException {
         List<Long> comisionesIds = new ArrayList<>();
-        String sql = "SELECT comision_id FROM " + TABLE_NAME + " WHERE miembro_id = ?  AND fecha_baja IS NULL";
+        String sql = "SELECT comision_id FROM comision_miembros WHERE miembro_id = ? AND fecha_baja IS NULL";
         
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement stmt = conn. prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setLong(1, miembroId);
             
@@ -148,7 +196,7 @@ public class ComisionMiembroDAO {
      * Cuenta cuántas comisiones activas tiene un miembro
      */
     public int contarComisionesActivas(Long miembroId) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE miembro_id = ? AND fecha_baja IS NULL";
+        String sql = "SELECT COUNT(*) FROM comision_miembros WHERE miembro_id = ? AND fecha_baja IS NULL";
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -236,7 +284,7 @@ public class ComisionMiembroDAO {
         // Cargo
         String cargoStr = rs.getString("cargo");
         if (cargoStr != null) {
-            cm.setCargo(ComisionMiembro.Cargo. valueOf(cargoStr));
+            cm.setCargo(ComisionMiembro.Cargo.valueOf(cargoStr));
         }
         
         // Fechas de incorporación y baja
@@ -254,14 +302,15 @@ public class ComisionMiembroDAO {
      * @return ComisionMiembro encontrado, o null si no existe
      */
     public ComisionMiembro findByCompositeKey(Long comisionId, Long miembroId) throws SQLException {
-        String sql = "SELECT cm.cargo, cm.fecha_incorporacion, cm.fecha_baja, " +
-                     "cm.comision_id, cm.miembro_id, " +
-                     "m.dni_nif, m.nombre_apellidos, m.correo_electronico, " +
-                     "c.nombre as comision_nombre " +
-                     "FROM " + TABLE_NAME + " cm " +
-                     "INNER JOIN miembros m ON cm.miembro_id = m.id " +
-                     "INNER JOIN comisiones c ON cm.comision_id = c.id " +
-                     "WHERE cm.comision_id = ? AND cm.miembro_id = ?";
+        String sql = String.join(" ",
+                "SELECT cm.cargo, cm.fecha_incorporacion, cm.fecha_baja,",
+                "cm.comision_id, cm.miembro_id,",
+                "m.dni_nif, m.nombre_apellidos, m.correo_electronico,",
+                "c.nombre as comision_nombre",
+                "FROM comision_miembros cm",
+                "INNER JOIN miembros m ON cm.miembro_id = m.id",
+                "INNER JOIN comisiones c ON cm.comision_id = c.id",
+                "WHERE cm.comision_id = ? AND cm.miembro_id = ?");
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -279,28 +328,117 @@ public class ComisionMiembroDAO {
     }
     
     /**
-     * Cambia el cargo de un miembro en una comisión.
-     * El trigger registrará automáticamente el cambio en el historial.
-     * 
-     * @param comisionId ID de la comisión
-     * @param miembroId ID del miembro
-     * @param nuevoCargo Nuevo cargo a asignar
-     * @return true si se actualizó correctamente, false si no se encontró el registro
+     * Cambia el cargo de un miembro en una comisión, registrando el usuario AD en el historial.
+     * Usa SET LOCAL para que el trigger de PostgreSQL pueda leer el usuario de la sesión web.
+     *
+     * @param comisionId  ID de la comisión
+     * @param miembroId   ID del miembro
+     * @param nuevoCargo  Nuevo cargo a asignar
+     * @param usuarioAD   Username del usuario AD logueado que realiza el cambio
+     * @return true si se actualizó correctamente
      */
+    public boolean cambiarCargo(Long comisionId, Long miembroId, String nuevoCargo, String usuarioAD) throws SQLException {
+        // Usar una sola conexión con autocommit desactivado para que SET LOCAL y el UPDATE
+        // pertenezcan a la misma transacción y el trigger pueda leer la variable de sesión.
+        try (Connection conn = DBUtil.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                // 1. Establecer el usuario AD como variable de sesión local de PostgreSQL
+                //    SET LOCAL es transaccional y solo dura hasta el final de la transacción actual
+                try (PreparedStatement setUser = conn.prepareStatement("SET LOCAL app.usuario_modificacion = ?")) {
+                    setUser.setString(1, usuarioAD != null ? usuarioAD : "SYSTEM");
+                    setUser.execute();
+                }
+
+                // 2. Ejecutar el cambio de cargo (el trigger leerá app.usuario_modificacion)
+                String sql = String.join(" ",
+                        "UPDATE comision_miembros SET cargo = CAST(? AS cargo_type)",
+                        "WHERE comision_id = ? AND miembro_id = ?");
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setString(1, nuevoCargo);
+                    stmt.setLong(2, comisionId);
+                    stmt.setLong(3, miembroId);
+                    int rowsAffected = stmt.executeUpdate();
+                    conn.commit();
+                    AppLogger.debug("cambiarCargo - Usuario: " + usuarioAD + " - Filas afectadas: " + rowsAffected);
+                    return rowsAffected > 0;
+                }
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        }
+    }
+
+    // Sobrecarga para compatibilidad con llamadas existentes sin usuario
     public boolean cambiarCargo(Long comisionId, Long miembroId, String nuevoCargo) throws SQLException {
-        String sql = "UPDATE " + TABLE_NAME + " SET cargo = ?::cargo_type " +
-                     "WHERE comision_id = ? AND miembro_id = ?";
-        
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, nuevoCargo);
-            stmt.setLong(2, comisionId);
-            stmt.setLong(3, miembroId);
-            
-            int rowsAffected = stmt.executeUpdate();
-            AppLogger.debug("cambiarCargo - Filas afectadas: " + rowsAffected);
-            return rowsAffected > 0;
+        return cambiarCargo(comisionId, miembroId, nuevoCargo, "SYSTEM");
+    }
+
+    /**
+     * Cambia el cargo de un miembro y actualiza el motivo en el historial dentro de
+     * una única transacción atómica.
+     *
+     * Si {@code motivo} es nulo o vacío, solo se cambia el cargo (el trigger registra
+     * automáticamente el cambio en el historial sin motivo).
+     * Si {@code motivo} tiene contenido, se actualiza también la columna motivo del
+     * registro de historial recién insertado por el trigger — todo en el mismo commit.
+     *
+     * @param comisionId ID de la comisión
+     * @param miembroId  ID del miembro
+     * @param nuevoCargo Nuevo cargo a asignar
+     * @param motivo     Motivo del cambio (puede ser nulo o vacío)
+     * @param usuarioAD  Username del usuario AD que realiza el cambio
+     * @return true si el cargo fue actualizado correctamente
+     */
+    public boolean cambiarCargoConMotivo(Long comisionId, Long miembroId,
+                                         String nuevoCargo, String motivo,
+                                         String usuarioAD) throws SQLException {
+        try (Connection conn = DBUtil.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                // 1. Propagar el usuario AD al trigger de historial
+                try (PreparedStatement setUser = conn.prepareStatement("SET LOCAL app.usuario_modificacion = ?")) {
+                    setUser.setString(1, usuarioAD != null ? usuarioAD : "SYSTEM");
+                    setUser.execute();
+                }
+
+                // 2. Cambiar cargo (el trigger inserta la fila de historial)
+                String updateCargo = "UPDATE comision_miembros SET cargo = CAST(? AS cargo_type) "
+                                   + "WHERE comision_id = ? AND miembro_id = ?";
+                int rowsAffected;
+                try (PreparedStatement stmt = conn.prepareStatement(updateCargo)) {
+                    stmt.setString(1, nuevoCargo);
+                    stmt.setLong(2, comisionId);
+                    stmt.setLong(3, miembroId);
+                    rowsAffected = stmt.executeUpdate();
+                }
+
+                // 3. Actualizar el motivo en el historial recién insertado (misma transacción)
+                if (rowsAffected > 0 && motivo != null && !motivo.trim().isEmpty()) {
+                    String updateMotivo = "UPDATE comision_miembro_historial_cargos "
+                                       + "SET motivo = ? "
+                                       + "WHERE id = ("
+                                       + "  SELECT id FROM comision_miembro_historial_cargos "
+                                       + "  WHERE comision_id = ? AND miembro_id = ? "
+                                       + "  ORDER BY fecha_cambio DESC LIMIT 1"
+                                       + ")";
+                    try (PreparedStatement stmt = conn.prepareStatement(updateMotivo)) {
+                        stmt.setString(1, motivo.trim());
+                        stmt.setLong(2, comisionId);
+                        stmt.setLong(3, miembroId);
+                        stmt.executeUpdate();
+                    }
+                }
+
+                conn.commit();
+                AppLogger.debug("cambiarCargoConMotivo - Usuario: " + usuarioAD + " - Filas afectadas: " + rowsAffected);
+                return rowsAffected > 0;
+
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
         }
     }
 }

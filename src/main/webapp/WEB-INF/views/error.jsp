@@ -1,4 +1,5 @@
 <%@ page isErrorPage="true" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -14,7 +15,7 @@
         <hr>
         <p class="mb-0">
             <strong>Mensaje:</strong>
-            ${error != null ? error : "No se proporcionó un mensaje de error específico."}
+            <c:out value="${error != null ? error : 'No se proporcionó un mensaje de error específico.'}"/>
         </p>
     </div>
     <a href="${pageContext.request.contextPath}/" class="btn btn-primary">Volver al inicio</a>

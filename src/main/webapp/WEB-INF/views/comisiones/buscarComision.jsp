@@ -1,18 +1,19 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<jsp:useBean id="now" class="java.util.Date" />
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>Buscar Comisión o Grupo de Trabajo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
     <!-- Header -->
-    <header class="header-comisiones">
+    <header class="header-app">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
@@ -23,90 +24,89 @@
                     <p class="mb-0 mt-1 header-subtitle">Gobierno de Aragón</p>
                 </div>
                 <div class="col-md-4 text-end">
-                    <fmt:formatDate value="<%= new java.util.Date() %>" pattern="dd/MM/yyyy" />
+                    <span class="text-white me-3 small">
+                        <i class="bi bi-person-circle me-1"></i>
+                        <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
+                    </span>
+                    <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+                    </a>
                 </div>
             </div>
         </div>
     </header>
 
-<div class="container mt-4">
-    <h2>Buscar Comisión o Grupo de Trabajo</h2>
-    <form action="${pageContext.request.contextPath}/comisiones/buscarComision" method="post" class="row g-3 mb-4">
-        <div class="col-auto">
-            <input type="text" name="nombre" class="form-control" placeholder="Nombre de comisión o grupo" required value="${nombreBuscado != null ? nombreBuscado : ''}">
-        </div>
-        <div class="col-auto">
-            <button type="submit" class="btn btn-primary mb-3">Buscar</button>
-        </div>
-    </form>
-    <c:if test="${not empty nombreBuscado}">
-        <c:choose>
-            <c:when test="${empty comisiones}">
-                <div class="alert alert-warning">No se encontraron comisiones o grupos con ese nombre.</div>
-            </c:when>
-            <c:otherwise>
-                <c:forEach var="comision" items="${comisiones}">
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <strong>${comision.nombre}</strong>
-                        </div>
-                        <div class="card-body">
-                            <p>
-                                <strong>Fecha de Constitución:</strong>
-                                <fmt:formatDate value="${comision.fechaConstitucion}" pattern="dd/MM/yyyy"/>
-                                <br/>
-                                <strong>Fecha de Fin:</strong>
-                                <c:if test="${not empty comision.fechaFin}">
-                                    <fmt:formatDate value="${comision.fechaFin}" pattern="dd/MM/yyyy"/>
-                                </c:if>
-                                <c:if test="${empty comision.fechaFin}">
-                                    -
-                                </c:if>
-                            </p>
-                            <h5>Miembros:</h5>
-                            <c:if test="${empty comision.miembros}">
-                                <div class="alert alert-info mb-0">No hay miembros registrados.</div>
-                            </c:if>
-                            <c:if test="${not empty comision.miembros}">
-                                <table class="table table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>Nombre y Apellidos</th>
-                                            <th>DNI/NIF</th>
-                                            <th>Email</th>
-                                            <th>Cargo</th>
-                                            <th>Fecha Incorporación</th>
-                                            <th>Fecha de Baja</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <c:forEach var="cm" items="${comision.miembros}">
-                                            <tr>
-                                                <td>${cm.miembro.nombreApellidos}</td>
-                                                <td>${cm.miembro.dniNif}</td>
-                                                <td>${cm.miembro.email}</td>
-                                                <td>${cm.cargo}</td>
-                                                <td><fmt:formatDate value="${cm.fechaIncorporacion}" pattern="dd/MM/yyyy"/></td>
-                                                <td>
-                                                    <c:if test ="${not empty cm.fechaBaja}">
-                                                        <fmt:formatDate value ="${cm.fechaBaja}" pattern="dd/MM/yyyy"/>
-                                                    </c:if>
-                                                    <c:if test="{empty cm.fechaBaja}">
-                                                        -
-                                                    </c:if>    
-                                                </td>
-                                            </tr>
-                                        </c:forEach>
-                                    </tbody>
-                                </table>
-                            </c:if>
-                        </div>
-                    </div>
-                </c:forEach>
-            </c:otherwise>
-        </c:choose>
-    </c:if>
-    <a href="${pageContext.request.contextPath}/" class="btn btn-secondary mt-3">Volver al Inicio</a>
-</div>
+    <div class="container mt-4">
+        <h2>Buscar Comisión o Grupo de Trabajo</h2>
+        <form action="${pageContext.request.contextPath}/comisiones/buscarComision" method="post" class="mb-4">
+            <input type="hidden" name="csrfToken" value="${csrfToken}" />
+            <div class="row g-3 align-items-end">
+                <div class="col-auto">
+                    <label for="nombre" class="form-label">Nombre de comisión o grupo</label>
+                    <input type="text" name="nombre" id="nombre" class="form-control"
+                           placeholder="Introduce nombre" required
+                           value="<c:out value='${nombreBuscado != null ? nombreBuscado : ""}'/>">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <c:if test="${not empty nombreBuscado}">
+            <c:choose>
+                <c:when test="${empty comisiones}">
+                    <div class="alert alert-warning">No se encontraron comisiones o grupos con ese nombre.</div>
+                </c:when>
+                <c:otherwise>
+                    <p class="text-muted">
+                        <strong>Resultados:</strong> ${comisiones.size()} comisión(es) encontrada(s)
+                    </p>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Fecha Constitución</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach items="${comisiones}" var="comision">
+                                <tr>
+                                    <td><c:out value="${comision.nombre}"/></td>
+                                    <td><fmt:formatDate pattern="dd/MM/yyyy" value="${comision.fechaConstitucion}" /></td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${empty comision.fechaFin}">
+                                                <span class="badge bg-success">Activa</span>
+                                            </c:when>
+                                            <c:when test="${comision.fechaFin > now}">
+                                                <span class="badge bg-success">Activa</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="badge bg-secondary">Finalizada</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td>
+                                        <a href="${pageContext.request.contextPath}/comisiones/view/${comision.id}" class="btn btn-info btn-sm">Ver</a>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </c:otherwise>
+            </c:choose>
+        </c:if>
+
+        <a href="${pageContext.request.contextPath}/comisiones" class="btn btn-secondary mt-3">
+            <i class="bi bi-arrow-left"></i> Volver a Comisiones
+        </a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

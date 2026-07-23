@@ -1,5 +1,7 @@
 package com.comisiones.ldap;
 
+import com.comisiones.util.AppLogger;
+
 import javax.servlet.ServletException;
 import javax. servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -16,6 +18,8 @@ import java.util.Map;
 import java.util.HashMap;
 
 public class LdapLookupServlet extends HttpServlet {
+    private static final String LDAP_GENERIC_ERROR_MESSAGE =
+            "No se pudo completar la búsqueda LDAP. Contacte con el administrador si el problema persiste.";
 
     private String ldapUrl;
     private String baseDn;
@@ -117,15 +121,18 @@ public class LdapLookupServlet extends HttpServlet {
             if (ne.getRootCause() != null) {
                 log("   Causa raíz: " + ne.getRootCause().getMessage());
             }
+            AppLogger.error("Error LDAP al consultar usuario por DNI: " + dni, ne);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.write("{\"error\":\"Error en consulta LDAP: " + escapeJson(ne.getMessage()) + "\"}");
+            out.write("{\"error\":\"" + escapeJson(LDAP_GENERIC_ERROR_MESSAGE) + "\"}");
         } catch (Exception e) {
             log("❌ Error inesperado para DNI: " + dni);
             log("   Tipo: " + e.getClass().getName());
             log("   Mensaje: " + e.getMessage());
-            e.printStackTrace();
+            // Log completo solo en logs del servidor, no en consola
+            log("Stack trace disponible en logs del servidor", e);
+            AppLogger.error("Error inesperado al consultar LDAP por DNI: " + dni, e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.write("{\"error\":\"Error inesperado: " + escapeJson(e. getMessage()) + "\"}");
+            out.write("{\"error\":\"" + escapeJson(LDAP_GENERIC_ERROR_MESSAGE) + "\"}");
         }
     }
 
@@ -173,49 +180,61 @@ public class LdapLookupServlet extends HttpServlet {
             log("   Filtro: " + filter);
             log("   Base DN: " + baseDn);
             
-            NamingEnumeration<SearchResult> results = ctx.search(baseDn, filter, sc);
-            
-            if (results.hasMore()) {
-                SearchResult sr = results.next();
-                Attributes attributes = sr.getAttributes();
-                
-                Map<String,String> map = new HashMap<>();
-                
-                // Obtener nombre completo (prioridad: displayName > cn > givenName+sn)
-                String displayName = getAttr(attributes, "displayName", "");
-                String cn = getAttr(attributes, "cn", "");
-                String givenName = getAttr(attributes, "givenName", "");
-                String sn = getAttr(attributes, "sn", "");
-                
-                String nombreCompleto = ! displayName.isEmpty() ? displayName : 
-                                       !cn.isEmpty() ? cn : 
-                                       (givenName + " " + sn). trim();
-                
-                // Mapear atributos
-                map. put("nombreApellidos", nombreCompleto);
-                map.put("email", getAttr(attributes, "mail", ""));
-                map. put("telefono", getAttr(attributes, "telephoneNumber", getAttr(attributes, "mobile", "")));
-                map.put("username", getAttr(attributes, "sAMAccountName", ""));
-                map.put("employeeNumber", getAttr(attributes, "employeeNumber", ""));
-                map.put("department", getAttr(attributes, "department", ""));
-                map. put("title", getAttr(attributes, "title", ""));
-                map.put("office", getAttr(attributes, "physicalDeliveryOfficeName", ""));
-                
-                log("   ✅ Usuario encontrado: " + nombreCompleto);
-                if (!map.get("email").isEmpty()) {
-                    log("      Email: " + map.get("email"));
+            NamingEnumeration<SearchResult> results = null;
+            try {
+                results = ctx.search(baseDn, filter, sc);
+
+                if (results.hasMore()) {
+                    SearchResult sr = results.next();
+                    Attributes attributes = sr.getAttributes();
+
+                    Map<String, String> map = new HashMap<>();
+
+                    // Obtener nombre completo (prioridad: displayName > cn > givenName+sn)
+                    String displayName = getAttr(attributes, "displayName", "");
+                    String cn = getAttr(attributes, "cn", "");
+                    String givenName = getAttr(attributes, "givenName", "");
+                    String sn = getAttr(attributes, "sn", "");
+
+                    String nombreCompleto = !displayName.isEmpty() ? displayName :
+                            !cn.isEmpty() ? cn :
+                                    (givenName + " " + sn).trim();
+
+                    // Mapear atributos
+                    map.put("nombreApellidos", nombreCompleto);
+                    map.put("email", getAttr(attributes, "mail", ""));
+                    map.put("telefono", getAttr(attributes, "telephoneNumber", getAttr(attributes, "mobile", "")));
+                    map.put("username", getAttr(attributes, "sAMAccountName", ""));
+                    map.put("employeeNumber", getAttr(attributes, "employeeNumber", ""));
+                    map.put("department", getAttr(attributes, "department", ""));
+                    map.put("title", getAttr(attributes, "title", ""));
+                    map.put("office", getAttr(attributes, "physicalDeliveryOfficeName", ""));
+
+                    log("   ✅ Usuario encontrado: " + nombreCompleto);
+                    if (!map.get("email").isEmpty()) {
+                        log("      Email: " + map.get("email"));
+                    }
+                    if (!map.get("department").isEmpty()) {
+                        log("      Departamento: " + map.get("department"));
+                    }
+
+                    return map;
                 }
-                if (!map.get("department").isEmpty()) {
-                    log("      Departamento: " + map.get("department"));
-                }
-                
-                return map;
-            } else {
                 log("   ⚠️ No se encontraron resultados para: " + dni);
                 return null;
+            } finally {
+                if (results != null) {
+                    try {
+                        results.close();
+                    } catch (NamingException closeException) {
+                        AppLogger.warn("Error al cerrar resultados LDAP de búsqueda por DNI");
+                        AppLogger.error("Detalle de cierre de NamingEnumeration LDAP", closeException);
+                    }
+                }
             }
         } catch (NamingException ne) {
             log("   ❌ Error en búsqueda LDAP: " + ne.getMessage());
+            AppLogger.error("Error en búsqueda LDAP para DNI " + dni, ne);
             throw ne;
         } finally {
             if (ctx != null) {

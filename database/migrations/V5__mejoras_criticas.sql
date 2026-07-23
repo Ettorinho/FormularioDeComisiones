@@ -19,13 +19,11 @@ ALTER TABLE IF EXISTS asistencias_acta RENAME TO asistencias_actas;
 -- Renombrar también la secuencia asociada
 ALTER SEQUENCE IF EXISTS asistencias_acta_id_seq RENAME TO asistencias_actas_id_seq;
 
--- 1.2. ACTUALIZAR CONSTRAINT DE CARGO (CRÍTICO - Falta PARTICIPANTE)
--- Problema: El constraint check_cargo no existe pero debe incluir PARTICIPANTE
--- Nota: Si el constraint existe, se elimina primero para recrearlo
+-- 1.2. VALIDACIÓN DE CARGO
+-- NOTA: La validación de cargo se gestiona mediante el tipo ENUM cargo_type.
+-- Ver migración V4__cargo_enum.sql para la conversión completa.
+-- El constraint check_cargo se elimina si existe (la integridad la garantiza el ENUM):
 ALTER TABLE comision_miembros DROP CONSTRAINT IF EXISTS check_cargo;
-ALTER TABLE comision_miembros 
-ADD CONSTRAINT check_cargo 
-CHECK (cargo IN ('REFERENTE', 'RESPONSABLE', 'PRESIDENTE', 'MIEMBRO', 'SECRETARIO', 'PARTICIPANTE', 'INVESTIGADOR_PRINCIPAL', 'INVESTIGADOR_COLABORADOR'));
 
 -- ========================================
 -- SECCIÓN 2: MEJORAS DE ESCALABILIDAD

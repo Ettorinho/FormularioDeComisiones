@@ -1,31 +1,35 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Gestión de Comisiones</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
-</head>
-<body>
-    <div class="container mt-5">
-        <div class="px-4 py-5 my-5 text-center">
-            <img class="d-block mx-auto mb-4" src="https://getbootstrap.com/docs/5.1/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57">
-            <h1 class="display-5 fw-bold">Sistema de Gestión de Comisiones</h1>
-            <div class="col-lg-6 mx-auto">
-                <p class="lead mb-4">Bienvenido a la aplicación para la gestión de comisiones y grupos de trabajo. Utilice los botones a continuación para navegar.</p>
-                <div class="d-grid gap-3">
-                    <!-- Este botón te llevará a la lista de comisiones -->
-                    <a href="${pageContext.request.contextPath}/comisiones" class="btn btn-primary btn-lg">Crear Comisión o Grupo de Trabajo</a>
-                    <a href="${pageContext.request.contextPath}/comisiones/buscarPorDni" class="btn btn-primary btn-lg">Buscar Miembros</a>
-                    <a href="${pageContext.request.contextPath}/comisiones/buscarComision" class="btn btn-primary btn-lg">Buscar Comisión o Grupo de Trabajo</a>
-                    <a href="${pageContext.request.contextPath}/actas/new" class="btn btn-primary btn-lg">Crear Acta de Reunión</a>                    
-                    <!-- Este botón te llevará a la lista de miembros -->
-                    <%-- <a href="${pageContext.request.contextPath}/miembros" class="btn btn-outline-secondary btn-lg">Ver Miembros</a> --%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<jsp:useBean id="now" class="java.util.Date" />
+<c:set var="pageTitle" value="Sistema de Gestión de Comisiones — Gobierno de Aragón" />
+<c:set var="headerSubtitle" value="Gobierno de Aragón" />
+<%@ include file="/WEB-INF/views/common/header.jspf" %>
+
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>Menú principal</h3>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column gap-2">
+
+                    <%-- Opciones visibles para TODOS los roles autenticados --%>
+                    <c:if test="${sessionScope.rolUsuario == 'LECTURA' || sessionScope.rolUsuario == 'GESTOR' || sessionScope.rolUsuario == 'ADMIN'}">
+                        <a href="${pageContext.request.contextPath}/comisiones" class="btn btn-primary btn-lg text-start">
+                            <i class="bi bi-people"></i> Ver Comisiones
+                        </a>
+                    </c:if>
+
+                    <%-- Fallback: sin rol asignado --%>
+                    <c:if test="${empty sessionScope.rolUsuario}">
+                        <div class="alert alert-warning">
+                            No tiene ningún rol asignado. Contacte con el administrador del sistema.
+                        </div>
+                    </c:if>
+
                 </div>
             </div>
         </div>
     </div>
-</body>
-</html>
+<%@ include file="/WEB-INF/views/common/footer.jspf" %>

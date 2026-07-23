@@ -6,14 +6,14 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Detalles de ${comision.nombre}</title>
+    <title>Detalles de <c:out value="${comision.nombre}"/></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
 <!-- Header -->
-<header class="header-comisiones">
+<header class="header-app">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-md-8">
@@ -24,7 +24,13 @@
                 <p class="mb-0 mt-1 header-subtitle">Gobierno de Aragón</p>
             </div>
             <div class="col-md-4 text-end">
-                <fmt:formatDate value="<%= new java.util.Date() %>" pattern="dd/MM/yyyy" />
+                <span class="text-white me-3 small">
+                    <i class="bi bi-person-circle me-1"></i>
+                    <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
+                </span>
+                <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+                </a>
             </div>
         </div>
     </div>
@@ -32,7 +38,7 @@
 <div class="container mt-4">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h3>${comision.nombre}</h3>
+            <h3><c:out value="${comision.nombre}"/></h3>
             <a href="${pageContext.request.contextPath}/comisiones/" class="btn btn-secondary">Volver al listado</a>
         </div>
         <div class="card-body">
@@ -62,8 +68,11 @@
             <hr/>
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4>Miembros</h4>
-                <c:if test="${empty comision.fechaFin || comision.fechaFin > now}">
+                <c:if test="${(empty comision.fechaFin || comision.fechaFin > now) && (rolUsuario == 'ADMIN' || rolUsuario == 'GESTOR')}">
                     <div>
+                        <a href="${pageContext.request.contextPath}/actas/new?comisionId=${comision.id}" class="btn btn-success me-2">
+                            <i class="bi bi-file-earmark-plus"></i> Crear Acta
+                        </a>
                         <a href="${pageContext.request.contextPath}/comisiones/addMember/${comision.id}" class="btn btn-primary me-2">Añadir Miembro</a>
                         <a href="${pageContext.request.contextPath}/comisiones/bajaMiembros/${comision.id}" class="btn btn-warning">Dar de baja a Miembros</a>
                     </div>
@@ -88,19 +97,21 @@
                     <tbody>
                         <c:forEach var="cm" items="${miembros}">
                             <tr>
-                                <td>${cm.miembro.nombreApellidos}</td>
-                                <td>${cm.miembro.dniNif}</td>
-                                <td>${cm.miembro.email}</td>
-                                <td>${cm.cargo}</td>
+                                <td><c:out value="${cm.miembro.nombreApellidos}"/></td>
+                                <td><c:out value="${cm.miembro.dniNif}"/></td>
+                                <td><c:out value="${cm.miembro.email}"/></td>
+                                <td><c:out value="${cm.cargo}"/></td>
                                 <td><fmt:formatDate value="${cm.fechaIncorporacion}" pattern="dd/MM/yyyy" /></td>
                                 <td>
                                     <c:choose>
                                         <c:when test="${empty cm.fechaBaja}">
-                                            <a href="${pageContext.request.contextPath}/comisiones/cambiarCargo?comisionId=${comision.id}&miembroId=${cm.miembro.id}" 
-                                               class="btn btn-warning btn-sm" 
-                                               title="Cambiar cargo del miembro">
-                                                <i class="bi bi-arrow-left-right"></i> Cambiar Cargo
-                                            </a>
+                                            <c:if test="${rolUsuario == 'ADMIN' || rolUsuario == 'GESTOR'}">
+                                                <a href="${pageContext.request.contextPath}/comisiones/cambiarCargo?comisionId=${comision.id}&miembroId=${cm.miembro.id}" 
+                                                   class="btn btn-warning btn-sm" 
+                                                   title="Cambiar cargo del miembro">
+                                                    <i class="bi bi-arrow-left-right"></i> Cambiar Cargo
+                                                </a>
+                                            </c:if>
                                         </c:when>
                                         <c:otherwise>
                                             <span class="badge bg-secondary">Baja: <fmt:formatDate value="${cm.fechaBaja}" pattern="dd/MM/yyyy"/></span>
@@ -112,6 +123,39 @@
                     </tbody>
                 </table>
             </c:if>
+
+            <hr/>
+            <div class="mt-4">
+                <h4>Actas de Reuniones</h4>
+                <c:if test="${empty actas}">
+                    <div class="alert alert-info">No hay actas registradas para esta comisión.</div>
+                </c:if>
+                <c:if test="${not empty actas}">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Fecha de Reunión</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="acta" items="${actas}">
+                                <tr>
+                                    <td><strong><c:out value="${acta.titulo}"/></strong></td>
+                                    <td>${acta.fechaReunionFormateada}</td>
+                                    <td>
+                                        <a href="${pageContext.request.contextPath}/actas/view?id=${acta.id}"
+                                           class="btn btn-primary btn-sm">
+                                            <i class="bi bi-eye"></i> Ver
+                                        </a>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </c:if>
+            </div>
         </div>
     </div>
 </div>

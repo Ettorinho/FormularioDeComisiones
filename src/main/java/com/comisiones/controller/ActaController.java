@@ -8,8 +8,11 @@ import com.comisiones.model.AsistenciaActa;
 import com.comisiones.model.Comision;
 import com.comisiones.model.Miembro;
 import com.comisiones.service.ActaGeneratorService;
+import com.comisiones.service.AuditoriaService;
 import com.comisiones.util.AppConstants;
 import com.comisiones.util.AppLogger;
+import com.comisiones.util.ServletHelper;
+import com.comisiones.util.ValidationUtil;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -28,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @WebServlet("/actas/*")
 @MultipartConfig(
@@ -49,7 +53,7 @@ public class ActaController extends HttpServlet {
         miembroDAO = new MiembroDAO();
         AppLogger.info("ActaController inicializado");
     }
-    
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -96,11 +100,22 @@ public class ActaController extends HttpServlet {
     
     private void showForm(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
-        
-        // Usar el método que tengas disponible en ComisionDAO
+
+        AppLogger.debug("showForm iniciado");
+
         List<Comision> comisiones = comisionDAO.findAll();
         request.setAttribute("comisiones", comisiones);
-        
+
+        // Si viene comisionId como parámetro (desde view.jsp de comisión), preseleccionar
+        String comisionIdStr = request.getParameter("comisionId");
+        if (comisionIdStr != null && !comisionIdStr.isEmpty()) {
+            Long comisionId = ServletHelper.parseIdSafely(comisionIdStr);
+            if (comisionId != null) {
+                AppLogger.debug("Comisión preseleccionada: " + comisionId);
+                request.setAttribute("comisionPreseleccionada", comisionId);
+            }
+        }
+
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/actas/form.jsp");
         dispatcher.forward(request, response);
     }
@@ -117,7 +132,11 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long comisionId = Long.parseLong(comisionIdParam);
+        Long comisionId = ServletHelper.parseIdSafely(comisionIdParam);
+        if (comisionId == null) {
+            ServletHelper.sendBadRequest(response, "ID de comisión no válido: " + comisionIdParam);
+            return;
+        }
         List<Miembro> miembros = miembroDAO.findMiembrosByComisionId(comisionId);
         
         AppLogger.debug("Miembros cargados: " + (miembros != null ? miembros.size() : 0));
@@ -138,6 +157,7 @@ public class ActaController extends HttpServlet {
         String comisionIdStr = request.getParameter("comisionId");
         String fechaReunionStr = request.getParameter("fechaReunion");
         String observaciones = request.getParameter("observaciones");
+        String titulo = request.getParameter("titulo");
         
         // Procesar archivo PDF
         Part pdfPart = null;
@@ -186,7 +206,16 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long comisionId = Long.parseLong(comisionIdStr);
+        if (titulo == null || titulo.trim().isEmpty()) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "El título del acta es obligatorio");
+            return;
+        }
+        
+        Long comisionId = ServletHelper.parseIdSafely(comisionIdStr);
+        if (comisionId == null) {
+            ServletHelper.sendBadRequest(response, "ID de comisión no válido: " + comisionIdStr);
+            return;
+        }
         
         // Buscar comisión
         Comision comision = comisionDAO.findById(comisionId);
@@ -209,6 +238,7 @@ public class ActaController extends HttpServlet {
         // Crear acta
         Acta acta = new Acta();
         acta.setComision(comision);
+        acta.setTitulo(titulo.trim());
         acta.setFechaReunion(fechaReunion);
         acta.setObservaciones(observaciones);
         acta.setFechaCreacion(LocalDateTime.now());
@@ -217,13 +247,24 @@ public class ActaController extends HttpServlet {
         acta.setPdfNombre(pdfNombre);
         acta.setPdfContenido(pdfContenido);
         acta.setPdfTipoMime(pdfTipoMime);
+
+        Map<String, String> erroresValidacionActa = ValidationUtil.validateWithFields(acta);
+        if (!erroresValidacionActa.isEmpty()) {
+            request.setAttribute("error", "Datos de acta inválidos: " + formatValidationErrors(erroresValidacionActa));
+            showForm(request, response);
+            return;
+        }
         
         // Preparar datos de asistencia
         Map<Long, Boolean> asistencias = new HashMap<>();
         Map<Long, String> justificaciones = new HashMap<>();
         
         for (String miembroIdStr : miembroIds) {
-            Long miembroId = Long.parseLong(miembroIdStr);
+            Long miembroId = ServletHelper.parseIdSafely(miembroIdStr);
+            if (miembroId == null) {
+                AppLogger.debug("ID de miembro inválido, omitiendo: " + miembroIdStr);
+                continue;
+            }
             String asistenciaParam = request.getParameter("asistencia_" + miembroId);
             String justificacion = request.getParameter("justificacion_" + miembroId);
             
@@ -247,9 +288,19 @@ public class ActaController extends HttpServlet {
         }
         
         AppLogger.info("Acta guardada con ID: " + actaId);
+        AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
+            "CREAR", "ACTA", actaId.toString(),
+            "Creó el acta de la comisión " + comision.getNombre()
+                + " para la reunión del " + fechaReunionStr);
         
         // Redirigir a la vista del acta
         response.sendRedirect(request.getContextPath() + "/actas/view?id=" + actaId);
+    }
+
+    private String formatValidationErrors(Map<String, String> fieldErrors) {
+        return fieldErrors.entrySet().stream()
+                .map(entry -> entry.getKey() + ": " + entry.getValue())
+                .collect(Collectors.joining("; "));
     }
     
     private void viewActa(HttpServletRequest request, HttpServletResponse response) 
@@ -266,7 +317,13 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long id = Long.parseLong(idStr);
+        Long id = ServletHelper.parseIdSafely(idStr);
+        if (id == null) {
+            AppLogger.error("ID de acta inválido: " + idStr, null);
+            request.setAttribute("error", "ID de acta no válido");
+            response.sendRedirect(request.getContextPath() + "/");
+            return;
+        }
         
         // Buscar acta
         Acta acta = actaDAO.findById(id);
@@ -306,7 +363,11 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long actaId = Long.parseLong(idStr);
+        Long actaId = ServletHelper.parseIdSafely(idStr);
+        if (actaId == null) {
+            ServletHelper.sendBadRequest(response, "ID de acta no válido: " + idStr);
+            return;
+        }
         Acta acta = actaDAO.findById(actaId);
         
         if (acta == null || !acta.tienePdf()) {
@@ -345,7 +406,11 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long actaId = Long.parseLong(idStr);
+        Long actaId = ServletHelper.parseIdSafely(idStr);
+        if (actaId == null) {
+            ServletHelper.sendBadRequest(response, "ID de acta no válido: " + idStr);
+            return;
+        }
         Acta acta = actaDAO.findById(actaId);
         
         if (acta == null || !acta.tienePdf()) {
@@ -397,11 +462,9 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long actaId;
-        try {
-            actaId = Long.parseLong(idStr);
-        } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID inválido");
+        Long actaId = ServletHelper.parseIdSafely(idStr);
+        if (actaId == null) {
+            ServletHelper.sendBadRequest(response, "ID de acta no válido: " + idStr);
             return;
         }
         
@@ -455,11 +518,9 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        Long actaId;
-        try {
-            actaId = Long.parseLong(idStr);
-        } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID inválido");
+        Long actaId = ServletHelper.parseIdSafely(idStr);
+        if (actaId == null) {
+            ServletHelper.sendBadRequest(response, "ID de acta no válido: " + idStr);
             return;
         }
         

@@ -8,12 +8,12 @@
     <meta charset="UTF-8">
     <title>Baja de miembros de comisión</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
     <!-- Header -->
-    <header class="header-comisiones">
+    <header class="header-app">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
@@ -24,7 +24,13 @@
                     <p class="mb-0 mt-1 header-subtitle">Gobierno de Aragón</p>
                 </div>
                 <div class="col-md-4 text-end">
-                    <fmt:formatDate value="<%= new java.util.Date() %>" pattern="dd/MM/yyyy" />
+                    <span class="text-white me-3 small">
+                        <i class="bi bi-person-circle me-1"></i>
+                        <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
+                    </span>
+                    <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+                    </a>
                 </div>
             </div>
         </div>
@@ -33,7 +39,7 @@
 <div class="container mt-4">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h3>Baja de miembros en la comisión: ${comision.nombre}</h3>
+            <h3>Baja de miembros en la comisión: <c:out value="${comision.nombre}"/></h3>
             <a href="${pageContext.request.contextPath}/comisiones/view/${comision.id}" class="btn btn-secondary">Volver a la comisión</a>
         </div>
         <div class="card-body">
@@ -55,13 +61,14 @@
                     <tbody>
                         <c:forEach var="cm" items="${miembros}">
                             <tr>
-                                <td>${cm.miembro.nombreApellidos}</td>
-                                <td>${cm.miembro.dniNif}</td>
-                                <td>${cm.miembro.email}</td>
+                                <td><c:out value="${cm.miembro.nombreApellidos}"/></td>
+                                <td><c:out value="${cm.miembro.dniNif}"/></td>
+                                <td><c:out value="${cm.miembro.email}"/></td>
                                 <td>${cm.cargo}</td>
                                 <td><fmt:formatDate value="${cm.fechaIncorporacion}" pattern="dd/MM/yyyy" /></td>
                                 <td>
                                     <form action="${pageContext.request.contextPath}/comisiones/bajaMiembro/${comision.id}/${cm.miembro.id}" method="post" class="form-inline-action">
+                                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
                                         <input type="date" name="fechaBaja" 
                                                value="<fmt:formatDate value='${now}' pattern='yyyy-MM-dd'/>" 
                                                max="<fmt:formatDate value='${now}' pattern='yyyy-MM-dd'/>" required />

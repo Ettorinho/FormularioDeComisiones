@@ -2,6 +2,7 @@ package com.comisiones.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import com.comisiones.util.DateFormatUtil;
 
 /**
  * Modelo para el historial de cambios de cargo de miembros en comisiones.
@@ -135,7 +136,15 @@ public class HistorialCargo implements Serializable {
     public void setNombreComision(String nombreComision) {
         this.nombreComision = nombreComision;
     }
-    
+
+    /**
+     * Devuelve fechaCambio formateada como "dd/MM/yyyy 'a las' HH:mm".
+     * Retorna cadena vacía si el valor es null (evita NPE en JSP).
+     */
+    public String getFechaCambioFormateada() {
+        return DateFormatUtil.formatTimestamp(fechaCambio);
+    }
+
     @Override
     public String toString() {
         return "HistorialCargo{" +

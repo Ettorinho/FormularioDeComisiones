@@ -4,6 +4,9 @@ import com.comisiones.dao.ComisionMiembroDAO;
 import com.comisiones.dao.HistorialCargoDAO;
 import com.comisiones.model.ComisionMiembro;
 import com.comisiones.model.HistorialCargo;
+import com.comisiones.service.AuditoriaService;
+import com.comisiones.util.ServletHelper;
+import com.comisiones.util.ValidationUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -13,6 +16,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Servlet para gestionar el cambio de cargo de miembros en comisiones.
@@ -29,7 +34,7 @@ public class CambiarCargoServlet extends HttpServlet {
         comisionMiembroDAO = new ComisionMiembroDAO();
         historialDAO = new HistorialCargoDAO();
     }
-    
+
     /**
      * GET: Muestra el formulario de cambio de cargo con el historial.
      */
@@ -47,10 +52,15 @@ public class CambiarCargoServlet extends HttpServlet {
             return;
         }
         
+        Long comisionId = ServletHelper.parseIdSafely(comisionIdStr);
+        Long miembroId = ServletHelper.parseIdSafely(miembroIdStr);
+        
+        if (comisionId == null || miembroId == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "IDs inválidos");
+            return;
+        }
+        
         try {
-            Long comisionId = Long.parseLong(comisionIdStr);
-            Long miembroId = Long.parseLong(miembroIdStr);
-            
             // Obtener ComisionMiembro por clave compuesta
             ComisionMiembro cm = comisionMiembroDAO.findByCompositeKey(comisionId, miembroId);
             if (cm == null) {
@@ -65,12 +75,11 @@ public class CambiarCargoServlet extends HttpServlet {
             // Pasar datos a la vista
             request.setAttribute("comisionMiembro", cm);
             request.setAttribute("historial", historial);
+            request.setAttribute("cargos", ComisionMiembro.Cargo.values());
             
             request.getRequestDispatcher("/WEB-INF/views/comisiones/cambiarCargo.jsp")
                    .forward(request, response);
             
-        } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID inválido");
         } catch (SQLException e) {
             throw new ServletException("Error al obtener datos del miembro", e);
         }
@@ -98,10 +107,16 @@ public class CambiarCargoServlet extends HttpServlet {
             return;
         }
         
+        Long comisionId = ServletHelper.parseIdSafely(comisionIdStr);
+        Long miembroId = ServletHelper.parseIdSafely(miembroIdStr);
+        
+        if (comisionId == null || miembroId == null) {
+            request.setAttribute("error", "IDs inválidos");
+            doGet(request, response);
+            return;
+        }
+        
         try {
-            Long comisionId = Long.parseLong(comisionIdStr);
-            Long miembroId = Long.parseLong(miembroIdStr);
-            
             // Validar que el miembro existe y no está dado de baja
             ComisionMiembro cm = comisionMiembroDAO.findByCompositeKey(comisionId, miembroId);
             if (cm == null) {
@@ -115,25 +130,48 @@ public class CambiarCargoServlet extends HttpServlet {
                 doGet(request, response);
                 return;
             }
-            
-            // Validar que el cargo sea diferente al actual
-            if (cm.getCargo().name().equals(nuevoCargo)) {
-                request.setAttribute("error", "El cargo seleccionado es el mismo que el actual");
+
+            ComisionMiembro.Cargo nuevoCargoEnum;
+            try {
+                nuevoCargoEnum = ComisionMiembro.Cargo.valueOf(nuevoCargo.trim().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                request.setAttribute("error", "El cargo seleccionado no es válido");
                 doGet(request, response);
                 return;
             }
             
-            // Cambiar cargo (el trigger registrará automáticamente en el historial)
-            boolean success = comisionMiembroDAO.cambiarCargo(comisionId, miembroId, nuevoCargo);
+            // Validar que el cargo sea diferente al actual
+            if (cm.getCargo() == nuevoCargoEnum) {
+                request.setAttribute("error", "El cargo seleccionado es el mismo que el actual");
+                doGet(request, response);
+                return;
+            }
+
+            ComisionMiembro validacionCambio = new ComisionMiembro();
+            validacionCambio.setComision(cm.getComision());
+            validacionCambio.setMiembro(cm.getMiembro());
+            validacionCambio.setCargo(nuevoCargoEnum);
+            validacionCambio.setFechaIncorporacion(cm.getFechaIncorporacion());
+            validacionCambio.setFechaBaja(cm.getFechaBaja());
+
+            Map<String, String> erroresValidacion = ValidationUtil.validateWithFields(validacionCambio);
+            if (!erroresValidacion.isEmpty()) {
+                request.setAttribute("error", "Datos inválidos para cambiar cargo: " + formatValidationErrors(erroresValidacion));
+                doGet(request, response);
+                return;
+            }
+            
+            // Cambiar cargo y registrar motivo en una única transacción atómica
+            boolean success = comisionMiembroDAO.cambiarCargoConMotivo(
+                    comisionId, miembroId, nuevoCargoEnum.name(), motivo, ServletHelper.getUsuarioLogueado(request));
             
             if (success) {
-                // Si hay motivo, actualizar en el historial
-                if (motivo != null && !motivo.trim().isEmpty()) {
-                    historialDAO.actualizarMotivoUltimoCambio(comisionId, miembroId, motivo);
-                }
-                
+                AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
+                    "MODIFICAR", "CARGO", comisionId + "/" + miembroId,
+                    "Cambió el cargo de " + cm.getCargo().name() + " a " + nuevoCargoEnum.name()
+                        + " en la comisión ID: " + comisionId);
                 request.setAttribute("success", "Cargo cambiado exitosamente de " + 
-                    cm.getCargo().name() + " a " + nuevoCargo);
+                    cm.getCargo().name() + " a " + nuevoCargoEnum.name());
             } else {
                 request.setAttribute("error", "No se pudo cambiar el cargo. Inténtelo nuevamente.");
             }
@@ -147,5 +185,11 @@ public class CambiarCargoServlet extends HttpServlet {
         } catch (SQLException e) {
             throw new ServletException("Error al cambiar el cargo", e);
         }
+    }
+
+    private String formatValidationErrors(Map<String, String> fieldErrors) {
+        return fieldErrors.entrySet().stream()
+                .map(entry -> entry.getKey() + ": " + entry.getValue())
+                .collect(Collectors.joining("; "));
     }
 }
