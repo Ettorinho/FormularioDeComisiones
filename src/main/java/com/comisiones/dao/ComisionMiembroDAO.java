@@ -329,7 +329,9 @@ public class ComisionMiembroDAO {
     
     /**
      * Cambia el cargo de un miembro en una comisión, registrando el usuario AD en el historial.
-     * Usa SET LOCAL para que el trigger de PostgreSQL pueda leer el usuario de la sesión web.
+     * Usa set_config(..., true) (equivalente a SET LOCAL) para que el trigger de PostgreSQL
+     * pueda leer el usuario de la sesión web. A diferencia de SET LOCAL, set_config() sí admite
+     * parámetros preparados (SET LOCAL no permite placeholders "?"/"$1").
      *
      * @param comisionId  ID de la comisión
      * @param miembroId   ID del miembro
@@ -338,14 +340,16 @@ public class ComisionMiembroDAO {
      * @return true si se actualizó correctamente
      */
     public boolean cambiarCargo(Long comisionId, Long miembroId, String nuevoCargo, String usuarioAD) throws SQLException {
-        // Usar una sola conexión con autocommit desactivado para que SET LOCAL y el UPDATE
+        // Usar una sola conexión con autocommit desactivado para que set_config y el UPDATE
         // pertenezcan a la misma transacción y el trigger pueda leer la variable de sesión.
         try (Connection conn = DBUtil.getConnection()) {
             conn.setAutoCommit(false);
             try {
                 // 1. Establecer el usuario AD como variable de sesión local de PostgreSQL
-                //    SET LOCAL es transaccional y solo dura hasta el final de la transacción actual
-                try (PreparedStatement setUser = conn.prepareStatement("SET LOCAL app.usuario_modificacion = ?")) {
+                //    set_config(nombre, valor, is_local=true) es transaccional, igual que SET LOCAL,
+                //    pero sí admite parámetros preparados.
+                try (PreparedStatement setUser = conn.prepareStatement(
+                        "SELECT set_config('app.usuario_modificacion', ?, true)")) {
                     setUser.setString(1, usuarioAD != null ? usuarioAD : "SYSTEM");
                     setUser.execute();
                 }
@@ -397,8 +401,11 @@ public class ComisionMiembroDAO {
         try (Connection conn = DBUtil.getConnection()) {
             conn.setAutoCommit(false);
             try {
-                // 1. Propagar el usuario AD al trigger de historial
-                try (PreparedStatement setUser = conn.prepareStatement("SET LOCAL app.usuario_modificacion = ?")) {
+                // 1. Propagar el usuario AD al trigger de historial.
+                //    set_config(nombre, valor, is_local=true) equivale a SET LOCAL pero sí
+                //    admite parámetros preparados (SET LOCAL no permite placeholders).
+                try (PreparedStatement setUser = conn.prepareStatement(
+                        "SELECT set_config('app.usuario_modificacion', ?, true)")) {
                     setUser.setString(1, usuarioAD != null ? usuarioAD : "SYSTEM");
                     setUser.execute();
                 }
