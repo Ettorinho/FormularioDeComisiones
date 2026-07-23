@@ -213,6 +213,7 @@ body {
 .cargo-PARTICIPANTE { background-color: #6c757d; }
 .cargo-INVESTIGADOR_PRINCIPAL { background-color: #fd7e14; }
 .cargo-INVESTIGADOR_COLABORADOR { background-color: #ffc107; }
+.cargo-FIRMANTE { background-color: #d63384; color: #fff; }
 
 /* ========================================
    Justificaciones de actas (actas/view.jsp)
