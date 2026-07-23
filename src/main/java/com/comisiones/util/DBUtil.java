@@ -34,6 +34,10 @@ public class DBUtil {
             config.addDataSourceProperty("cachePrepStmts", "true");
             config.addDataSourceProperty("prepStmtCacheSize", "250");
             config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+            // Forzar UTF-8 en la conexión JDBC para evitar doble codificación
+            // de caracteres especiales (tildes, ñ, etc.) al leer/escribir en BD.
+            config.addDataSourceProperty("characterEncoding", "UTF-8");
+            config.addDataSourceProperty("useUnicode", "true");
 
             dataSource = new HikariDataSource(config);
             AppLogger.info("Connection pool HikariCP inicializado correctamente (JNDI/context.xml)");
