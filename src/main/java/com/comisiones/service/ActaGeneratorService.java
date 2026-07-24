@@ -47,10 +47,11 @@ public class ActaGeneratorService {
      * 
      * @param acta Acta a generar
      * @param asistencias Lista de asistencias del acta
+     * @param numeroActaEnComision Número secuencial del acta dentro de su comisión
      * @return Contenido del PDF como array de bytes
      * @throws IOException Si hay un error al generar el PDF
      */
-    public byte[] generarPdf(Acta acta, List<AsistenciaActa> asistencias) throws IOException {
+    public byte[] generarPdf(Acta acta, List<AsistenciaActa> asistencias, int numeroActaEnComision) throws IOException {
         AppLogger.debug("Generando PDF para acta ID: " + acta.getId());
         
         try (PDDocument document = new PDDocument()) {
@@ -64,7 +65,7 @@ public class ActaGeneratorService {
                 contentStream.beginText();
                 contentStream.setFont(PDType1Font.HELVETICA_BOLD, TITLE_FONT_SIZE);
                 contentStream.newLineAtOffset(MARGIN, yPosition);
-                contentStream.showText("ACTA DE REUNIÓN #" + acta.getId());
+                contentStream.showText("ACTA DE REUNIÓN #" + numeroActaEnComision);
                 contentStream.endText();
                 yPosition -= 30;
                 
@@ -246,10 +247,11 @@ public class ActaGeneratorService {
      * 
      * @param acta Acta a generar
      * @param asistencias Lista de asistencias del acta
+     * @param numeroActaEnComision Número secuencial del acta dentro de su comisión
      * @return Contenido del documento Word como array de bytes
      * @throws IOException Si hay un error al generar el documento
      */
-    public byte[] generarWord(Acta acta, List<AsistenciaActa> asistencias) throws IOException {
+    public byte[] generarWord(Acta acta, List<AsistenciaActa> asistencias, int numeroActaEnComision) throws IOException {
         AppLogger.debug("Generando Word para acta ID: " + acta.getId());
         
         try (XWPFDocument document = new XWPFDocument()) {
@@ -257,7 +259,7 @@ public class ActaGeneratorService {
             XWPFParagraph titleParagraph = document.createParagraph();
             titleParagraph.setAlignment(ParagraphAlignment.CENTER);
             XWPFRun titleRun = titleParagraph.createRun();
-            titleRun.setText("ACTA DE REUNIÓN #" + acta.getId());
+            titleRun.setText("ACTA DE REUNIÓN #" + numeroActaEnComision);
             titleRun.setBold(true);
             titleRun.setFontSize(18);
             titleRun.addBreak();
