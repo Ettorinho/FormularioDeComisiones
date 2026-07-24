@@ -342,9 +342,14 @@ public class ActaController extends HttpServlet {
         
         AppLogger.debug("Asistencias encontradas: " + (asistencias != null ? asistencias.size() : 0));
         
+        // Calcular el número secuencial del acta dentro de su comisión
+        // (en lugar de usar el ID global de la tabla actas, compartido por todas las comisiones)
+        int numeroActaEnComision = actaDAO.findNumeroSecuencialEnComision(id, acta.getComision().getId());
+        
         // Establecer atributos
         request.setAttribute("acta", acta);
         request.setAttribute("asistencias", asistencias);
+        request.setAttribute("numeroActaEnComision", numeroActaEnComision);
         
         // Forward a la vista
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/actas/view.jsp");
@@ -480,16 +485,19 @@ public class ActaController extends HttpServlet {
         
         AppLogger.debug("Generando PDF para acta ID: " + actaId);
         
+        // Calcular el número secuencial del acta dentro de su comisión
+        int numeroActaEnComision = actaDAO.findNumeroSecuencialEnComision(actaId, acta.getComision().getId());
+        
         // Instanciar el servicio generador
         ActaGeneratorService generatorService = new ActaGeneratorService();
         
         try {
             // Generar PDF
-            byte[] pdfBytes = generatorService.generarPdf(acta, asistencias);
+            byte[] pdfBytes = generatorService.generarPdf(acta, asistencias, numeroActaEnComision);
             
             // Establecer headers HTTP
             response.setContentType(AppConstants.PDF_MIME_TYPE);
-            response.setHeader("Content-Disposition", "attachment; filename=\"Acta_" + actaId + ".pdf\"");
+            response.setHeader("Content-Disposition", "attachment; filename=\"Acta_" + numeroActaEnComision + ".pdf\"");
             response.setContentLength(pdfBytes.length);
             
             // Escribir bytes al OutputStream
@@ -536,16 +544,19 @@ public class ActaController extends HttpServlet {
         
         AppLogger.debug("Generando Word para acta ID: " + actaId);
         
+        // Calcular el número secuencial del acta dentro de su comisión
+        int numeroActaEnComision = actaDAO.findNumeroSecuencialEnComision(actaId, acta.getComision().getId());
+        
         // Instanciar el servicio generador
         ActaGeneratorService generatorService = new ActaGeneratorService();
         
         try {
             // Generar Word
-            byte[] wordBytes = generatorService.generarWord(acta, asistencias);
+            byte[] wordBytes = generatorService.generarWord(acta, asistencias, numeroActaEnComision);
             
             // Establecer headers HTTP
             response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-            response.setHeader("Content-Disposition", "attachment; filename=\"Acta_" + actaId + ".docx\"");
+            response.setHeader("Content-Disposition", "attachment; filename=\"Acta_" + numeroActaEnComision + ".docx\"");
             response.setContentLength(wordBytes.length);
             
             // Escribir bytes al OutputStream
