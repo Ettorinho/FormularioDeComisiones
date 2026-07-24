@@ -9,15 +9,6 @@
 
     <!-- Contenido Principal -->
     <div class="container mt-4 mb-5">
-        
-        <!-- Breadcrumb -->
-        <nav aria-label="breadcrumb" class="no-print">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/">Inicio</a></li>
-                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/actas/new">Actas</a></li>
-                <li class="breadcrumb-item active">Ver Acta #${acta.id}</li>
-            </ol>
-        </nav>
 
         <c:if test="${not empty error}">
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -41,11 +32,6 @@
                         <button onclick="window.print()" class="btn btn-light btn-sm me-2">
                             <i class="bi bi-printer"></i> Imprimir
                         </button>
-                        <c:if test="${rolUsuario == 'ADMIN' || rolUsuario == 'GESTOR'}">
-                        <a href="${pageContext.request.contextPath}/actas/new" class="btn btn-light btn-sm">
-                            <i class="bi bi-plus-circle"></i> Nueva Acta
-                        </a>
-                        </c:if>
                     </div>
                 </div>
                 
@@ -289,11 +275,6 @@
                             <a href="${pageContext.request.contextPath}/" class="btn btn-secondary">
                                 <i class="bi bi-house"></i> Inicio
                             </a>
-                            <c:if test="${rolUsuario == 'ADMIN' || rolUsuario == 'GESTOR'}">
-                            <a href="${pageContext.request.contextPath}/actas/new" class="btn btn-primary">
-                                <i class="bi bi-plus-circle"></i> Nueva Acta
-                            </a>
-                            </c:if>
                         </div>
                         <button onclick="window.print()" class="btn btn-outline-primary">
                             <i class="bi bi-printer"></i> Imprimir
