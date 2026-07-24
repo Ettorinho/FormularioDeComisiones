@@ -252,6 +252,38 @@ public class ActaDAO {
     }
 
     /**
+     * Calcula el número secuencial de un acta dentro de su propia comisión
+     * (por ejemplo, la 3ª acta creada para esa comisión sería el número 3),
+     * en lugar de usar el ID global de la tabla `actas`, que es compartido
+     * por todas las comisiones y no refleja un conteo individual por comisión.
+     *
+     * Se apoya en que el ID es autoincremental y por tanto refleja el orden
+     * de creación: se cuentan todas las actas de la misma comisión cuyo ID
+     * sea menor o igual al del acta indicada.
+     *
+     * @param actaId ID del acta cuyo número secuencial se quiere calcular
+     * @param comisionId ID de la comisión a la que pertenece el acta
+     * @return Número secuencial (posición) del acta dentro de su comisión
+     */
+    public int findNumeroSecuencialEnComision(Long actaId, Long comisionId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM actas WHERE comision_id = ? AND id <= ?";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, comisionId);
+            stmt.setLong(2, actaId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
+    /**
      * Obtiene solo el contenido del PDF (para descarga)
      */
     public byte[] getPdfContenido(Long actaId) throws SQLException {
