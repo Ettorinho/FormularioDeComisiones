@@ -34,17 +34,36 @@
                         <label for="comisionId" class="form-label">
                             <i class="bi bi-building"></i> Comisión / Grupo <span class="text-danger">*</span>
                         </label>
-                        <select class="form-select" id="comisionId" name="comisionId" required>
-                            <option value="">Seleccione una comisión...</option>
-                            <c:forEach var="comision" items="${comisiones}">
-                                <option value="${comision.id}" ${comisionPreseleccionada != null && comisionPreseleccionada == comision.id ? 'selected' : ''}>
-                                    <c:out value="${comision.nombre}"/>
-                                    <c:if test="${not empty comision.area}">
-                                        - <c:out value="${comision.area.descripcion}"/>
+                        <c:choose>
+                            <%-- Si venimos desde la vista de una comisión concreta, el acta queda
+                                 bloqueada a esa comisión: se muestra deshabilitado (solo lectura)
+                                 y se envía el ID real mediante un campo oculto, ya que los
+                                 elementos <select disabled> no se envían en el submit del formulario. --%>
+                            <c:when test="${not empty comisionPreseleccionada}">
+                                <c:forEach var="comision" items="${comisiones}">
+                                    <c:if test="${comisionPreseleccionada == comision.id}">
+                                        <input type="text" class="form-control" value="<c:out value='${comision.nombre}'/><c:if test='${not empty comision.area}'> - <c:out value="${comision.area.descripcion}"/></c:if>" disabled />
                                     </c:if>
-                                </option>
-                            </c:forEach>
-                        </select>
+                                </c:forEach>
+                                <input type="hidden" id="comisionId" name="comisionId" value="${comisionPreseleccionada}" />
+                                <div class="form-text">
+                                    <i class="bi bi-lock"></i> El acta se creará para esta comisión. Para elegir otra, acceda desde "Nueva Acta" en el menú principal.
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <select class="form-select" id="comisionId" name="comisionId" required>
+                                    <option value="">Seleccione una comisión...</option>
+                                    <c:forEach var="comision" items="${comisiones}">
+                                        <option value="${comision.id}">
+                                            <c:out value="${comision.nombre}"/>
+                                            <c:if test="${not empty comision.area}">
+                                                - <c:out value="${comision.area.descripcion}"/>
+                                            </c:if>
+                                        </option>
+                                    </c:forEach>
+                                </select>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
 
                     <!-- Título del Acta -->
