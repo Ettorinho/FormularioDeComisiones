@@ -76,7 +76,8 @@
         const resultadoLdap = document.getElementById('resultadoLDAP');
         const cargoLdap = document.getElementById('cargoLDAP');
         const cargoManual = document.getElementById('miembroRol');
-        const miembros = [];
+        const btnLimpiar = document.getElementById('btnLimpiarComision');
+        let miembros = [];
 
         function renderSinMiembros() {
             const row = document.createElement('tr');
@@ -312,6 +313,44 @@
             }
         });
 
+        if (btnLimpiar) {
+            btnLimpiar.addEventListener('click', function () {
+                if (!window.confirm('¿Seguro que desea limpiar todos los campos del formulario?')) {
+                    return;
+                }
+
+                // Reiniciar el formulario nativo (selects, radios, inputs de texto/fecha)
+                form.reset();
+
+                // Ocultar secciones dependientes de las selecciones
+                divTipo.classList.add('hidden');
+                divSeleccion.classList.add('hidden');
+                divMiembros.classList.add('hidden');
+                tipoSelect.required = false;
+
+                // Vaciar select de comisiones existentes
+                limpiarNodo(selectExistente);
+                selectExistente.appendChild(new Option('-- Seleccione --', ''));
+
+                // Ocultar panel de resultado LDAP
+                resultadoLdap.classList.add('hidden');
+                delete resultadoLdap.dataset.dni;
+                delete resultadoLdap.dataset.nombre;
+                delete resultadoLdap.dataset.email;
+
+                document.getElementById('dniBusqueda').value = '';
+                document.getElementById('miembroDNI').value = '';
+                document.getElementById('miembroNombre').value = '';
+
+                // Vaciar la lista de miembros agregados
+                miembros = [];
+                actualizarTablaMiembros();
+
+                seleccionarCargoPorDefecto(cargoLdap);
+                seleccionarCargoPorDefecto(cargoManual);
+            });
+        }
+
         seleccionarCargoPorDefecto(cargoLdap);
         seleccionarCargoPorDefecto(cargoManual);
         actualizarTablaMiembros();
@@ -330,6 +369,7 @@
         const debugInfo = document.getElementById('debugInfo');
         const messageContainer = document.getElementById('ldapMessage');
         const fechaIncorporacion = document.getElementById('fechaIncorporacion');
+        const btnLimpiar = document.getElementById('btnLimpiarMiembro');
 
         function mostrarMensaje(mensaje, tipo) {
             limpiarNodo(messageContainer);
@@ -350,6 +390,10 @@
             button.disabled = false;
             buttonText.classList.remove('d-none');
             spinner.classList.add('d-none');
+        }
+
+        function fechaHoy() {
+            return new Date().toISOString().split('T')[0];
         }
 
         dniInput.addEventListener('input', function () {
@@ -424,8 +468,31 @@
                 });
         });
 
+        if (btnLimpiar) {
+            btnLimpiar.addEventListener('click', function () {
+                if (!window.confirm('¿Seguro que desea limpiar todos los campos del formulario?')) {
+                    return;
+                }
+
+                form.reset();
+                limpiarNodo(messageContainer);
+                debugInfo.textContent = '';
+                restaurarBoton();
+
+                if (fechaIncorporacion) {
+                    fechaIncorporacion.value = fechaHoy();
+                }
+
+                [document.getElementById('nombreApellidos'), document.getElementById('email')].forEach(function (input) {
+                    if (input) {
+                        input.style.backgroundColor = '';
+                    }
+                });
+            });
+        }
+
         if (fechaIncorporacion) {
-            fechaIncorporacion.value = new Date().toISOString().split('T')[0];
+            fechaIncorporacion.value = fechaHoy();
         }
     }
 
