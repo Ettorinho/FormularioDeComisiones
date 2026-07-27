@@ -107,6 +107,9 @@
         const pdfInput = document.getElementById('pdfFile');
         const pdfInfo = document.getElementById('pdfInfo');
         const btnGuardar = document.getElementById('btnGuardar');
+        const btnLimpiar = document.getElementById('btnLimpiarActa');
+        const tituloInput = document.getElementById('titulo');
+        const observacionesInput = document.getElementById('observaciones');
 
         function cargarMiembros(comisionId) {
             if (!comisionId) {
@@ -168,6 +171,12 @@
             }
 
             pdfInfo.appendChild(alertDiv);
+        }
+
+        function resetFecha() {
+            const today = new Date().toISOString().split('T')[0];
+            fechaInput.value = today;
+            fechaInput.setAttribute('max', today);
         }
 
         comisionSelect.addEventListener('change', function () {
@@ -237,9 +246,42 @@
             actualizarPdfInfo(event.target.files[0]);
         });
 
-        const today = new Date().toISOString().split('T')[0];
-        fechaInput.value = today;
-        fechaInput.setAttribute('max', today);
+        if (btnLimpiar) {
+            btnLimpiar.addEventListener('click', function () {
+                if (!window.confirm('¿Seguro que desea limpiar todos los campos del formulario?')) {
+                    return;
+                }
+
+                // Comisión: solo se resetea si es un <select> editable (no bloqueado por preselección)
+                if (comisionSelect && comisionSelect.tagName === 'SELECT') {
+                    comisionSelect.value = '';
+                    renderInfo(miembrosContainer, 'Seleccione una comisión para cargar los miembros');
+                }
+
+                if (tituloInput) {
+                    tituloInput.value = '';
+                }
+
+                if (observacionesInput) {
+                    observacionesInput.value = '';
+                }
+
+                resetFecha();
+
+                if (pdfInput) {
+                    pdfInput.value = '';
+                    actualizarPdfInfo(null);
+                }
+
+                // Si la comisión no está bloqueada (era un select), los miembros ya se limpiaron arriba.
+                // Si está bloqueada (input oculto), simplemente reiniciamos las asistencias ya cargadas.
+                if (comisionSelect && comisionSelect.tagName !== 'SELECT') {
+                    window.limpiarTodo();
+                }
+            });
+        }
+
+        resetFecha();
 
         if (comisionSelect.value) {
             cargarMiembros(comisionSelect.value);
