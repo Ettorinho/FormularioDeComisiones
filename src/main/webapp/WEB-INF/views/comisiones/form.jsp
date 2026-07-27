@@ -205,6 +205,9 @@
                 <button type="submit" class="btn btn-success btn-lg" id="btnGuardar">
                     💾 Guardar
                 </button>
+                <button type="button" class="btn btn-outline-secondary btn-lg" id="btnLimpiarComision">
+                    🔄 Limpiar
+                </button>
                 <a href="${pageContext.request.contextPath}/comisiones/list" class="btn btn-secondary btn-lg">
                     ❌ Cancelar
                 </a>
