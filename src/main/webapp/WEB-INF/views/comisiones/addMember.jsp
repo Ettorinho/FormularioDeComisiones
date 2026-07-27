@@ -68,6 +68,9 @@
                         <button type="submit" class="btn btn-primary">
                             ✅ Añadir miembro
                         </button>
+                        <button type="button" id="btnLimpiarMiembro" class="btn btn-outline-secondary">
+                            🔄 Limpiar
+                        </button>
                         <a href="${pageContext.request.contextPath}/comisiones/view/${comision.id}" class="btn btn-secondary">
                             ❌ Cancelar
                         </a>
