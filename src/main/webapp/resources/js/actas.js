@@ -256,6 +256,9 @@
                 if (comisionSelect && comisionSelect.tagName === 'SELECT') {
                     comisionSelect.value = '';
                     renderInfo(miembrosContainer, 'Seleccione una comisión para cargar los miembros');
+                } else {
+                    // Comisión bloqueada (input oculto): solo reiniciamos las asistencias ya cargadas
+                    window.limpiarTodo();
                 }
 
                 if (tituloInput) {
@@ -271,12 +274,6 @@
                 if (pdfInput) {
                     pdfInput.value = '';
                     actualizarPdfInfo(null);
-                }
-
-                // Si la comisión no está bloqueada (era un select), los miembros ya se limpiaron arriba.
-                // Si está bloqueada (input oculto), simplemente reiniciamos las asistencias ya cargadas.
-                if (comisionSelect && comisionSelect.tagName !== 'SELECT') {
-                    window.limpiarTodo();
                 }
             });
         }
