@@ -137,9 +137,14 @@
                         <a href="${pageContext.request.contextPath}/" class="btn btn-secondary">
                             <i class="bi bi-x-circle"></i> Cancelar
                         </a>
-                        <button type="submit" class="btn btn-primary" id="btnGuardar">
-                            <i class="bi bi-save"></i> Guardar Acta
-                        </button>
+                        <div>
+                            <button type="button" class="btn btn-outline-secondary me-2" id="btnLimpiarActa">
+                                <i class="bi bi-arrow-clockwise"></i> Limpiar
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="btnGuardar">
+                                <i class="bi bi-save"></i> Guardar Acta
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
