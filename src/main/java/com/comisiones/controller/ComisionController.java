@@ -39,6 +39,8 @@ import java.util.stream.Collectors;
 @WebServlet("/comisiones/*")
 public class ComisionController extends HttpServlet {
 
+    private static final int TAMANO_PAGINA = 20;
+
     private ComisionDAO comisionDAO;
     private ComisionMiembroDAO comisionMiembroDAO;
     private MiembroDAO miembroDAO;
@@ -120,8 +122,29 @@ public class ComisionController extends HttpServlet {
     }
 
     private void listComisiones(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
-        List<Comision> listaComisiones = comisionDAO.findAll();
+        int pagina = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null) {
+            try {
+                int parsed = Integer.parseInt(pageParam);
+                if (parsed >= 1) {
+                    pagina = parsed;
+                }
+            } catch (NumberFormatException e) {
+                // valor inválido → usar página 1
+            }
+        }
+
+        long totalComisiones = comisionDAO.countAll();
+        int totalPaginas = (totalComisiones == 0) ? 1 : (int) Math.ceil((double) totalComisiones / TAMANO_PAGINA);
+
+        List<Comision> listaComisiones = comisionDAO.findAllPaginado(pagina, TAMANO_PAGINA);
+
         request.setAttribute("comisiones", listaComisiones);
+        request.setAttribute("paginaActual", pagina);
+        request.setAttribute("totalPaginas", totalPaginas);
+        request.setAttribute("totalComisiones", totalComisiones);
+
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/comisiones/list.jsp");
         dispatcher.forward(request, response);
     }
