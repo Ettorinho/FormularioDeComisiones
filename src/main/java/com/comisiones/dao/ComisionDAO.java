@@ -65,6 +65,35 @@ public class ComisionDAO {
         }
         return comisiones;
     }
+
+    public List<Comision> findAllPaginado(int pagina, int tamanoPagina) throws SQLException {
+        List<Comision> comisiones = new ArrayList<>();
+        int offset = (pagina - 1) * tamanoPagina;
+        String sql = "SELECT * FROM comisiones ORDER BY area, tipo, nombre LIMIT ? OFFSET ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, tamanoPagina);
+            stmt.setInt(2, offset);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    comisiones.add(extractComisionFromResultSet(rs));
+                }
+            }
+        }
+        return comisiones;
+    }
+
+    public long countAll() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM comisiones";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getLong(1);
+            }
+        }
+        return 0L;
+    }
     
     // ⭐ NUEVO:  Buscar por área y tipo
     public List<Comision> findByAreaAndTipo(Area area, Tipo tipo) throws SQLException {

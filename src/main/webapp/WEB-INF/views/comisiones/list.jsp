@@ -82,6 +82,25 @@
         <c:if test="${empty comisiones}">
             <div class="alert alert-info">No hay comisiones registradas.</div>
         </c:if>
+        <c:if test="${totalPaginas > 1}">
+            <nav aria-label="Paginación de comisiones">
+                <ul class="pagination justify-content-center mt-3">
+                    <li class="page-item ${paginaActual <= 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="${pageContext.request.contextPath}/comisiones/list?page=${paginaActual - 1}">
+                            <i class="bi bi-chevron-left"></i> Anterior
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">Página ${paginaActual} de ${totalPaginas}</span>
+                    </li>
+                    <li class="page-item ${paginaActual >= totalPaginas ? 'disabled' : ''}">
+                        <a class="page-link" href="${pageContext.request.contextPath}/comisiones/list?page=${paginaActual + 1}">
+                            Siguiente <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </c:if>
         <a href="${pageContext.request.contextPath}/" class="btn btn-secondary mt-3">Volver al Inicio</a>
     </div>
 </body>
