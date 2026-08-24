@@ -1,4 +1,5 @@
 
+
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -81,7 +82,18 @@
                         </c:if>
                     </c:forEach>
 
-                    <div class="row mb-4 no-print">
+                    <!-- Cálculo del porcentaje de asistencia -->
+                    <c:set var="totalMiembrosActa" value="${contadorAsistieron + contadorNoAsistieron}"/>
+                    <c:choose>
+                        <c:when test="${totalMiembrosActa > 0}">
+                            <c:set var="porcentajeAsistencia" value="${(contadorAsistieron * 100.0) / totalMiembrosActa}"/>
+                        </c:when>
+                        <c:otherwise>
+                            <c:set var="porcentajeAsistencia" value="0"/>
+                        </c:otherwise>
+                    </c:choose>
+
+                    <div class="row mb-3 no-print">
                         <div class="col-md-3">
                             <div class="stats-box">
                                 <h3>${contadorAsistieron + contadorNoAsistieron}</h3>
@@ -104,6 +116,24 @@
                             <div class="stats-box stats-box-yellow">
                                 <h3>${contadorConJustificacion}</h3>
                                 <p>Con Justificación</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Porcentaje de Asistencia -->
+                    <div class="row mb-4 no-print">
+                        <div class="col-12">
+                            <div class="stats-box stats-box-blue">
+                                <h3>
+                                    <fmt:formatNumber value="${porcentajeAsistencia}" maxFractionDigits="1" minFractionDigits="0"/>%
+                                </h3>
+                                <p class="mb-2">Porcentaje de Asistencia</p>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-success" role="progressbar"
+                                         style="width: ${porcentajeAsistencia}%;"
+                                         aria-valuenow="${porcentajeAsistencia}" aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
