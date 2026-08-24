@@ -19,7 +19,10 @@
                 <i class="bi bi-file-earmark-text"></i>
                 Formulario de Comisiones
             </h1>
-            <p class="mb-0 mt-1 header-subtitle">Gobierno de Aragón</p>
+            <img src="${pageContext.request.contextPath}/resources/images/logo_salud.png"
+                 alt="Gobierno de Aragón"
+                 class="img-fluid mt-1"
+                 style="height:40px;">
         </div>
     </header>
 

@@ -18,9 +18,10 @@
                         <i class="bi ${empty headerIcon ? 'bi-file-earmark-text' : headerIcon}"></i>
                         Sistema de Gestión de Comisiones
                     </h1>
-                    <p class="mb-0 mt-1 header-subtitle">
-                        <c:out value="${empty headerSubtitle ? 'Gobierno de Aragón' : headerSubtitle}"/>
-                    </p>
+                    <img src="${pageContext.request.contextPath}/resources/images/logo_salud.png"
+                         alt="Gobierno de Aragón"
+                         class="img-fluid mt-1"
+                         style="height:40px;">
                 </div>
                 <div class="col-md-4 text-end">
                     <span class="text-white me-3 small">
