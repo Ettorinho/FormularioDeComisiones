@@ -9,6 +9,10 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
+import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
 
 import org.apache.poi.xwpf.usermodel.*;
 
@@ -16,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -359,198 +364,449 @@ public class ActaGeneratorService {
     }
     
     /**
-     * Genera un PDF de plantilla de acta completamente vacía, lista para imprimir y rellenar a mano.
+     * Genera un PDF rellenable (AcroForm) de 3 páginas A4 con el layout de tablas/recuadros
+     * de la plantilla oficial de acta de reunión (MC-2_SA(P)E).
+     *
+     * <p>Cada página incluye el encabezado de 3 columnas. La página 1 contiene el bloque
+     * principal (ASISTENTES, TIPO REUNIÓN, ORDEN DEL DÍA, RESUMEN). Las páginas 2 y 3
+     * son continuación del RESUMEN. La página 3 incluye también el bloque de firma al final.</p>
      *
      * @return Contenido del PDF como array de bytes
      * @throws IOException Si hay un error al generar el PDF
      */
     public byte[] generarPlantillaVaciaPdf() throws IOException {
-        AppLogger.debug("Generando plantilla de acta vacía en PDF");
+        AppLogger.debug("Generando plantilla de acta vacía (AcroForm, 3 páginas) en PDF");
 
         try (PDDocument document = new PDDocument()) {
-            PDPage page = new PDPage(PDRectangle.A4);
-            document.addPage(page);
+            final float PW = PDRectangle.A4.getWidth();   // 595.28
+            final float PH = PDRectangle.A4.getHeight();  // 841.89
+            final float M  = MARGIN;                       // 50
+            final float CW = PW - 2 * M;                  // 495.28
 
-            float pageWidth  = page.getMediaBox().getWidth();
-            float pageHeight = page.getMediaBox().getHeight();
-            float contentWidth = pageWidth - 2 * MARGIN;
+            // ── Dimensiones del encabezado ───────────────────────────────────────
+            final float HDR_H       = 72f;
+            final float HDR_LOGO_W  = 75f;
+            final float HDR_COL3_W  = 108f;
+            final float HDR_COL2_W  = CW - HDR_LOGO_W - HDR_COL3_W;
+            final float HDR_TOP     = PH - M;
+            final float HDR_BOT     = HDR_TOP - HDR_H;
 
-            try (PDPageContentStream cs = new PDPageContentStream(document, page)) {
-                float y = pageHeight - MARGIN;
+            // ── Dimensiones del bloque principal (página 1) ──────────────────────
+            final float MAIN_TOP    = HDR_BOT - 4f;
+            final float MAIN_H      = 210f;
+            final float MAIN_BOT    = MAIN_TOP - MAIN_H;
+            final float MAIN_LEFT_W = CW * 0.45f;
+            final float MAIN_CTR_W  = CW * 0.35f;
+            final float MAIN_RIGHT_W = CW - MAIN_LEFT_W - MAIN_CTR_W;
 
-                // ── Título principal ──────────────────────────────────────────────────
+            // ── ORDEN DEL DÍA (página 1) ─────────────────────────────────────────
+            final float ORD_TOP = MAIN_BOT - 4f;
+            final float ORD_H   = 96f;
+            final float ORD_BOT = ORD_TOP - ORD_H;
+
+            // ── RESUMEN página 1 ──────────────────────────────────────────────────
+            final float RES1_TOP = ORD_BOT - 4f;
+            final float RES1_H   = RES1_TOP - M;
+
+            // ── RESUMEN páginas 2 y 3 ─────────────────────────────────────────────
+            final float RES_TOP_P23 = HDR_BOT - 4f;
+            final float RES2_H      = RES_TOP_P23 - M;
+
+            // ── Bloque de firma (página 3) ────────────────────────────────────────
+            final float SIG_H    = 72f;
+            final float RES3_H   = RES_TOP_P23 - M - SIG_H - 4f;
+
+            // Crear 3 páginas
+            PDPage page1 = new PDPage(PDRectangle.A4);
+            PDPage page2 = new PDPage(PDRectangle.A4);
+            PDPage page3 = new PDPage(PDRectangle.A4);
+            document.addPage(page1);
+            document.addPage(page2);
+            document.addPage(page3);
+
+            // Configurar AcroForm
+            PDAcroForm acroForm = new PDAcroForm(document);
+            document.getDocumentCatalog().setAcroForm(acroForm);
+            acroForm.setNeedAppearances(true);
+
+            // ════════════════════════════════════════════════════════════════════
+            // PÁGINA 1 — Encabezado
+            // ════════════════════════════════════════════════════════════════════
+            try (PDPageContentStream cs = new PDPageContentStream(document, page1)) {
+                drawPageHeaderStatic(cs, M, CW, HDR_TOP, HDR_BOT, HDR_LOGO_W, HDR_COL2_W, HDR_COL3_W, HDR_H, 1);
+            }
+            // Campos del encabezado (página 1)
+            float hCol3X = M + HDR_LOGO_W + HDR_COL2_W;
+            float hRowH  = HDR_H / 3f;
+            addTextField(acroForm, page1, "nombreGrupo", true,
+                    M + HDR_LOGO_W + 2, HDR_BOT + 2, HDR_COL2_W - 4, HDR_H - 4);
+            addTextField(acroForm, page1, "referencia", false,
+                    hCol3X + 2, HDR_BOT + 2 * hRowH + 1, HDR_COL3_W - 4, hRowH - 3);
+            addTextField(acroForm, page1, "revision", false,
+                    hCol3X + 2, HDR_BOT + hRowH + 1, HDR_COL3_W - 4, hRowH - 3);
+
+            // ════════════════════════════════════════════════════════════════════
+            // PÁGINA 1 — Bloque principal: ASISTENTES / Fecha+TipoReunión / Duración
+            // ════════════════════════════════════════════════════════════════════
+            try (PDPageContentStream cs = new PDPageContentStream(document, page1,
+                    PDPageContentStream.AppendMode.APPEND, false)) {
+
+                cs.setLineWidth(0.8f);
+                // Recuadro exterior
+                cs.addRect(M, MAIN_BOT, CW, MAIN_H);
+                // Separador izquierda|centro
+                cs.moveTo(M + MAIN_LEFT_W, MAIN_BOT);
+                cs.lineTo(M + MAIN_LEFT_W, MAIN_TOP);
+                // Separador centro|derecha
+                cs.moveTo(M + MAIN_LEFT_W + MAIN_CTR_W, MAIN_BOT);
+                cs.lineTo(M + MAIN_LEFT_W + MAIN_CTR_W, MAIN_TOP);
+                cs.stroke();
+
+                // Label columna izquierda
                 cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, TITLE_FONT_SIZE);
-                cs.newLineAtOffset(MARGIN, y);
-                cs.showText("ACTA DE REUNIÓN:");
-                cs.endText();
-                y -= 22;
-
-                // Línea en blanco para nombre del grupo/comisión
-                drawUnderline(cs, MARGIN, y, contentWidth);
-                y -= 20;
-
-                // Referencia + Revisión + Página
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA, NORMAL_FONT_SIZE);
-                cs.newLineAtOffset(MARGIN, y);
-                cs.showText("Referencia: _________________    Revisión: ______    Página ___ de ___");
-                cs.endText();
-                y -= 25;
-
-                // ── Separador ─────────────────────────────────────────────────────────
-                drawHorizontalLine(cs, MARGIN, y, contentWidth);
-                y -= 15;
-
-                // ── ASISTENTES ────────────────────────────────────────────────────────
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, SUBTITLE_FONT_SIZE);
-                cs.newLineAtOffset(MARGIN, y);
+                cs.setFont(PDType1Font.HELVETICA_BOLD, 10f);
+                cs.newLineAtOffset(M + 3f, MAIN_TOP - 13f);
                 cs.showText("ASISTENTES (Nombre y Cargo)");
                 cs.endText();
-                y -= 18;
 
-                // Encabezado de columnas
-                float col1 = contentWidth * 0.55f;
-                float col2 = contentWidth * 0.45f;
-                float rowH  = 18f;
-
-                drawTableRow(cs, MARGIN, y, col1, col2, rowH, "Nombre", "Cargo", true);
-                y -= rowH;
-
-                // 12 filas vacías para asistentes
-                for (int i = 0; i < 12; i++) {
-                    drawTableRow(cs, MARGIN, y, col1, col2, rowH, "", "", false);
-                    y -= rowH;
-                }
-                y -= 10;
-
-                // ── Fecha y Hora / Duración ───────────────────────────────────────────
+                // Labels columna central
+                float cx = M + MAIN_LEFT_W + 3f;
+                float cy = MAIN_TOP - 13f;
                 cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, NORMAL_FONT_SIZE);
-                cs.newLineAtOffset(MARGIN, y);
-                cs.showText("Fecha y Hora: ");
+                cs.setFont(PDType1Font.HELVETICA_BOLD, 10f);
+                cs.newLineAtOffset(cx, cy);
+                cs.showText("Fecha y Hora:");
                 cs.endText();
+                cy -= 22f;
 
                 cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA, NORMAL_FONT_SIZE);
-                cs.newLineAtOffset(MARGIN + 90, y);
-                cs.showText("___________________");
+                cs.setFont(PDType1Font.HELVETICA_BOLD, 10f);
+                cs.newLineAtOffset(cx, cy);
+                cs.showText("TIPO REUNI\u00D3N:");
                 cs.endText();
+                cy -= 14f;
+
+                // Checkboxes de tipo reunión
+                float cbX = cx + 1f;
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA, 9f);
+                cs.newLineAtOffset(cbX + 14f, cy);
+                cs.showText("REVISI\u00D3N DEL SIS. CALIDAD");
+                cs.endText();
+                cy -= 16f;
 
                 cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, NORMAL_FONT_SIZE);
-                cs.newLineAtOffset(MARGIN + 260, y);
-                cs.showText("Duración: ");
+                cs.setFont(PDType1Font.HELVETICA, 9f);
+                cs.newLineAtOffset(cbX + 14f, cy);
+                cs.showText("REUNI\u00D3N INTERNA");
                 cs.endText();
+                cy -= 16f;
 
                 cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA, NORMAL_FONT_SIZE);
-                cs.newLineAtOffset(MARGIN + 330, y);
-                cs.showText("___________________");
+                cs.setFont(PDType1Font.HELVETICA, 9f);
+                cs.newLineAtOffset(cbX + 14f, cy);
+                cs.showText("OTROS (especificar):");
                 cs.endText();
-                y -= 20;
+                cy -= 18f;
 
-                // ── ORDEN DEL DÍA ─────────────────────────────────────────────────────
+                // Label Excusa asistencia
+                float excusaLabelY = MAIN_BOT + 54f;
                 cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, SUBTITLE_FONT_SIZE);
-                cs.newLineAtOffset(MARGIN, y);
-                cs.showText("ORDEN DEL DÍA:");
+                cs.setFont(PDType1Font.HELVETICA_BOLD, 10f);
+                cs.newLineAtOffset(cx, excusaLabelY);
+                cs.showText("Excusa asistencia:");
                 cs.endText();
-                y -= 16;
 
-                for (int i = 1; i <= 6; i++) {
-                    cs.beginText();
-                    cs.setFont(PDType1Font.HELVETICA, NORMAL_FONT_SIZE);
-                    cs.newLineAtOffset(MARGIN, y);
-                    cs.showText(i + ". ");
-                    cs.endText();
-                    drawUnderline(cs, MARGIN + 18, y - 2, contentWidth - 18);
-                    y -= 16;
-                }
-                y -= 8;
-
-                // ── TIPO REUNIÓN ──────────────────────────────────────────────────────
+                // Label columna derecha
+                float rx = M + MAIN_LEFT_W + MAIN_CTR_W + 3f;
                 cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, SUBTITLE_FONT_SIZE);
-                cs.newLineAtOffset(MARGIN, y);
-                cs.showText("TIPO REUNIÓN:");
+                cs.setFont(PDType1Font.HELVETICA_BOLD, 10f);
+                cs.newLineAtOffset(rx, MAIN_TOP - 13f);
+                cs.showText("Duraci\u00F3n:");
                 cs.endText();
-                y -= 18;
-
-                drawCheckbox(cs, MARGIN, y, "REVISIÓN DEL SIS. CALIDAD");
-                drawCheckbox(cs, MARGIN + 180, y, "REUNIÓN INTERNA");
-                y -= 18;
-
-                drawCheckbox(cs, MARGIN, y, "OTROS (especificar): ");
-                drawUnderline(cs, MARGIN + 160, y - 2, contentWidth - 160);
-                y -= 22;
-
-                // ── Excusa asistencia ─────────────────────────────────────────────────
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, NORMAL_FONT_SIZE);
-                cs.newLineAtOffset(MARGIN, y);
-                cs.showText("Excusa asistencia: ");
-                cs.endText();
-                drawUnderline(cs, MARGIN + 122, y - 2, contentWidth - 122);
-                y -= 16;
-                drawUnderline(cs, MARGIN, y - 2, contentWidth);
-                y -= 22;
-
-                // ── RESUMEN DE LA REUNIÓN ─────────────────────────────────────────────
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, SUBTITLE_FONT_SIZE);
-                cs.newLineAtOffset(MARGIN, y);
-                cs.showText("RESUMEN DE LA REUNIÓN:");
-                cs.endText();
-                y -= 16;
-
-                for (int i = 0; i < 8; i++) {
-                    drawUnderline(cs, MARGIN, y - 2, contentWidth);
-                    y -= 16;
-                }
-                y -= 10;
-
-                // ── Firma final ───────────────────────────────────────────────────────
-                drawHorizontalLine(cs, MARGIN, y, contentWidth);
-                y -= 15;
-
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, NORMAL_FONT_SIZE);
-                cs.newLineAtOffset(MARGIN, y);
-                cs.showText("Nombre: ");
-                cs.endText();
-                drawUnderline(cs, MARGIN + 60, y - 2, contentWidth * 0.45f - 60);
-
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, NORMAL_FONT_SIZE);
-                cs.newLineAtOffset(MARGIN + contentWidth * 0.5f, y);
-                cs.showText("Fecha/Hora cierre: ");
-                cs.endText();
-                drawUnderline(cs, MARGIN + contentWidth * 0.5f + 120, y - 2, contentWidth * 0.5f - 120);
-                y -= 16;
-
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, NORMAL_FONT_SIZE);
-                cs.newLineAtOffset(MARGIN, y);
-                cs.showText("Cargo: ");
-                cs.endText();
-                drawUnderline(cs, MARGIN + 52, y - 2, contentWidth * 0.45f - 52);
-                y -= 16;
-
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, NORMAL_FONT_SIZE);
-                cs.newLineAtOffset(MARGIN, y);
-                cs.showText("Firma: ");
-                cs.endText();
-                drawUnderline(cs, MARGIN + 52, y - 2, 100);
             }
+
+            // Campos interactivos bloque principal
+            float cx1 = M + MAIN_LEFT_W + 3f;
+            float cw1 = MAIN_CTR_W - 6f;
+
+            // Asistentes (área multilínea toda la columna izquierda)
+            addTextField(acroForm, page1, "asistentes", true,
+                    M + 2f, MAIN_BOT + 2f, MAIN_LEFT_W - 4f, MAIN_H - 16f);
+
+            // Fecha y Hora
+            addTextField(acroForm, page1, "fechaHora", false,
+                    cx1, MAIN_TOP - 36f, cw1, 16f);
+
+            // Checkboxes tipo reunión
+            float cbBaseY = MAIN_TOP - 13f - 22f - 14f;
+            addCheckBox(acroForm, page1, "tipoReunionCalidad",
+                    cx1 + 1f, cbBaseY - 12f, 12f);
+            cbBaseY -= 16f;
+            addCheckBox(acroForm, page1, "tipoReunionInterna",
+                    cx1 + 1f, cbBaseY - 12f, 12f);
+            cbBaseY -= 16f;
+            addCheckBox(acroForm, page1, "tipoReunionOtros",
+                    cx1 + 1f, cbBaseY - 12f, 12f);
+            // Campo "otros especificar"
+            float otrosX = cx1 + 15f + 92f;
+            float otrosW = (M + MAIN_LEFT_W + MAIN_CTR_W) - otrosX - 4f;
+            if (otrosW > 15f) {
+                addTextField(acroForm, page1, "tipoReunionOtrosEspecificar", false,
+                        otrosX, cbBaseY - 12f, otrosW, 12f);
+            }
+
+            // Excusa asistencia (área multilínea)
+            float excusaFieldBot = MAIN_BOT + 2f;
+            float excusaFieldTop = MAIN_BOT + 52f;
+            addTextField(acroForm, page1, "excusaAsistencia", true,
+                    cx1, excusaFieldBot, cw1, excusaFieldTop - excusaFieldBot);
+
+            // Duración
+            float rx1 = M + MAIN_LEFT_W + MAIN_CTR_W + 3f;
+            float rw1 = MAIN_RIGHT_W - 6f;
+            addTextField(acroForm, page1, "duracion", false,
+                    rx1, MAIN_TOP - 36f, rw1, 16f);
+
+            // ════════════════════════════════════════════════════════════════════
+            // PÁGINA 1 — ORDEN DEL DÍA
+            // ════════════════════════════════════════════════════════════════════
+            try (PDPageContentStream cs = new PDPageContentStream(document, page1,
+                    PDPageContentStream.AppendMode.APPEND, false)) {
+                cs.setLineWidth(0.8f);
+                cs.addRect(M, ORD_BOT, CW, ORD_H);
+                cs.stroke();
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, 11f);
+                cs.newLineAtOffset(M + 3f, ORD_TOP - 13f);
+                cs.showText("ORDEN DEL D\u00CDA:");
+                cs.endText();
+            }
+            addTextField(acroForm, page1, "ordenDelDia", true,
+                    M + 2f, ORD_BOT + 2f, CW - 4f, ORD_H - 16f);
+
+            // ════════════════════════════════════════════════════════════════════
+            // PÁGINA 1 — RESUMEN DE LA REUNIÓN
+            // ════════════════════════════════════════════════════════════════════
+            try (PDPageContentStream cs = new PDPageContentStream(document, page1,
+                    PDPageContentStream.AppendMode.APPEND, false)) {
+                cs.setLineWidth(0.8f);
+                cs.addRect(M, M, CW, RES1_H);
+                cs.stroke();
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, 11f);
+                cs.newLineAtOffset(M + 3f, M + RES1_H - 13f);
+                cs.showText("RESUMEN DE LA REUNI\u00D3N:");
+                cs.endText();
+            }
+            addTextField(acroForm, page1, "resumenReunionPagina1", true,
+                    M + 2f, M + 2f, CW - 4f, RES1_H - 16f);
+
+            // ════════════════════════════════════════════════════════════════════
+            // PÁGINA 2 — Encabezado + RESUMEN (continuación)
+            // ════════════════════════════════════════════════════════════════════
+            try (PDPageContentStream cs = new PDPageContentStream(document, page2)) {
+                drawPageHeaderStatic(cs, M, CW, HDR_TOP, HDR_BOT, HDR_LOGO_W, HDR_COL2_W, HDR_COL3_W, HDR_H, 2);
+            }
+            try (PDPageContentStream cs = new PDPageContentStream(document, page2,
+                    PDPageContentStream.AppendMode.APPEND, false)) {
+                cs.setLineWidth(0.8f);
+                cs.addRect(M, M, CW, RES2_H);
+                cs.stroke();
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, 11f);
+                cs.newLineAtOffset(M + 3f, M + RES2_H - 13f);
+                cs.showText("RESUMEN DE LA REUNI\u00D3N (continuaci\u00F3n):");
+                cs.endText();
+            }
+            addTextField(acroForm, page2, "resumenReunionPagina2", true,
+                    M + 2f, M + 2f, CW - 4f, RES2_H - 16f);
+
+            // ════════════════════════════════════════════════════════════════════
+            // PÁGINA 3 — Encabezado + RESUMEN (continuación) + Firma
+            // ════════════════════════════════════════════════════════════════════
+            try (PDPageContentStream cs = new PDPageContentStream(document, page3)) {
+                drawPageHeaderStatic(cs, M, CW, HDR_TOP, HDR_BOT, HDR_LOGO_W, HDR_COL2_W, HDR_COL3_W, HDR_H, 3);
+            }
+
+            float sigTop = M + SIG_H;
+
+            try (PDPageContentStream cs = new PDPageContentStream(document, page3,
+                    PDPageContentStream.AppendMode.APPEND, false)) {
+                cs.setLineWidth(0.8f);
+                // Recuadro RESUMEN (continuación)
+                cs.addRect(M, sigTop + 4f, CW, RES3_H);
+                cs.stroke();
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, 11f);
+                cs.newLineAtOffset(M + 3f, sigTop + 4f + RES3_H - 13f);
+                cs.showText("RESUMEN DE LA REUNI\u00D3N (continuaci\u00F3n):");
+                cs.endText();
+
+                // Recuadro de firma
+                cs.setLineWidth(0.5f);
+                cs.addRect(M, M, CW, SIG_H);
+                // Separador vertical a la mitad
+                cs.moveTo(M + CW * 0.5f, M);
+                cs.lineTo(M + CW * 0.5f, M + SIG_H);
+                cs.stroke();
+
+                // Labels bloque de firma
+                float sLb = 10f;
+                float halfX = M + CW * 0.5f;
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, sLb);
+                cs.newLineAtOffset(M + 3f, M + SIG_H - 14f);
+                cs.showText("Nombre:");
+                cs.endText();
+
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, sLb);
+                cs.newLineAtOffset(M + 3f, M + SIG_H - 36f);
+                cs.showText("Cargo:");
+                cs.endText();
+
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, sLb);
+                cs.newLineAtOffset(halfX + 3f, M + SIG_H - 14f);
+                cs.showText("Fecha/Hora cierre:");
+                cs.endText();
+
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, sLb);
+                cs.newLineAtOffset(halfX + 3f, M + SIG_H - 36f);
+                cs.showText("Firma:");
+                cs.endText();
+                // Recuadro visual para la firma
+                cs.setLineWidth(0.5f);
+                cs.addRect(halfX + 50f, M + 3f, 70f, 30f);
+                cs.stroke();
+            }
+
+            addTextField(acroForm, page3, "resumenReunionPagina3", true,
+                    M + 2f, sigTop + 6f, CW - 4f, RES3_H - 16f);
+
+            float halfCW = CW * 0.5f;
+            addTextField(acroForm, page3, "firmaNombre", false,
+                    M + 52f, M + SIG_H - 28f, halfCW - 56f, 16f);
+            addTextField(acroForm, page3, "firmaCargo", false,
+                    M + 44f, M + SIG_H - 50f, halfCW - 48f, 16f);
+            addTextField(acroForm, page3, "firmaFechaCierre", false,
+                    M + halfCW + 115f, M + SIG_H - 28f, halfCW - 120f, 16f);
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             document.save(baos);
-            AppLogger.debug("Plantilla de acta vacía generada correctamente");
+            AppLogger.debug("Plantilla de acta vacía (AcroForm, 3 páginas) generada correctamente");
             return baos.toByteArray();
         }
+    }
+
+    /**
+     * Dibuja el encabezado estático de 3 columnas con bordes en una página.
+     * Columna 1: espacio para logo. Columna 2: título ACTA DE REUNIÓN + espacio grupo.
+     * Columna 3: referencia, revisión, página. Los campos interactivos se añaden por separado.
+     */
+    private void drawPageHeaderStatic(PDPageContentStream cs, float m, float cw,
+            float hdrTop, float hdrBot, float logoW, float col2W, float col3W, float hdrH,
+            int pageNum) throws IOException {
+        cs.setLineWidth(0.8f);
+        // Recuadro exterior del encabezado
+        cs.addRect(m, hdrBot, cw, hdrH);
+        // Separador logo|col2
+        cs.moveTo(m + logoW, hdrBot);
+        cs.lineTo(m + logoW, hdrTop);
+        // Separador col2|col3
+        cs.moveTo(m + logoW + col2W, hdrBot);
+        cs.lineTo(m + logoW + col2W, hdrTop);
+        // Divisores horizontales columna 3 (3 filas de igual altura)
+        float rowH = hdrH / 3f;
+        cs.moveTo(m + logoW + col2W, hdrBot + rowH);
+        cs.lineTo(m + logoW + col2W + col3W, hdrBot + rowH);
+        cs.moveTo(m + logoW + col2W, hdrBot + 2f * rowH);
+        cs.lineTo(m + logoW + col2W + col3W, hdrBot + 2f * rowH);
+        cs.stroke();
+
+        // Placeholder [LOGO] en columna 1
+        cs.beginText();
+        cs.setFont(PDType1Font.HELVETICA, 9f);
+        cs.newLineAtOffset(m + 5f, hdrBot + hdrH / 2f - 4f);
+        cs.showText("[LOGO]");
+        cs.endText();
+
+        // Título en columna 2
+        cs.beginText();
+        cs.setFont(PDType1Font.HELVETICA_BOLD, 11f);
+        cs.newLineAtOffset(m + logoW + 4f, hdrTop - 13f);
+        cs.showText("ACTA DE REUNI\u00D3N:");
+        cs.endText();
+
+        // Etiquetas en columna 3
+        float col3X = m + logoW + col2W + 3f;
+        cs.beginText();
+        cs.setFont(PDType1Font.HELVETICA, 8f);
+        cs.newLineAtOffset(col3X, hdrBot + 2f * rowH + rowH / 2f - 3f);
+        cs.showText("Referencia:");
+        cs.endText();
+
+        cs.beginText();
+        cs.setFont(PDType1Font.HELVETICA, 8f);
+        cs.newLineAtOffset(col3X, hdrBot + rowH + rowH / 2f - 3f);
+        cs.showText("Revisi\u00F3n:");
+        cs.endText();
+
+        cs.beginText();
+        cs.setFont(PDType1Font.HELVETICA, 8f);
+        cs.newLineAtOffset(col3X, hdrBot + rowH / 2f - 3f);
+        cs.showText("P\u00E1gina " + pageNum + " de 3");
+        cs.endText();
+    }
+
+    /**
+     * Añade un campo de texto rellenable (PDTextField) al formulario AcroForm.
+     *
+     * @param acroForm  El formulario AcroForm del documento
+     * @param page      La página donde aparece el campo
+     * @param fieldName Nombre único del campo
+     * @param multiline Si true, el campo acepta múltiples líneas
+     * @param x         Coordenada x (origen inferior izquierdo)
+     * @param y         Coordenada y del borde inferior del campo
+     * @param w         Anchura del campo
+     * @param h         Altura del campo
+     */
+    private void addTextField(PDAcroForm acroForm, PDPage page, String fieldName,
+            boolean multiline, float x, float y, float w, float h) throws IOException {
+        PDTextField field = new PDTextField(acroForm);
+        field.setPartialName(fieldName);
+        if (multiline) {
+            field.setMultiline(true);
+        }
+        PDAnnotationWidget widget = field.getWidgets().get(0);
+        widget.setRectangle(new PDRectangle(x, y, w, h));
+        widget.setPage(page);
+        page.getAnnotations().add(widget);
+        acroForm.getFields().add(field);
+    }
+
+    /**
+     * Añade un checkbox interactivo (PDCheckBox) al formulario AcroForm.
+     *
+     * @param acroForm  El formulario AcroForm del documento
+     * @param page      La página donde aparece el checkbox
+     * @param fieldName Nombre único del campo
+     * @param x         Coordenada x (origen inferior izquierdo del cuadrado)
+     * @param y         Coordenada y del borde inferior del cuadrado
+     * @param size      Tamaño (anchura y altura) del cuadrado del checkbox
+     */
+    private void addCheckBox(PDAcroForm acroForm, PDPage page, String fieldName,
+            float x, float y, float size) throws IOException {
+        PDCheckBox checkBox = new PDCheckBox(acroForm);
+        checkBox.setPartialName(fieldName);
+        PDAnnotationWidget widget = checkBox.getWidgets().get(0);
+        widget.setRectangle(new PDRectangle(x, y, size, size));
+        widget.setPage(page);
+        page.getAnnotations().add(widget);
+        acroForm.getFields().add(checkBox);
+        checkBox.unCheck();
     }
 
     // ── Helpers para dibujo PDF ───────────────────────────────────────────────────

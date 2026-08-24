@@ -422,22 +422,73 @@ Los endpoints seguirán funcionando si alguien los llama directamente.
 
 ### Qué es
 
-La plantilla de acta vacía es un documento PDF preformateado con todos los campos en blanco, diseñado para ser imprimido y rellenado a mano. No contiene datos de ninguna acta concreta almacenada en la base de datos; simplemente ofrece la estructura oficial del acta de comisión lista para su uso inmediato.
+La plantilla de acta vacía es un **PDF rellenable (formulario AcroForm) de 3 páginas A4** que replica fielmente el layout visual de la plantilla oficial "MC-2_SA(P)E". Todos los campos de texto son `PDTextField` editables directamente en Adobe Reader u otro lector compatible, y el bloque "TIPO REUNIÓN" usa `PDCheckBox` interactivos. No contiene datos de ninguna acta concreta almacenada en la base de datos.
 
-La plantilla incluye las siguientes secciones (en orden):
+#### Estructura visual (3 páginas)
 
-1. **Encabezado** — espacio en blanco para el nombre del grupo/comisión, código de referencia, campo revisión y número de página.
-2. **ASISTENTES (Nombre y Cargo)** — tabla con 12 filas vacías.
-3. **Fecha y Hora / Duración** — campos en blanco en una misma línea.
-4. **ORDEN DEL DÍA** — 6 líneas numeradas en blanco.
-5. **TIPO REUNIÓN** — checkboxes dibujados para: "REVISIÓN DEL SIS. CALIDAD", "REUNIÓN INTERNA" y "OTROS (especificar): ___".
-6. **Excusa asistencia** — líneas en blanco para anotar ausencias comunicadas.
-7. **RESUMEN DE LA REUNIÓN** — 8 líneas en blanco para el desarrollo y acuerdos.
-8. **Firma final** — espacio para nombre, cargo y fecha/hora de cierre.
+**Todas las páginas** incluyen el mismo encabezado de 3 columnas con bordes:
+- Columna izquierda: espacio para logotipo (`[LOGO]`).
+- Columna central: título "ACTA DE REUNIÓN:" y campo de texto rellenable para el nombre del grupo/comisión (`nombreGrupo`).
+- Columna derecha: campos rellenables de referencia (`referencia`), revisión (`revision`) y número de página estático ("Página X de 3").
+
+**Página 1** contiene además:
+
+1. **Bloque principal de 3 columnas** (con bordes):
+   - Columna izquierda (~45%): "ASISTENTES (Nombre y Cargo)" + área de texto multilínea (`asistentes`).
+   - Columna central (~35%): "Fecha y Hora:" (`fechaHora`), "TIPO REUNIÓN:" con checkboxes interactivos (`tipoReunionCalidad`, `tipoReunionInterna`, `tipoReunionOtros`) + campo "otros especificar" (`tipoReunionOtrosEspecificar`), "Excusa asistencia:" multilínea (`excusaAsistencia`).
+   - Columna derecha (~20%): "Duración:" (`duracion`).
+2. **ORDEN DEL DÍA** (recuadro con borde): área de texto multilínea (`ordenDelDia`).
+3. **RESUMEN DE LA REUNIÓN** (recuadro grande hasta el margen inferior): área de texto multilínea (`resumenReunionPagina1`).
+
+**Páginas 2 y 3** contienen únicamente:
+
+- El encabezado repetido (con "Página 2 de 3" / "Página 3 de 3").
+- Recuadro "RESUMEN DE LA REUNIÓN (continuación)" con área de texto multilínea (`resumenReunionPagina2`, `resumenReunionPagina3`).
+
+**Página 3** incluye también al final:
+
+- **Bloque de firma** con campos rellenables: "Nombre:" (`firmaNombre`), "Cargo:" (`firmaCargo`), "Fecha/Hora cierre:" (`firmaFechaCierre`) y un recuadro visual para la firma manuscrita.
+
+#### Campos AcroForm del formulario
+
+| Campo                         | Tipo        | Descripción                                   |
+|-------------------------------|-------------|-----------------------------------------------|
+| `nombreGrupo`                 | TextField   | Nombre del grupo/comisión (multilínea, pág. 1) |
+| `referencia`                  | TextField   | Código de referencia (pág. 1)                 |
+| `revision`                    | TextField   | Campo revisión (pág. 1)                       |
+| `asistentes`                  | TextField   | Lista de asistentes (multilínea, pág. 1)      |
+| `fechaHora`                   | TextField   | Fecha y hora de la reunión (pág. 1)           |
+| `tipoReunionCalidad`          | CheckBox    | Checkbox: Revisión del Sis. Calidad (pág. 1)  |
+| `tipoReunionInterna`          | CheckBox    | Checkbox: Reunión Interna (pág. 1)            |
+| `tipoReunionOtros`            | CheckBox    | Checkbox: Otros (pág. 1)                      |
+| `tipoReunionOtrosEspecificar` | TextField   | Detalle para "Otros" (pág. 1)                 |
+| `excusaAsistencia`            | TextField   | Excusa de asistencia (multilínea, pág. 1)     |
+| `duracion`                    | TextField   | Duración de la reunión (pág. 1)               |
+| `ordenDelDia`                 | TextField   | Orden del día (multilínea, pág. 1)            |
+| `resumenReunionPagina1`       | TextField   | Resumen de la reunión (multilínea, pág. 1)    |
+| `resumenReunionPagina2`       | TextField   | Resumen continuación (multilínea, pág. 2)     |
+| `resumenReunionPagina3`       | TextField   | Resumen continuación (multilínea, pág. 3)     |
+| `firmaNombre`                 | TextField   | Nombre del firmante (pág. 3)                  |
+| `firmaCargo`                  | TextField   | Cargo del firmante (pág. 3)                   |
+| `firmaFechaCierre`            | TextField   | Fecha/hora de cierre (pág. 3)                 |
 
 ### Cómo se genera
 
-El método responsable es `generarPlantillaVaciaPdf()` en `ActaGeneratorService.java`. Utiliza Apache PDFBox exactamente igual que los métodos `generarPdf()`/`generarWord()` existentes (misma fuente Helvetica, mismos márgenes de 50 pt, mismo patrón de logging con `AppLogger`). No accede a la base de datos.
+El método responsable es `generarPlantillaVaciaPdf()` en `ActaGeneratorService.java`. Usa `PDAcroForm`, `PDTextField` y `PDCheckBox` de Apache PDFBox 2.0.30 (ya presente en el proyecto — sin dependencias nuevas). Dibuja los recuadros con bordes mediante `PDPageContentStream` y añade los campos interactivos como anotaciones de formulario. No accede a la base de datos.
+
+### Verificación de campos
+
+El PDF generado puede verificarse mediante la API de PDFBox:
+```java
+PDDocument doc = PDDocument.load(new File("Plantilla_Acta_Vacia.pdf"));
+PDAcroForm form = doc.getDocumentCatalog().getAcroForm();
+// form.getFields().size() → 18 campos
+for (PDField f : form.getFields()) {
+    System.out.println(f.getClass().getSimpleName() + ": " + f.getFullyQualifiedName());
+}
+// doc.getNumberOfPages() → 3 páginas
+doc.close();
+```
 
 ### Cómo se accede desde la UI
 
@@ -448,7 +499,7 @@ El método responsable es `generarPlantillaVaciaPdf()` en `ActaGeneratorService.
 
 ```
 GET http://localhost:8080/FormularioDeComisiones/actas/generate-blank-template
-→ descarga Plantilla_Acta_Vacia.pdf
+→ descarga Plantilla_Acta_Vacia.pdf  (AcroForm rellenable, 3 páginas A4)
 ```
 
 ## Soporte y Contacto
