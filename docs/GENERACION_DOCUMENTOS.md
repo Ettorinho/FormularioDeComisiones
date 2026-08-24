@@ -418,6 +418,39 @@ Los endpoints seguirán funcionando si alguien los llama directamente.
 7. **Exportación por lotes:** Generar múltiples actas en un ZIP
 8. **Personalización de contenido:** Permitir seleccionar qué secciones incluir
 
+## Plantilla de Acta Vacía
+
+### Qué es
+
+La plantilla de acta vacía es un documento PDF preformateado con todos los campos en blanco, diseñado para ser imprimido y rellenado a mano. No contiene datos de ninguna acta concreta almacenada en la base de datos; simplemente ofrece la estructura oficial del acta de comisión lista para su uso inmediato.
+
+La plantilla incluye las siguientes secciones (en orden):
+
+1. **Encabezado** — espacio en blanco para el nombre del grupo/comisión, código de referencia, campo revisión y número de página.
+2. **ASISTENTES (Nombre y Cargo)** — tabla con 12 filas vacías.
+3. **Fecha y Hora / Duración** — campos en blanco en una misma línea.
+4. **ORDEN DEL DÍA** — 6 líneas numeradas en blanco.
+5. **TIPO REUNIÓN** — checkboxes dibujados para: "REVISIÓN DEL SIS. CALIDAD", "REUNIÓN INTERNA" y "OTROS (especificar): ___".
+6. **Excusa asistencia** — líneas en blanco para anotar ausencias comunicadas.
+7. **RESUMEN DE LA REUNIÓN** — 8 líneas en blanco para el desarrollo y acuerdos.
+8. **Firma final** — espacio para nombre, cargo y fecha/hora de cierre.
+
+### Cómo se genera
+
+El método responsable es `generarPlantillaVaciaPdf()` en `ActaGeneratorService.java`. Utiliza Apache PDFBox exactamente igual que los métodos `generarPdf()`/`generarWord()` existentes (misma fuente Helvetica, mismos márgenes de 50 pt, mismo patrón de logging con `AppLogger`). No accede a la base de datos.
+
+### Cómo se accede desde la UI
+
+- **Desde la vista de una comisión** (`/comisiones/view?id=...`): aparece un botón **"Descargar Plantilla de Acta en Blanco"** junto a los botones de gestión de miembros. Solo visible para usuarios con rol ADMIN o GESTOR en comisiones activas.
+- **URL directa:** `GET /actas/generate-blank-template` — devuelve el PDF con `Content-Type: application/pdf` y el header `Content-Disposition: attachment; filename="Plantilla_Acta_Vacia.pdf"`. No requiere ningún parámetro.
+
+### Ejemplo
+
+```
+GET http://localhost:8080/FormularioDeComisiones/actas/generate-blank-template
+→ descarga Plantilla_Acta_Vacia.pdf
+```
+
 ## Soporte y Contacto
 
 Para problemas o preguntas sobre esta funcionalidad:

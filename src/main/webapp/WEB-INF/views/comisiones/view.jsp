@@ -75,6 +75,9 @@
                         </a>
                         <a href="${pageContext.request.contextPath}/comisiones/addMember/${comision.id}" class="btn btn-primary me-2">Añadir Miembro</a>
                         <a href="${pageContext.request.contextPath}/comisiones/bajaMiembros/${comision.id}" class="btn btn-warning">Dar de baja a Miembros</a>
+                        <a href="${pageContext.request.contextPath}/actas/generate-blank-template" class="btn btn-outline-secondary ms-2">
+                            <i class="bi bi-file-earmark-arrow-down"></i> Descargar Plantilla de Acta en Blanco
+                        </a>
                     </div>
                 </c:if>
             </div>
