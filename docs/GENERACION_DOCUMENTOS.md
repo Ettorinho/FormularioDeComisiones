@@ -422,59 +422,56 @@ Los endpoints seguirán funcionando si alguien los llama directamente.
 
 ### Qué es
 
-La plantilla de acta vacía es un **PDF rellenable (formulario AcroForm) de 3 páginas A4** que replica fielmente el layout visual de la plantilla oficial "MC-2_SA(P)E". Todos los campos de texto son `PDTextField` editables directamente en Adobe Reader u otro lector compatible, y el bloque "TIPO REUNIÓN" usa `PDCheckBox` interactivos. No contiene datos de ninguna acta concreta almacenada en la base de datos.
+La plantilla de acta vacía es un **PDF rellenable (formulario AcroForm) de 1 página A4** que replica fielmente el layout visual de la plantilla oficial "MC-2_SA(P)E". Todos los campos de texto son `PDTextField` editables directamente en Adobe Reader u otro lector compatible, y el bloque "TIPO REUNIÓN" usa `PDCheckBox` interactivos. El campo de "Resumen de la Reunión" es un campo multilínea con **scroll interno habilitado**, lo que permite escribir cualquier cantidad de texto sin que el campo se expanda ni genere páginas nuevas. No contiene datos de ninguna acta concreta almacenada en la base de datos.
 
-#### Estructura visual (3 páginas)
+> **Nota técnica:** En el documento original en papel las páginas adicionales surgían porque a mano se continuaba en hojas adicionales. En un PDF rellenable digital (AcroForm), los campos de texto no pueden generar páginas nuevas dinámicamente (eso solo sería posible con XFA dinámico, no soportado por PDFBox). El diseño correcto para un formulario digital es usar una sola página con un campo de texto extenso con scroll interno, tal y como se ha implementado.
 
-**Todas las páginas** incluyen el mismo encabezado de 3 columnas con bordes:
-- Columna izquierda: espacio para logotipo (`[LOGO]`).
+#### Estructura visual (1 página)
+
+**Encabezado** de 3 columnas con bordes:
+- Columna izquierda: **logo oficial de Salud** embebido en el PDF (imagen PNG cargada desde `src/main/resources/images/logo_salud.png`, redimensionada con proporción de aspecto preservada). Si el archivo no está disponible, se muestra el texto placeholder `[LOGO]`.
+
+  > **⚠️ Logo placeholder:** El archivo `src/main/resources/images/logo_salud.png` incluido actualmente es un **placeholder generado automáticamente** con texto "salud" y "servicio aragonés de salud" en los colores oficiales (naranja/turquesa). Para sustituirlo por el logo oficial real, sube el archivo PNG real a la misma ruta y reconstruye el proyecto (`mvn clean install`).
+
 - Columna central: título "ACTA DE REUNIÓN:" y campo de texto rellenable para el nombre del grupo/comisión (`nombreGrupo`).
-- Columna derecha: campos rellenables de referencia (`referencia`), revisión (`revision`) y número de página estático ("Página X de 3").
+- Columna derecha: campos rellenables de referencia (`referencia`), revisión (`revision`) y número de página editable (`numeroPagina`, p.ej. "1 de 1").
 
-**Página 1** contiene además:
+**Bloque principal** de 3 columnas (con bordes):
+1. Columna izquierda (~45%): "ASISTENTES (Nombre y Cargo)" + área de texto multilínea (`asistentes`).
+2. Columna central (~35%): "Fecha y Hora:" (`fechaHora`), "TIPO REUNIÓN:" con checkboxes interactivos (`tipoReunionCalidad`, `tipoReunionInterna`, `tipoReunionOtros`) + campo "otros especificar" (`tipoReunionOtrosEspecificar`), "Excusa asistencia:" multilínea (`excusaAsistencia`).
+3. Columna derecha (~20%): "Duración:" (`duracion`).
 
-1. **Bloque principal de 3 columnas** (con bordes):
-   - Columna izquierda (~45%): "ASISTENTES (Nombre y Cargo)" + área de texto multilínea (`asistentes`).
-   - Columna central (~35%): "Fecha y Hora:" (`fechaHora`), "TIPO REUNIÓN:" con checkboxes interactivos (`tipoReunionCalidad`, `tipoReunionInterna`, `tipoReunionOtros`) + campo "otros especificar" (`tipoReunionOtrosEspecificar`), "Excusa asistencia:" multilínea (`excusaAsistencia`).
-   - Columna derecha (~20%): "Duración:" (`duracion`).
-2. **ORDEN DEL DÍA** (recuadro con borde): área de texto multilínea (`ordenDelDia`).
-3. **RESUMEN DE LA REUNIÓN** (recuadro grande hasta el margen inferior): área de texto multilínea (`resumenReunionPagina1`).
+**ORDEN DEL DÍA** (recuadro con borde): área de texto multilínea (`ordenDelDia`).
 
-**Páginas 2 y 3** contienen únicamente:
+**RESUMEN DE LA REUNIÓN** (recuadro grande entre el orden del día y el bloque de firma): campo de texto multilínea con **scroll interno habilitado** (`resumenReunion`). El usuario puede escribir un texto tan extenso como necesite; el contenido no se recorta y el campo permite hacer scroll dentro de él en cualquier visor PDF compatible.
 
-- El encabezado repetido (con "Página 2 de 3" / "Página 3 de 3").
-- Recuadro "RESUMEN DE LA REUNIÓN (continuación)" con área de texto multilínea (`resumenReunionPagina2`, `resumenReunionPagina3`).
-
-**Página 3** incluye también al final:
-
-- **Bloque de firma** con campos rellenables: "Nombre:" (`firmaNombre`), "Cargo:" (`firmaCargo`), "Fecha/Hora cierre:" (`firmaFechaCierre`) y un recuadro visual para la firma manuscrita.
+**Bloque de firma** al pie de la página: campos rellenables "Nombre:" (`firmaNombre`), "Cargo:" (`firmaCargo`), "Fecha/Hora cierre:" (`firmaFechaCierre`) y un recuadro visual para la firma manuscrita.
 
 #### Campos AcroForm del formulario
 
-| Campo                         | Tipo        | Descripción                                   |
-|-------------------------------|-------------|-----------------------------------------------|
-| `nombreGrupo`                 | TextField   | Nombre del grupo/comisión (multilínea, pág. 1) |
-| `referencia`                  | TextField   | Código de referencia (pág. 1)                 |
-| `revision`                    | TextField   | Campo revisión (pág. 1)                       |
-| `asistentes`                  | TextField   | Lista de asistentes (multilínea, pág. 1)      |
-| `fechaHora`                   | TextField   | Fecha y hora de la reunión (pág. 1)           |
-| `tipoReunionCalidad`          | CheckBox    | Checkbox: Revisión del Sis. Calidad (pág. 1)  |
-| `tipoReunionInterna`          | CheckBox    | Checkbox: Reunión Interna (pág. 1)            |
-| `tipoReunionOtros`            | CheckBox    | Checkbox: Otros (pág. 1)                      |
-| `tipoReunionOtrosEspecificar` | TextField   | Detalle para "Otros" (pág. 1)                 |
-| `excusaAsistencia`            | TextField   | Excusa de asistencia (multilínea, pág. 1)     |
-| `duracion`                    | TextField   | Duración de la reunión (pág. 1)               |
-| `ordenDelDia`                 | TextField   | Orden del día (multilínea, pág. 1)            |
-| `resumenReunionPagina1`       | TextField   | Resumen de la reunión (multilínea, pág. 1)    |
-| `resumenReunionPagina2`       | TextField   | Resumen continuación (multilínea, pág. 2)     |
-| `resumenReunionPagina3`       | TextField   | Resumen continuación (multilínea, pág. 3)     |
-| `firmaNombre`                 | TextField   | Nombre del firmante (pág. 3)                  |
-| `firmaCargo`                  | TextField   | Cargo del firmante (pág. 3)                   |
-| `firmaFechaCierre`            | TextField   | Fecha/hora de cierre (pág. 3)                 |
+| Campo                         | Tipo        | Descripción                                    |
+|-------------------------------|-------------|------------------------------------------------|
+| `nombreGrupo`                 | TextField   | Nombre del grupo/comisión (multilínea)         |
+| `referencia`                  | TextField   | Código de referencia                           |
+| `revision`                    | TextField   | Campo revisión                                 |
+| `numeroPagina`                | TextField   | Número de página editable (p.ej. "1 de 1")    |
+| `asistentes`                  | TextField   | Lista de asistentes (multilínea)               |
+| `fechaHora`                   | TextField   | Fecha y hora de la reunión                     |
+| `tipoReunionCalidad`          | CheckBox    | Checkbox: Revisión del Sis. Calidad            |
+| `tipoReunionInterna`          | CheckBox    | Checkbox: Reunión Interna                      |
+| `tipoReunionOtros`            | CheckBox    | Checkbox: Otros                                |
+| `tipoReunionOtrosEspecificar` | TextField   | Detalle para "Otros"                           |
+| `excusaAsistencia`            | TextField   | Excusa de asistencia (multilínea)              |
+| `duracion`                    | TextField   | Duración de la reunión                         |
+| `ordenDelDia`                 | TextField   | Orden del día (multilínea)                     |
+| `resumenReunion`              | TextField   | Resumen de la reunión (multilínea, con scroll) |
+| `firmaNombre`                 | TextField   | Nombre del firmante                            |
+| `firmaCargo`                  | TextField   | Cargo del firmante                             |
+| `firmaFechaCierre`            | TextField   | Fecha/hora de cierre                           |
 
 ### Cómo se genera
 
-El método responsable es `generarPlantillaVaciaPdf()` en `ActaGeneratorService.java`. Usa `PDAcroForm`, `PDTextField` y `PDCheckBox` de Apache PDFBox 2.0.30 (ya presente en el proyecto — sin dependencias nuevas). Dibuja los recuadros con bordes mediante `PDPageContentStream` y añade los campos interactivos como anotaciones de formulario. No accede a la base de datos.
+El método responsable es `generarPlantillaVaciaPdf()` en `ActaGeneratorService.java`. Usa `PDAcroForm`, `PDTextField` y `PDCheckBox` de Apache PDFBox 2.0.30 (ya presente en el proyecto — sin dependencias nuevas). Dibuja los recuadros con bordes mediante `PDPageContentStream`, inserta el logo usando `PDImageXObject.createFromByteArray()` y añade los campos interactivos como anotaciones de formulario. El campo `resumenReunion` se crea con `setMultiline(true)` y `setDoNotScroll(false)` para habilitar el scroll interno. No accede a la base de datos.
 
 ### Verificación de campos
 
@@ -482,13 +479,22 @@ El PDF generado puede verificarse mediante la API de PDFBox:
 ```java
 PDDocument doc = PDDocument.load(new File("Plantilla_Acta_Vacia.pdf"));
 PDAcroForm form = doc.getDocumentCatalog().getAcroForm();
-// form.getFields().size() → 18 campos
+// form.getFields().size() → 17 campos
 for (PDField f : form.getFields()) {
     System.out.println(f.getClass().getSimpleName() + ": " + f.getFullyQualifiedName());
 }
-// doc.getNumberOfPages() → 3 páginas
+// doc.getNumberOfPages() → 1 página
 doc.close();
 ```
+
+### Verificación visual
+
+Al abrir el PDF generado en Adobe Acrobat Reader:
+- El encabezado muestra el logo (o el placeholder) correctamente proporcionado dentro de su recuadro.
+- El campo "Resumen de la Reunión" ocupa el espacio entre el orden del día y el bloque de firma.
+- Al escribir texto extenso en ese campo, el texto no se corta y aparece una barra de scroll interna.
+- El campo "Página" en el encabezado es editable (se puede escribir "1 de 1" u otro valor).
+- Todos los demás campos son rellenables y los checkboxes de tipo reunión son marcables.
 
 ### Cómo se accede desde la UI
 
@@ -499,7 +505,7 @@ doc.close();
 
 ```
 GET http://localhost:8080/FormularioDeComisiones/actas/generate-blank-template
-→ descarga Plantilla_Acta_Vacia.pdf  (AcroForm rellenable, 3 páginas A4)
+→ descarga Plantilla_Acta_Vacia.pdf  (AcroForm rellenable, 1 página A4, campo de resumen con scroll)
 ```
 
 ## Soporte y Contacto
