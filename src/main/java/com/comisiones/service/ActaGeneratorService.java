@@ -526,6 +526,12 @@ public class ActaGeneratorService {
                 cs.newLineAtOffset(rx, MAIN_TOP - 13f);
                 cs.showText("Duraci\u00F3n:");
                 cs.endText();
+
+                // Línea horizontal negra bajo la fila de encabezados de columna
+                cs.setLineWidth(0.5f);
+                cs.moveTo(M, MAIN_TOP - 18f);
+                cs.lineTo(M + CW, MAIN_TOP - 18f);
+                cs.stroke();
             }
 
             float cx1 = M + MAIN_LEFT_W + 3f;
