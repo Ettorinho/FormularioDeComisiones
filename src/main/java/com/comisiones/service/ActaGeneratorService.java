@@ -359,6 +359,251 @@ public class ActaGeneratorService {
     }
     
     /**
+     * Genera un PDF de plantilla de acta completamente vacía, lista para imprimir y rellenar a mano.
+     *
+     * @return Contenido del PDF como array de bytes
+     * @throws IOException Si hay un error al generar el PDF
+     */
+    public byte[] generarPlantillaVaciaPdf() throws IOException {
+        AppLogger.debug("Generando plantilla de acta vacía en PDF");
+
+        try (PDDocument document = new PDDocument()) {
+            PDPage page = new PDPage(PDRectangle.A4);
+            document.addPage(page);
+
+            float pageWidth  = page.getMediaBox().getWidth();
+            float pageHeight = page.getMediaBox().getHeight();
+            float contentWidth = pageWidth - 2 * MARGIN;
+
+            try (PDPageContentStream cs = new PDPageContentStream(document, page)) {
+                float y = pageHeight - MARGIN;
+
+                // ── Título principal ──────────────────────────────────────────────────
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, TITLE_FONT_SIZE);
+                cs.newLineAtOffset(MARGIN, y);
+                cs.showText("ACTA DE REUNIÓN:");
+                cs.endText();
+                y -= 22;
+
+                // Línea en blanco para nombre del grupo/comisión
+                drawUnderline(cs, MARGIN, y, contentWidth);
+                y -= 20;
+
+                // Referencia + Revisión + Página
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA, NORMAL_FONT_SIZE);
+                cs.newLineAtOffset(MARGIN, y);
+                cs.showText("Referencia: _________________    Revisión: ______    Página ___ de ___");
+                cs.endText();
+                y -= 25;
+
+                // ── Separador ─────────────────────────────────────────────────────────
+                drawHorizontalLine(cs, MARGIN, y, contentWidth);
+                y -= 15;
+
+                // ── ASISTENTES ────────────────────────────────────────────────────────
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, SUBTITLE_FONT_SIZE);
+                cs.newLineAtOffset(MARGIN, y);
+                cs.showText("ASISTENTES (Nombre y Cargo)");
+                cs.endText();
+                y -= 18;
+
+                // Encabezado de columnas
+                float col1 = contentWidth * 0.55f;
+                float col2 = contentWidth * 0.45f;
+                float rowH  = 18f;
+
+                drawTableRow(cs, MARGIN, y, col1, col2, rowH, "Nombre", "Cargo", true);
+                y -= rowH;
+
+                // 12 filas vacías para asistentes
+                for (int i = 0; i < 12; i++) {
+                    drawTableRow(cs, MARGIN, y, col1, col2, rowH, "", "", false);
+                    y -= rowH;
+                }
+                y -= 10;
+
+                // ── Fecha y Hora / Duración ───────────────────────────────────────────
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, NORMAL_FONT_SIZE);
+                cs.newLineAtOffset(MARGIN, y);
+                cs.showText("Fecha y Hora: ");
+                cs.endText();
+
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA, NORMAL_FONT_SIZE);
+                cs.newLineAtOffset(MARGIN + 90, y);
+                cs.showText("___________________");
+                cs.endText();
+
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, NORMAL_FONT_SIZE);
+                cs.newLineAtOffset(MARGIN + 260, y);
+                cs.showText("Duración: ");
+                cs.endText();
+
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA, NORMAL_FONT_SIZE);
+                cs.newLineAtOffset(MARGIN + 330, y);
+                cs.showText("___________________");
+                cs.endText();
+                y -= 20;
+
+                // ── ORDEN DEL DÍA ─────────────────────────────────────────────────────
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, SUBTITLE_FONT_SIZE);
+                cs.newLineAtOffset(MARGIN, y);
+                cs.showText("ORDEN DEL DÍA:");
+                cs.endText();
+                y -= 16;
+
+                for (int i = 1; i <= 6; i++) {
+                    cs.beginText();
+                    cs.setFont(PDType1Font.HELVETICA, NORMAL_FONT_SIZE);
+                    cs.newLineAtOffset(MARGIN, y);
+                    cs.showText(i + ". ");
+                    cs.endText();
+                    drawUnderline(cs, MARGIN + 18, y - 2, contentWidth - 18);
+                    y -= 16;
+                }
+                y -= 8;
+
+                // ── TIPO REUNIÓN ──────────────────────────────────────────────────────
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, SUBTITLE_FONT_SIZE);
+                cs.newLineAtOffset(MARGIN, y);
+                cs.showText("TIPO REUNIÓN:");
+                cs.endText();
+                y -= 18;
+
+                drawCheckbox(cs, MARGIN, y, "REVISIÓN DEL SIS. CALIDAD");
+                drawCheckbox(cs, MARGIN + 180, y, "REUNIÓN INTERNA");
+                y -= 18;
+
+                drawCheckbox(cs, MARGIN, y, "OTROS (especificar): ");
+                drawUnderline(cs, MARGIN + 160, y - 2, contentWidth - 160);
+                y -= 22;
+
+                // ── Excusa asistencia ─────────────────────────────────────────────────
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, NORMAL_FONT_SIZE);
+                cs.newLineAtOffset(MARGIN, y);
+                cs.showText("Excusa asistencia: ");
+                cs.endText();
+                drawUnderline(cs, MARGIN + 122, y - 2, contentWidth - 122);
+                y -= 16;
+                drawUnderline(cs, MARGIN, y - 2, contentWidth);
+                y -= 22;
+
+                // ── RESUMEN DE LA REUNIÓN ─────────────────────────────────────────────
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, SUBTITLE_FONT_SIZE);
+                cs.newLineAtOffset(MARGIN, y);
+                cs.showText("RESUMEN DE LA REUNIÓN:");
+                cs.endText();
+                y -= 16;
+
+                for (int i = 0; i < 8; i++) {
+                    drawUnderline(cs, MARGIN, y - 2, contentWidth);
+                    y -= 16;
+                }
+                y -= 10;
+
+                // ── Firma final ───────────────────────────────────────────────────────
+                drawHorizontalLine(cs, MARGIN, y, contentWidth);
+                y -= 15;
+
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, NORMAL_FONT_SIZE);
+                cs.newLineAtOffset(MARGIN, y);
+                cs.showText("Nombre: ");
+                cs.endText();
+                drawUnderline(cs, MARGIN + 60, y - 2, contentWidth * 0.45f - 60);
+
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, NORMAL_FONT_SIZE);
+                cs.newLineAtOffset(MARGIN + contentWidth * 0.5f, y);
+                cs.showText("Fecha/Hora cierre: ");
+                cs.endText();
+                drawUnderline(cs, MARGIN + contentWidth * 0.5f + 120, y - 2, contentWidth * 0.5f - 120);
+                y -= 16;
+
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, NORMAL_FONT_SIZE);
+                cs.newLineAtOffset(MARGIN, y);
+                cs.showText("Cargo: ");
+                cs.endText();
+                drawUnderline(cs, MARGIN + 52, y - 2, contentWidth * 0.45f - 52);
+                y -= 16;
+
+                cs.beginText();
+                cs.setFont(PDType1Font.HELVETICA_BOLD, NORMAL_FONT_SIZE);
+                cs.newLineAtOffset(MARGIN, y);
+                cs.showText("Firma: ");
+                cs.endText();
+                drawUnderline(cs, MARGIN + 52, y - 2, 100);
+            }
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            document.save(baos);
+            AppLogger.debug("Plantilla de acta vacía generada correctamente");
+            return baos.toByteArray();
+        }
+    }
+
+    // ── Helpers para dibujo PDF ───────────────────────────────────────────────────
+
+    private void drawHorizontalLine(PDPageContentStream cs, float x, float y, float width) throws IOException {
+        cs.setLineWidth(0.5f);
+        cs.moveTo(x, y);
+        cs.lineTo(x + width, y);
+        cs.stroke();
+    }
+
+    private void drawUnderline(PDPageContentStream cs, float x, float y, float width) throws IOException {
+        cs.setLineWidth(0.5f);
+        cs.moveTo(x, y);
+        cs.lineTo(x + width, y);
+        cs.stroke();
+    }
+
+    private void drawCheckbox(PDPageContentStream cs, float x, float y, String label) throws IOException {
+        float size = 10f;
+        cs.setLineWidth(0.8f);
+        cs.addRect(x, y - 1, size, size);
+        cs.stroke();
+        cs.beginText();
+        cs.setFont(PDType1Font.HELVETICA, NORMAL_FONT_SIZE);
+        cs.newLineAtOffset(x + size + 4, y + 1);
+        cs.showText(label);
+        cs.endText();
+    }
+
+    private void drawTableRow(PDPageContentStream cs, float x, float y,
+                              float col1Width, float col2Width, float rowHeight,
+                              String text1, String text2, boolean bold) throws IOException {
+        cs.setLineWidth(0.5f);
+        cs.addRect(x, y - rowHeight, col1Width, rowHeight);
+        cs.addRect(x + col1Width, y - rowHeight, col2Width, rowHeight);
+        cs.stroke();
+        if (!text1.isEmpty() || !text2.isEmpty()) {
+            PDType1Font font = bold ? PDType1Font.HELVETICA_BOLD : PDType1Font.HELVETICA;
+            cs.beginText();
+            cs.setFont(font, NORMAL_FONT_SIZE);
+            cs.newLineAtOffset(x + 4, y - rowHeight + 4);
+            cs.showText(text1);
+            cs.endText();
+            cs.beginText();
+            cs.setFont(font, NORMAL_FONT_SIZE);
+            cs.newLineAtOffset(x + col1Width + 4, y - rowHeight + 4);
+            cs.showText(text2);
+            cs.endText();
+        }
+    }
+
+    /**
      * Divide un texto en líneas de longitud máxima.
      */
     private String[] splitTextIntoLines(String text, int maxLength) {

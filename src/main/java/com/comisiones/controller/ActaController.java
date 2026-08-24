@@ -74,6 +74,8 @@ public class ActaController extends HttpServlet {
                 generatePdfActa(request, response);
             } else if (pathInfo.equals("/generate-word")) {
                 generateWordActa(request, response);
+            } else if (pathInfo.equals("/generate-blank-template")) {
+                generateBlankTemplate(request, response);
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -570,6 +572,36 @@ public class ActaController extends HttpServlet {
         } catch (IOException e) {
             AppLogger.error("Error al generar Word para acta ID: " + actaId, e);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al generar el documento Word");
+        }
+    }
+
+    /**
+     * Genera y descarga una plantilla de acta completamente vacía en PDF.
+     */
+    private void generateBlankTemplate(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        AppLogger.debug("Generando plantilla de acta vacía");
+
+        ActaGeneratorService generatorService = new ActaGeneratorService();
+
+        try {
+            byte[] pdfBytes = generatorService.generarPlantillaVaciaPdf();
+
+            response.setContentType(AppConstants.PDF_MIME_TYPE);
+            response.setHeader("Content-Disposition", "attachment; filename=\"Plantilla_Acta_Vacia.pdf\"");
+            response.setContentLength(pdfBytes.length);
+
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(pdfBytes);
+                out.flush();
+            }
+
+            AppLogger.debug("Plantilla de acta vacía generada y descargada");
+
+        } catch (IOException e) {
+            AppLogger.error("Error al generar la plantilla de acta vacía", e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al generar la plantilla");
         }
     }
 }
