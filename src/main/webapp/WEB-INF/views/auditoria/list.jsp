@@ -14,17 +14,19 @@
     <!-- Header -->
     <header class="header-app">
         <div class="container">
-            <div class="d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center" style="flex:1 1 0;">
                     <img src="${pageContext.request.contextPath}/resources/images/logo_salud.png"
                          alt="Gobierno de Aragón"
                          style="height:44px; width:auto;">
-                    <h1 class="h3 mb-0 text-white">
+                </div>
+                <div class="text-center" style="flex:1 1 0;">
+                    <h1 class="h3 mb-0 text-white text-nowrap">
                         <i class="bi bi-shield-check"></i>
                         Gestión de Comisiones
                     </h1>
                 </div>
-                <div class="text-end">
+                <div class="text-end" style="flex:1 1 0;">
                     <fmt:formatDate value="<%= new java.util.Date() %>" pattern="dd/MM/yyyy" />
                 </div>
             </div>
