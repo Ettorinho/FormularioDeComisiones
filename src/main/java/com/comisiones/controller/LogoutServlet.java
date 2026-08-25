@@ -1,5 +1,7 @@
 package com.comisiones.controller;
 
+import com.comisiones.service.AuditoriaService;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -26,6 +28,8 @@ public class LogoutServlet extends HttpServlet {
             if (usuario instanceof com.comisiones.model.UsuarioAD) {
                 username = ((com.comisiones.model.UsuarioAD) usuario).getUsername();
             }
+            AuditoriaService.getInstance().registrar(request, username,
+                    "LOGOUT", "SESION", null, "Cierre de sesión");
             session.invalidate();
             log("✅ Sesión cerrada para el usuario: " + username);
         }

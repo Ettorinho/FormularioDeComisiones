@@ -27,7 +27,7 @@ public class AuditoriaDAO {
             "SELECT " + COLS + " FROM auditoria_acciones ORDER BY fecha_hora DESC LIMIT ?";
 
     private static final String FIND_BY_USUARIO_SQL =
-            "SELECT " + COLS + " FROM auditoria_acciones WHERE usuario = ? ORDER BY fecha_hora DESC";
+            "SELECT " + COLS + " FROM auditoria_acciones WHERE usuario = ? ORDER BY fecha_hora DESC LIMIT ?";
 
     private static final String FIND_BY_ENTIDAD_SQL =
             "SELECT " + COLS + " FROM auditoria_acciones WHERE entidad = ? AND entidad_id = ? ORDER BY fecha_hora DESC";
@@ -46,6 +46,14 @@ public class AuditoriaDAO {
             " WHERE ip_origen = ? AND fecha_hora > CURRENT_TIMESTAMP - (? * INTERVAL '1 hour')" +
             " ORDER BY fecha_hora DESC LIMIT 100";
 
+    // ---- Paginación ----
+
+    private static final String FIND_PAGINADO_BASE =
+            "SELECT " + COLS + " FROM auditoria_acciones";
+
+    private static final String COUNT_BASE =
+            "SELECT COUNT(*) FROM auditoria_acciones";
+
     public List<AuditoriaAccion> findAll(int limit) throws SQLException {
         List<AuditoriaAccion> lista = new ArrayList<>();
         try (Connection conn = DBUtil.getConnection();
@@ -63,6 +71,7 @@ public class AuditoriaDAO {
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(FIND_BY_USUARIO_SQL)) {
             stmt.setString(1, usuario);
+            stmt.setInt(2, 500);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) lista.add(extract(rs));
             }
@@ -138,6 +147,93 @@ public class AuditoriaDAO {
             }
         }
         return lista;
+    }
+
+    /**
+     * Devuelve una página de registros de auditoría, opcionalmente filtrada por usuario, resultado
+     * y/o rango de fechas.
+     *
+     * @param filtroUsuario   filtro por usuario (puede ser null o vacío)
+     * @param filtroResultado filtro por resultado (puede ser null o vacío)
+     * @param fechaDesde      fecha de inicio del rango en formato ISO (YYYY-MM-DD, puede ser null)
+     * @param fechaHasta      fecha de fin del rango en formato ISO (YYYY-MM-DD, puede ser null)
+     * @param pagina          número de página (1-based)
+     * @param tamanoPagina    tamaño de página
+     */
+    public List<AuditoriaAccion> findPaginado(String filtroUsuario, String filtroResultado,
+                                              String fechaDesde, String fechaHasta,
+                                              int pagina, int tamanoPagina) throws SQLException {
+        List<AuditoriaAccion> lista = new ArrayList<>();
+        List<String> params = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder(FIND_PAGINADO_BASE);
+        buildWhereClause(sql, params, filtroUsuario, filtroResultado, fechaDesde, fechaHasta);
+        sql.append(" ORDER BY fecha_hora DESC LIMIT ? OFFSET ?");
+
+        int offset = (pagina - 1) * tamanoPagina;
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            for (String p : params) {
+                stmt.setString(idx++, p);
+            }
+            stmt.setInt(idx++, tamanoPagina);
+            stmt.setInt(idx,   offset);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) lista.add(extract(rs));
+            }
+        }
+        return lista;
+    }
+
+    /**
+     * Devuelve el total de registros de auditoría que cumplen los filtros dados.
+     */
+    public long countFiltrado(String filtroUsuario, String filtroResultado,
+                              String fechaDesde, String fechaHasta) throws SQLException {
+        StringBuilder sql = new StringBuilder(COUNT_BASE);
+        List<String> params = new ArrayList<>();
+        buildWhereClause(sql, params, filtroUsuario, filtroResultado, fechaDesde, fechaHasta);
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setString(i + 1, params.get(i));
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getLong(1) : 0L;
+            }
+        }
+    }
+
+    /**
+     * Construye la cláusula WHERE y rellena la lista de parámetros posicionales según los filtros.
+     */
+    private void buildWhereClause(StringBuilder sql, List<String> params,
+                                  String filtroUsuario, String filtroResultado,
+                                  String fechaDesde, String fechaHasta) {
+        boolean primero = true;
+
+        if (filtroUsuario != null && !filtroUsuario.trim().isEmpty()) {
+            sql.append(primero ? " WHERE" : " AND").append(" usuario = ?");
+            params.add(filtroUsuario.trim());
+            primero = false;
+        }
+        if (filtroResultado != null && !filtroResultado.trim().isEmpty()) {
+            sql.append(primero ? " WHERE" : " AND").append(" resultado = ?");
+            params.add(filtroResultado.trim().toUpperCase());
+            primero = false;
+        }
+        if (fechaDesde != null && !fechaDesde.trim().isEmpty()) {
+            sql.append(primero ? " WHERE" : " AND").append(" fecha_hora >= CAST(? AS TIMESTAMP)");
+            params.add(fechaDesde.trim() + " 00:00:00");
+            primero = false;
+        }
+        if (fechaHasta != null && !fechaHasta.trim().isEmpty()) {
+            sql.append(primero ? " WHERE" : " AND").append(" fecha_hora < CAST(? AS TIMESTAMP) + INTERVAL '1 day'");
+            params.add(fechaHasta.trim() + " 00:00:00");
+        }
     }
 
     private AuditoriaAccion extract(ResultSet rs) throws SQLException {

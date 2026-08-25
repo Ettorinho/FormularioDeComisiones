@@ -509,6 +509,9 @@ public class ActaController extends HttpServlet {
             }
             
             AppLogger.debug("PDF generado y descargado para acta ID: " + actaId);
+            AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
+                    "GENERAR", "ACTA_PDF", actaId.toString(),
+                    "Generó PDF del acta ID: " + actaId + " (comisión: " + acta.getComision().getNombre() + ")");
             
         } catch (IOException e) {
             AppLogger.error("Error al generar PDF para acta ID: " + actaId, e);
@@ -568,6 +571,9 @@ public class ActaController extends HttpServlet {
             }
             
             AppLogger.debug("Word generado y descargado para acta ID: " + actaId);
+            AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
+                    "GENERAR", "ACTA_WORD", actaId.toString(),
+                    "Generó Word del acta ID: " + actaId + " (comisión: " + acta.getComision().getNombre() + ")");
             
         } catch (IOException e) {
             AppLogger.error("Error al generar Word para acta ID: " + actaId, e);
@@ -598,6 +604,8 @@ public class ActaController extends HttpServlet {
             }
 
             AppLogger.debug("Plantilla de acta vacía generada y descargada");
+            AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
+                    "DESCARGAR", "PLANTILLA", null, "Descargó la plantilla de acta vacía");
 
         } catch (IOException e) {
             AppLogger.error("Error al generar la plantilla de acta vacía", e);

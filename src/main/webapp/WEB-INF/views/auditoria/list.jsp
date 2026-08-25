@@ -18,24 +18,34 @@
             <div class="card-body">
                 <form method="get" action="${pageContext.request.contextPath}/auditoria" class="row g-2 align-items-end">
                     <div class="col-md-3">
-                        <label for="usuario" class="form-label">Filtrar por usuario</label>
+                        <label for="usuario" class="form-label">Usuario</label>
                         <input type="text" id="usuario" name="usuario" class="form-control"
                                placeholder="Nombre de usuario AD"
                                value="<c:out value='${filtroUsuario}'/>">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="resultado" class="form-label">Resultado</label>
                         <select id="resultado" name="resultado" class="form-select">
-                            <option value="">Todos los resultados</option>
-                            <option value="EXITOSO"         ${filtroResultado == 'EXITOSO'         ? 'selected' : ''}>Exitoso</option>
-                            <option value="FALLIDO"         ${filtroResultado == 'FALLIDO'         ? 'selected' : ''}>Fallido</option>
-                            <option value="DENEGADO"        ${filtroResultado == 'DENEGADO'        ? 'selected' : ''}>Denegado</option>
-                            <option value="VALIDACION_ERROR"${filtroResultado == 'VALIDACION_ERROR'? 'selected' : ''}>Error de validación</option>
+                            <option value="">Todos</option>
+                            <option value="EXITOSO"          ${filtroResultado == 'EXITOSO'          ? 'selected' : ''}>Exitoso</option>
+                            <option value="FALLIDO"          ${filtroResultado == 'FALLIDO'          ? 'selected' : ''}>Fallido</option>
+                            <option value="DENEGADO"         ${filtroResultado == 'DENEGADO'         ? 'selected' : ''}>Denegado</option>
+                            <option value="VALIDACION_ERROR" ${filtroResultado == 'VALIDACION_ERROR' ? 'selected' : ''}>Error validación</option>
                         </select>
                     </div>
                     <div class="col-md-2">
+                        <label for="fechaDesde" class="form-label">Desde</label>
+                        <input type="date" id="fechaDesde" name="fechaDesde" class="form-control"
+                               value="<c:out value='${fechaDesde}'/>">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="fechaHasta" class="form-label">Hasta</label>
+                        <input type="date" id="fechaHasta" name="fechaHasta" class="form-control"
+                               value="<c:out value='${fechaHasta}'/>">
+                    </div>
+                    <div class="col-md-1">
                         <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-search me-1"></i>Buscar
+                            <i class="bi bi-search"></i>
                         </button>
                     </div>
                     <div class="col-md-2">
@@ -46,27 +56,6 @@
                 </form>
             </div>
         </div>
-
-        <!-- Información de filtro activo -->
-        <c:if test="${not empty filtroUsuario}">
-            <div class="alert alert-info">
-                <i class="bi bi-funnel me-1"></i>
-                Mostrando acciones del usuario: <strong><c:out value="${filtroUsuario}"/></strong>
-            </div>
-        </c:if>
-        <c:if test="${not empty filtroEntidad}">
-            <div class="alert alert-info">
-                <i class="bi bi-funnel me-1"></i>
-                Mostrando acciones sobre: <strong><c:out value="${filtroEntidad}"/></strong>
-                (ID: <c:out value="${filtroEntidadId}"/>)
-            </div>
-        </c:if>
-        <c:if test="${not empty filtroResultado}">
-            <div class="alert alert-info">
-                <i class="bi bi-funnel me-1"></i>
-                Mostrando registros con resultado: <strong><c:out value="${filtroResultado}"/></strong>
-            </div>
-        </c:if>
 
         <!-- Tabla de auditoría -->
         <c:choose>
@@ -107,8 +96,17 @@
                                             <c:when test="${accion.accion == 'LOGIN'}">
                                                 <span class="badge bg-primary"><c:out value="${accion.accion}"/></span>
                                             </c:when>
+                                            <c:when test="${accion.accion == 'LOGOUT'}">
+                                                <span class="badge bg-secondary"><c:out value="${accion.accion}"/></span>
+                                            </c:when>
                                             <c:when test="${accion.accion == 'LOGIN_FALLIDO' || accion.accion == 'ACCESS_DENIED'}">
                                                 <span class="badge bg-danger"><c:out value="${accion.accion}"/></span>
+                                            </c:when>
+                                            <c:when test="${accion.accion == 'GENERAR'}">
+                                                <span class="badge bg-info text-dark"><c:out value="${accion.accion}"/></span>
+                                            </c:when>
+                                            <c:when test="${accion.accion == 'DESCARGAR'}">
+                                                <span class="badge bg-info text-dark"><c:out value="${accion.accion}"/></span>
                                             </c:when>
                                             <c:otherwise>
                                                 <span class="badge bg-secondary"><c:out value="${accion.accion}"/></span>
@@ -145,10 +143,30 @@
                         </tbody>
                     </table>
                 </div>
-                <p class="text-muted small">
-                    <i class="bi bi-info-circle me-1"></i>
-                    Mostrando <strong>${acciones.size()}</strong> registro(s).
-                </p>
+
+                <!-- Paginación -->
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <p class="text-muted small mb-0">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Mostrando <strong>${acciones.size()}</strong> de <strong>${totalRegistros}</strong> registro(s).
+                        Página ${paginaActual} de ${totalPaginas}.
+                    </p>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item ${paginaActual <= 1 ? 'disabled' : ''}">
+                            <a class="page-link" href="${pageContext.request.contextPath}/auditoria?page=${paginaActual - 1}&usuario=${filtroUsuario}&resultado=${filtroResultado}&fechaDesde=${fechaDesde}&fechaHasta=${fechaHasta}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">Página ${paginaActual} / ${totalPaginas}</span>
+                        </li>
+                        <li class="page-item ${paginaActual >= totalPaginas ? 'disabled' : ''}">
+                            <a class="page-link" href="${pageContext.request.contextPath}/auditoria?page=${paginaActual + 1}&usuario=${filtroUsuario}&resultado=${filtroResultado}&fechaDesde=${fechaDesde}&fechaHasta=${fechaHasta}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </c:when>
             <c:otherwise>
                 <div class="alert alert-info">
