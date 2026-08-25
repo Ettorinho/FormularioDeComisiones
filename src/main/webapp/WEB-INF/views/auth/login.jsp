@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Iniciar Sesión — Formulario de Comisiones</title>
+    <title>Iniciar Sesión — Gestión de Comisiones</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
@@ -15,14 +15,20 @@
     <!-- Cabecera corporativa -->
     <header class="header-app">
         <div class="container">
-            <h1 class="h3 mb-0">
-                <i class="bi bi-file-earmark-text"></i>
-                Formulario de Comisiones
-            </h1>
-            <img src="${pageContext.request.contextPath}/resources/images/logo_salud.png"
-                 alt="Gobierno de Aragón"
-                 class="img-fluid mt-1"
-                 style="height:40px;">
+            <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center" style="flex:1 1 0;">
+                    <img src="${pageContext.request.contextPath}/resources/images/logo_salud.png"
+                         alt="Gobierno de Aragón"
+                         style="height:40px; width:auto;">
+                </div>
+                <div class="text-center" style="flex:1 1 0;">
+                    <h1 class="h3 mb-0 text-nowrap">
+                        <i class="bi bi-file-earmark-text"></i>
+                        Gestión de Comisiones
+                    </h1>
+                </div>
+                <div style="flex:1 1 0;"></div>
+            </div>
         </div>
     </header>
 
@@ -35,7 +41,7 @@
                         <!-- Título del formulario -->
                         <div class="text-center mb-4">
                             <i class="bi bi-shield-lock fs-1 text-primary"></i>
-                            <h2 class="h4 mt-2 mb-1">Formulario de Comisiones</h2>
+                            <h2 class="h4 mt-2 mb-1">Gestión de Comisiones</h2>
                             <p class="text-muted small">Acceso con credenciales corporativas</p>
                         </div>
 
