@@ -242,7 +242,7 @@ public class LdapLookupServlet extends HttpServlet {
                     ctx.close();
                     log("   Conexión LDAP cerrada");
                 } catch(Exception e) {
-                    log("   ⚠️ Error al cerrar contexto LDAP: " + e.getMessage());
+                    AppLogger.warn("Error al cerrar contexto LDAP: " + e.getMessage());
                 }
             }
         }
@@ -253,7 +253,7 @@ public class LdapLookupServlet extends HttpServlet {
         Attribute a = attrs.get(name);
         if (a == null) return defaultValue;
         Object v = a.get();
-        return v != null ? v.toString(). trim() : defaultValue;
+        return v != null ? v.toString().trim() : defaultValue;
     }
 
     private String escapeJson(String s) {
