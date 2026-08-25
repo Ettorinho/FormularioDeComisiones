@@ -48,9 +48,12 @@ public class AppContextListener implements ServletContextListener {
                 errors.add("Falta el valor 'FIRMANTE' en el tipo 'cargo_type'. Aplique la migración V15__add_cargo_firmante.sql");
             }
 
-            // Comprobación 4: trigger registrar_cambio_cargo en comision_miembros (requiere migración V16)
-            if (!triggerExists(conn, "registrar_cambio_cargo", "comision_miembros")) {
-                errors.add("Falta el trigger 'registrar_cambio_cargo' en la tabla 'comision_miembros'. Aplique la migración V16__fix_trigger_registrar_cambio_cargo.sql");
+            // Comprobación 4: función registrar_cambio_cargo (requiere migración V16)
+            // Nota: el trigger real sobre comision_miembros se llama 'trigger_cambio_cargo'
+            // (creado en V6); 'registrar_cambio_cargo' es la función que ese trigger ejecuta,
+            // y es lo que V16 recrea sin el cast a VARCHAR. Se valida la función, no el trigger.
+            if (!functionExists(conn, "registrar_cambio_cargo")) {
+                errors.add("Falta la función 'registrar_cambio_cargo'. Aplique la migración V16__fix_trigger_registrar_cambio_cargo.sql");
             }
 
         } catch (SQLException e) {
@@ -111,6 +114,20 @@ public class AppContextListener implements ServletContextListener {
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, triggerName);
             stmt.setString(2, tableName);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    /**
+     * Comprueba si existe una función en el esquema público (independiente del schema,
+     * pg_proc no filtra por schema por defecto en esta consulta simple).
+     */
+    private boolean functionExists(Connection conn, String functionName) throws SQLException {
+        String sql = "SELECT 1 FROM pg_proc WHERE proname = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, functionName);
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
             }
