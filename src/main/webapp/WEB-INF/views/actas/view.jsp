@@ -4,7 +4,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <c:set var="pageTitle" value="Acta de Reunión - Gobierno de Aragón" />
-<c:set var="headerSubtitle" value="Gestión de Actas" />
 <c:set var="headerClass" value="no-print" />
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
 

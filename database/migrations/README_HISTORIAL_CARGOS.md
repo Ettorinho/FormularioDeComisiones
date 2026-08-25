@@ -215,7 +215,7 @@ pg_dump -U postgres -d nombre_bd -t comision_miembro_historial_cargos > historia
 ### Paso 2: Ejecutar rollback
 
 ```bash
-psql -U postgres -d nombre_bd -f database/migrations/002_rollback.sql
+psql -U postgres -d nombre_bd -f database/rollbacks/V6__rollback.sql
 ```
 
 ### Verificación

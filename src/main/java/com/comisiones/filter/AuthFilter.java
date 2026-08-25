@@ -1,7 +1,8 @@
 package com.comisiones.filter;
 
+import com.comisiones.util.StaticResourceUtil;
+
 import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -12,8 +13,9 @@ import java.io.IOException;
  * Rutas públicas (sin autenticación requerida): /login, /logout y recursos estáticos.
  * Para el resto de rutas, comprueba que exista sesión con el atributo "usuarioLogueado".
  * Si no hay sesión, guarda la URL original y redirige al formulario de login.
+ *
+ * Registrado exclusivamente en web.xml para mantener el orden con el resto de filtros.
  */
-@WebFilter("/*")
 public class AuthFilter implements Filter {
 
     @Override
@@ -35,7 +37,7 @@ public class AuthFilter implements Filter {
         String path = requestURI.substring(contextPath.length());
 
         // Rutas públicas que no requieren autenticación
-        if (esRutaPublica(path)) {
+        if (StaticResourceUtil.esRutaPublica(path)) {
             chain.doFilter(request, response);
             return;
         }
@@ -56,35 +58,6 @@ public class AuthFilter implements Filter {
         }
         newSession.setAttribute("urlAntesDeSesion", urlOriginal);
         httpResp.sendRedirect(contextPath + "/login");
-    }
-
-    /**
-     * Determina si la ruta es pública (no requiere autenticación).
-     * Son públicas: /login, /logout y todos los recursos estáticos.
-     */
-    private boolean esRutaPublica(String path) {
-        // Rutas funcionales públicas
-        if ("/login".equals(path) || "/logout".equals(path)) {
-            return true;
-        }
-
-        // Recursos estáticos por prefijo de ruta
-        if (path.startsWith("/css/")    || path.startsWith("/js/")
-                || path.startsWith("/img/")    || path.startsWith("/images/")
-                || path.startsWith("/fonts/")  || path.startsWith("/webjars/")) {
-            return true;
-        }
-
-        // Recursos estáticos por extensión de archivo
-        String pathLower = path.toLowerCase();
-        if (pathLower.endsWith(".css")   || pathLower.endsWith(".js")
-                || pathLower.endsWith(".png")   || pathLower.endsWith(".jpg")
-                || pathLower.endsWith(".ico")   || pathLower.endsWith(".woff")
-                || pathLower.endsWith(".woff2")) {
-            return true;
-        }
-
-        return false;
     }
 
     @Override

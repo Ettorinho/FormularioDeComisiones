@@ -71,6 +71,39 @@ public class MiembroDAO {
     }
     
     /**
+     * Busca todos los miembros activos (sin fecha de baja) de una comisión.
+     * Usar para listados de asistencia en actas, donde solo deben aparecer miembros activos.
+     */
+    public List<Miembro> findMiembrosActivosByComisionId(Long comisionId) throws SQLException {
+        List<Miembro> miembros = new ArrayList<>();
+
+        String sql = String.join(" ",
+                "SELECT m.id, m.nombre_apellidos, m.dni_nif, m.correo_electronico",
+                "FROM miembros m",
+                "INNER JOIN comision_miembros cm ON m.id = cm.miembro_id",
+                "WHERE cm.comision_id = ?",
+                "AND cm.fecha_baja IS NULL",
+                "ORDER BY m.nombre_apellidos");
+
+        AppLogger.debug("Buscando miembros activos de comisión ID: " + comisionId);
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, comisionId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    miembros.add(extractMiembroFromResultSet(rs));
+                }
+            }
+        }
+
+        AppLogger.debug("Miembros activos encontrados: " + miembros.size());
+        return miembros;
+    }
+
+    /**
      * NUEVO MÉTODO: Busca todos los miembros de una comisión específica
      */
     public List<Miembro> findMiembrosByComisionId(Long comisionId) throws SQLException {

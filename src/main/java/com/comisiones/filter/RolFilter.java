@@ -6,6 +6,7 @@ import com.comisiones.security.AppRoles;
 import com.comisiones.security.RolService;
 import com.comisiones.service.AuditoriaService;
 import com.comisiones.util.AppLogger;
+import com.comisiones.util.StaticResourceUtil;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -45,7 +46,7 @@ public class RolFilter implements Filter {
         String method      = httpReq.getMethod();
 
         // Rutas públicas (login, logout, recursos estáticos) → pasar sin verificar rol
-        if (esRutaPublica(path)) {
+        if (StaticResourceUtil.esRutaPublica(path)) {
             chain.doFilter(request, response);
             return;
         }
@@ -86,33 +87,11 @@ public class RolFilter implements Filter {
         chain.doFilter(request, response);
     }
 
-    private boolean esRutaPublica(String path) {
-        // Rutas funcionales públicas
-        if ("/login".equals(path) || "/logout".equals(path)) {
-            return true;
-        }
-
-        // Recursos estáticos por prefijo de ruta
-        if (path.startsWith("/css/")    || path.startsWith("/js/")
-                || path.startsWith("/img/")    || path.startsWith("/images/")
-                || path.startsWith("/fonts/")  || path.startsWith("/webjars/")) {
-            return true;
-        }
-
-        // Recursos estáticos por extensión de archivo
-        String pathLower = path.toLowerCase();
-        if (pathLower.endsWith(".css")   || pathLower.endsWith(".js")
-                || pathLower.endsWith(".png")   || pathLower.endsWith(".jpg")
-                || pathLower.endsWith(".ico")   || pathLower.endsWith(".woff")
-                || pathLower.endsWith(".woff2")) {
-            return true;
-        }
-
-        return false;
-    }
-
     private String determinarRolRequerido(String path, String method) {
         // Rutas que requieren ADMIN
+        if (path.startsWith("/auditoria")) {
+            return AppRoles.ADMIN;
+        }
         if ("GET".equals(method) && path.startsWith("/comisiones/new")) {
             return AppRoles.ADMIN;
         }

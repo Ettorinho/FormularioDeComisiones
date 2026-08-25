@@ -375,7 +375,8 @@ public class ComisionMiembroDAO {
         }
     }
 
-    // Sobrecarga para compatibilidad con llamadas existentes sin usuario
+    // Sobrecarga para compatibilidad con llamadas existentes sin usuario.
+    // Mantenida como API pública para usos futuros donde no sea relevante el usuario.
     public boolean cambiarCargo(Long comisionId, Long miembroId, String nuevoCargo) throws SQLException {
         return cambiarCargo(comisionId, miembroId, nuevoCargo, "SYSTEM");
     }

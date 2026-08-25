@@ -120,7 +120,9 @@ public class ActaDAO {
     }
     
     /**
-     * Guarda una asistencia de acta
+     * Guarda una asistencia de acta.
+     * Versión pública independiente para uso directo por callers externos.
+     * Internamente, el guardado en bulk de actas usa la sobrecarga privada con Connection.
      */
     public Long saveAsistencia(Long actaId, Long miembroId, boolean asistio, String justificacion) 
             throws SQLException {

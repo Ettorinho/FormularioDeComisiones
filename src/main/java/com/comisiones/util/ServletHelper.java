@@ -9,6 +9,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Helper para operaciones comunes en servlets
@@ -47,6 +48,19 @@ public class ServletHelper {
             }
         }
         return "SISTEMA";
+    }
+
+    /**
+     * Formatea un mapa de errores de validación como un string legible.
+     * Centraliza la lógica antes duplicada en ComisionController, ActaController y CambiarCargoServlet.
+     *
+     * @param fieldErrors mapa de campo→mensaje de error
+     * @return string con todos los errores separados por "; "
+     */
+    public static String formatValidationErrors(Map<String, String> fieldErrors) {
+        return fieldErrors.entrySet().stream()
+                .map(entry -> entry.getKey() + ": " + entry.getValue())
+                .collect(java.util.stream.Collectors.joining("; "));
     }
 
     public static Long parsePathId(HttpServletRequest request, String expectedPrefix) {

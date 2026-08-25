@@ -2,6 +2,7 @@ package com.comisiones.filter;
 
 import com.comisiones.security.CsrfTokenUtil;
 import com.comisiones.util.AppLogger;
+import com.comisiones.util.StaticResourceUtil;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -29,7 +30,7 @@ public class CsrfFilter implements Filter {
         String requestUri = httpReq.getRequestURI();
         String path = requestUri.substring(contextPath.length());
 
-        if (isStaticResource(path)) {
+        if (StaticResourceUtil.esRecursoEstatico(path)) {
             chain.doFilter(request, response);
             return;
         }
@@ -48,17 +49,5 @@ public class CsrfFilter implements Filter {
     @Override
     public void destroy() {
         // Sin recursos que liberar
-    }
-
-    private boolean isStaticResource(String path) {
-        if (path.startsWith("/css/") || path.startsWith("/js/") || path.startsWith("/img/")
-                || path.startsWith("/images/") || path.startsWith("/fonts/")
-                || path.startsWith("/webjars/") || path.startsWith("/resources/")) {
-            return true;
-        }
-        String lowerPath = path.toLowerCase();
-        return lowerPath.endsWith(".css") || lowerPath.endsWith(".js") || lowerPath.endsWith(".png")
-                || lowerPath.endsWith(".jpg") || lowerPath.endsWith(".jpeg") || lowerPath.endsWith(".ico")
-                || lowerPath.endsWith(".svg") || lowerPath.endsWith(".woff") || lowerPath.endsWith(".woff2");
     }
 }

@@ -19,11 +19,9 @@ BEGIN
 END
 $$;
 
-COMMIT;
-
 -- Paso 2: Actualizar CHECK constraints en comision_miembro_historial_cargos
--- (deben ejecutarse en una transacción separada porque ALTER TYPE ... ADD VALUE
--- no puede usarse en la misma transacción que lo consuma)
+-- Nota: ALTER TYPE ... ADD VALUE no puede usarse en la misma transacción que lo consuma,
+-- pero Flyway gestiona las transacciones automáticamente; no se debe insertar COMMIT manual.
 ALTER TABLE comision_miembro_historial_cargos
     DROP CONSTRAINT IF EXISTS check_cargo_nuevo;
 

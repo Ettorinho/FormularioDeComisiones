@@ -3,7 +3,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <c:set var="pageTitle" value="Nueva Acta de Reunión" />
-<c:set var="headerSubtitle" value="Crear Nueva Acta de Reunión" />
 <c:set var="headerClass" value="no-print" />
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
     <!-- Contenido Principal -->

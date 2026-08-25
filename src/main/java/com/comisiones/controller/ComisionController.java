@@ -29,7 +29,6 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.HashSet;
@@ -271,7 +270,7 @@ public class ComisionController extends HttpServlet {
 
             Map<String, String> erroresValidacionComision = ValidationUtil.validateWithFields(nuevaComision);
             if (!erroresValidacionComision.isEmpty()) {
-                request.setAttribute("error", "Datos de comisión inválidos: " + formatValidationErrors(erroresValidacionComision));
+                request.setAttribute("error", "Datos de comisión inválidos: " + ServletHelper.formatValidationErrors(erroresValidacionComision));
                 showNewForm(request, response);
                 return;
             }
@@ -333,7 +332,7 @@ public class ComisionController extends HttpServlet {
                 response.sendRedirect(request.getContextPath()
                         + "/comisiones/addMember/" + comisionId
                         + "?error=" + java.net.URLEncoder.encode("Datos de miembro inválidos: "
-                        + formatValidationErrors(erroresValidacionMiembro), java.nio.charset.StandardCharsets.UTF_8));
+                        + ServletHelper.formatValidationErrors(erroresValidacionMiembro), java.nio.charset.StandardCharsets.UTF_8));
                 return;
             }
             miembroDAO.save(miembro);
@@ -362,7 +361,7 @@ public class ComisionController extends HttpServlet {
             response.sendRedirect(request.getContextPath()
                     + "/comisiones/addMember/" + comisionId
                     + "?error=" + java.net.URLEncoder.encode("Datos de incorporación inválidos: "
-                    + formatValidationErrors(erroresValidacionRelacion), java.nio.charset.StandardCharsets.UTF_8));
+                    + ServletHelper.formatValidationErrors(erroresValidacionRelacion), java.nio.charset.StandardCharsets.UTF_8));
             return;
         }
 
@@ -535,7 +534,7 @@ public class ComisionController extends HttpServlet {
 
                         Map<String, String> erroresMiembro = ValidationUtil.validateWithFields(miembro);
                         if (!erroresMiembro.isEmpty()) {
-                            AppLogger.warn("Miembro inválido omitido (" + dni + "): " + formatValidationErrors(erroresMiembro));
+                            AppLogger.warn("Miembro inválido omitido (" + dni + "): " + ServletHelper.formatValidationErrors(erroresMiembro));
                             errores++;
                             continue;
                         }
@@ -562,7 +561,7 @@ public class ComisionController extends HttpServlet {
                     Map<String, String> erroresRelacion = ValidationUtil.validateWithFields(cm);
                     if (!erroresRelacion.isEmpty()) {
                         AppLogger.warn("Relación comisión-miembro inválida omitida (" + dni + "): "
-                                + formatValidationErrors(erroresRelacion));
+                                + ServletHelper.formatValidationErrors(erroresRelacion));
                         errores++;
                         continue;
                     }
@@ -596,10 +595,4 @@ public class ComisionController extends HttpServlet {
         request.setAttribute("cargos", ComisionMiembro.Cargo.values());
     }
 
-    private String formatValidationErrors(Map<String, String> fieldErrors) {
-        Map<String, String> orderedErrors = new LinkedHashMap<>(fieldErrors);
-        return orderedErrors.entrySet().stream()
-                .map(entry -> entry.getKey() + ": " + entry.getValue())
-                .collect(Collectors.joining("; "));
-    }
 }
