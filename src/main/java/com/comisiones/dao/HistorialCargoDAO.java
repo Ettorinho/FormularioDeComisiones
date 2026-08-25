@@ -1,6 +1,7 @@
 package com.comisiones.dao;
 
 import com.comisiones.model.HistorialCargo;
+import com.comisiones.util.AppLogger;
 import com.comisiones.util.DBUtil;
 import java.sql.*;
 import java.util.ArrayList;
@@ -108,7 +109,7 @@ public class HistorialCargoDAO {
                     try {
                         hc.setNombreMiembro(rs.getString("nombre_apellidos"));
                     } catch (SQLException e) {
-                        // Campo opcional
+                        AppLogger.debug("Campo 'nombre_apellidos' no disponible en el ResultSet: " + e.getMessage());
                     }
                     historial.add(hc);
                 }
@@ -147,7 +148,7 @@ public class HistorialCargoDAO {
                     try {
                         hc.setNombreComision(rs.getString("nombre_comision"));
                     } catch (SQLException e) {
-                        // Campo opcional
+                        AppLogger.debug("Campo 'nombre_comision' no disponible en el ResultSet: " + e.getMessage());
                     }
                     historial.add(hc);
                 }

@@ -229,6 +229,7 @@ public class ComisionMiembroDAO {
             String correo = rs.getString("correo_electronico");
             miembro.setEmail(correo);
         } catch (SQLException e) {
+            AppLogger.debug("Campo 'correo_electronico' no disponible en el ResultSet: " + e.getMessage());
             miembro.setEmail(null);
         }
         
@@ -246,7 +247,7 @@ public class ComisionMiembroDAO {
                 comision.setArea(Comision.Area.valueOf(areaStr));
             }
         } catch (SQLException e) {
-            // Campo no disponible en esta query
+            AppLogger.debug("Campo 'area' no disponible en el ResultSet: " + e.getMessage());
         }
         
         // Tipo (opcional, solo en algunas queries)
@@ -256,7 +257,7 @@ public class ComisionMiembroDAO {
                 comision.setTipo(Comision.Tipo.valueOf(tipoStr));
             }
         } catch (SQLException e) {
-            // Campo no disponible en esta query
+            AppLogger.debug("Campo 'tipo' no disponible en el ResultSet: " + e.getMessage());
         }
         
         // Fecha constitución (opcional)
@@ -266,7 +267,7 @@ public class ComisionMiembroDAO {
                 comision.setFechaConstitucion(fechaConst);
             }
         } catch (SQLException e) {
-            // Campo no disponible
+            AppLogger.debug("Campo 'fecha_constitucion' no disponible en el ResultSet: " + e.getMessage());
         }
         
         // Fecha fin (opcional)
@@ -276,7 +277,7 @@ public class ComisionMiembroDAO {
                 comision.setFechaFin(fechaFin);
             }
         } catch (SQLException e) {
-            // Campo no disponible
+            AppLogger.debug("Campo 'fecha_fin' no disponible en el ResultSet: " + e.getMessage());
         }
         
         cm.setComision(comision);
