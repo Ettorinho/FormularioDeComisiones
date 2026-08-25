@@ -14,15 +14,17 @@
     <!-- Header -->
     <header class="header-app">
         <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="h3 mb-0">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="${pageContext.request.contextPath}/resources/images/logo_salud.png"
+                         alt="Gobierno de Aragón"
+                         style="height:44px; width:auto;">
+                    <h1 class="h3 mb-0 text-white">
                         <i class="bi bi-shield-check"></i>
-                        Sistema de Gestión de Comisiones
+                        Gestión de Comisiones
                     </h1>
-                    <p class="mb-0 mt-1 header-subtitle">Gobierno de Aragón</p>
                 </div>
-                <div class="col-md-4 text-end">
+                <div class="text-end">
                     <fmt:formatDate value="<%= new java.util.Date() %>" pattern="dd/MM/yyyy" />
                 </div>
             </div>
