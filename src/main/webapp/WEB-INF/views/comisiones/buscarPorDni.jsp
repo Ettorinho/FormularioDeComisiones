@@ -10,7 +10,6 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <jsp:useBean id="now" class="java.util.Date" />
 <c:set var="pageTitle" value="Buscar Comisiones por DNI" />
-<c:set var="headerSubtitle" value="Gobierno de Aragón" />
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
 <div class="container mt-4">
@@ -200,7 +199,7 @@
                                                                         <%-- Fila para el cargo actual (cargoNuevo del elemento más reciente, índice 0) --%>
                                                                         <c:set var="primerCambio" value="${historialComision[0]}" />
                                                                         <tr>
-                                                                            <td><small><strong>${primerCambio.cargoNuevo}</strong></small></td>
+                                                                            <td><small><strong><c:out value="${primerCambio.cargoNuevo}"/></strong></small></td>
                                                                             <td><small><fmt:formatDate value="${primerCambio.fechaCambio}" pattern="dd/MM/yyyy" /></small></td>
                                                                             <td>
                                                                                 <small>
@@ -220,7 +219,7 @@
                                                                             <c:if test="${status.index > 0}">
                                                                                 <c:set var="cambioAnterior" value="${historialComision[status.index - 1]}" />
                                                                                 <tr>
-                                                                                    <td><small>${cambio.cargoNuevo}</small></td>
+                                                                                    <td><small><c:out value="${cambio.cargoNuevo}"/></small></td>
                                                                                     <td><small><fmt:formatDate value="${cambio.fechaCambio}" pattern="dd/MM/yyyy" /></small></td>
                                                                                     <td><small><fmt:formatDate value="${cambioAnterior.fechaCambio}" pattern="dd/MM/yyyy" /></small></td>
                                                                                 </tr>
@@ -230,7 +229,7 @@
                                                                         <c:set var="ultimoCambio" value="${historialComision[fn:length(historialComision) - 1]}" />
                                                                         <c:if test="${not empty ultimoCambio.cargoAnterior}">
                                                                             <tr class="table-light">
-                                                                                <td><small>${ultimoCambio.cargoAnterior}</small></td>
+                                                                                <td><small><c:out value="${ultimoCambio.cargoAnterior}"/></small></td>
                                                                                 <td>
                                                                                     <small>
                                                                                         <c:choose>

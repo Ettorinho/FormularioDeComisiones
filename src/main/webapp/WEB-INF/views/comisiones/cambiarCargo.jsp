@@ -2,7 +2,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <c:set var="pageTitle" value="Cambiar Cargo" />
-<c:set var="headerSubtitle" value="Gobierno de Aragón" />
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
 <div class="container mt-4">
@@ -161,7 +160,7 @@
                                             </c:when>
                                             <c:otherwise>
                                                 <span class="badge cargo-${cambio.cargoAnterior} badge-cargo">
-                                                    ${cambio.cargoAnterior}
+                                                    <c:out value="${cambio.cargoAnterior}"/>
                                                 </span>
                                             </c:otherwise>
                                         </c:choose>
@@ -171,7 +170,7 @@
                                     </td>
                                     <td>
                                         <span class="badge cargo-${cambio.cargoNuevo} badge-cargo">
-                                            ${cambio.cargoNuevo}
+                                            <c:out value="${cambio.cargoNuevo}"/>
                                         </span>
                                     </td>
                                     <td>

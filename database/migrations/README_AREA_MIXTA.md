@@ -50,7 +50,7 @@ Solo ejecutar rollback si:
 - Estás en ambiente de desarrollo/testing
 
 ```bash
-psql -U usuario -d bd_comisiones -f database/migrations/003_rollback.sql
+psql -U usuario -d bd_comisiones -f database/rollbacks/V8__rollback.sql
 ```
 
 ## Ejemplo de Uso

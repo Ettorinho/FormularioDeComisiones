@@ -31,7 +31,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @WebServlet("/actas/*")
 @MultipartConfig(
@@ -139,7 +138,7 @@ public class ActaController extends HttpServlet {
             ServletHelper.sendBadRequest(response, "ID de comisión no válido: " + comisionIdParam);
             return;
         }
-        List<Miembro> miembros = miembroDAO.findMiembrosByComisionId(comisionId);
+        List<Miembro> miembros = miembroDAO.findMiembrosActivosByComisionId(comisionId);
         
         AppLogger.debug("Miembros cargados: " + (miembros != null ? miembros.size() : 0));
         
@@ -252,7 +251,7 @@ public class ActaController extends HttpServlet {
 
         Map<String, String> erroresValidacionActa = ValidationUtil.validateWithFields(acta);
         if (!erroresValidacionActa.isEmpty()) {
-            request.setAttribute("error", "Datos de acta inválidos: " + formatValidationErrors(erroresValidacionActa));
+            request.setAttribute("error", "Datos de acta inválidos: " + ServletHelper.formatValidationErrors(erroresValidacionActa));
             showForm(request, response);
             return;
         }
@@ -299,11 +298,6 @@ public class ActaController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/actas/view?id=" + actaId);
     }
 
-    private String formatValidationErrors(Map<String, String> fieldErrors) {
-        return fieldErrors.entrySet().stream()
-                .map(entry -> entry.getKey() + ": " + entry.getValue())
-                .collect(Collectors.joining("; "));
-    }
     
     private void viewActa(HttpServletRequest request, HttpServletResponse response) 
             throws SQLException, ServletException, IOException {

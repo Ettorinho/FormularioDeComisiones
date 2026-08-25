@@ -43,6 +43,16 @@ public class AppContextListener implements ServletContextListener {
                 errors.add("Falta el valor 'MIXTA' en el tipo 'area_type'. Aplique la migración V8__agregar_area_mixta.sql");
             }
 
+            // Comprobación 3: valor FIRMANTE en enum cargo_type (requiere migración V15)
+            if (!enumValueExists(conn, "cargo_type", "FIRMANTE")) {
+                errors.add("Falta el valor 'FIRMANTE' en el tipo 'cargo_type'. Aplique la migración V15__add_cargo_firmante.sql");
+            }
+
+            // Comprobación 4: trigger registrar_cambio_cargo en comision_miembros (requiere migración V16)
+            if (!triggerExists(conn, "registrar_cambio_cargo", "comision_miembros")) {
+                errors.add("Falta el trigger 'registrar_cambio_cargo' en la tabla 'comision_miembros'. Aplique la migración V16__fix_trigger_registrar_cambio_cargo.sql");
+            }
+
         } catch (SQLException e) {
             AppLogger.error("[StartupCheck] No se pudo conectar a la BD para las comprobaciones de arranque", e);
             throw new RuntimeException("[StartupCheck] Error al verificar compatibilidad DB: " + e.getMessage(), e);
@@ -86,6 +96,21 @@ public class AppContextListener implements ServletContextListener {
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, typeName);
             stmt.setString(2, enumValue);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    /**
+     * Comprueba si existe un trigger con el nombre dado en una tabla del esquema público.
+     */
+    private boolean triggerExists(Connection conn, String triggerName, String tableName) throws SQLException {
+        String sql = "SELECT 1 FROM information_schema.triggers "
+                   + "WHERE trigger_schema = 'public' AND trigger_name = ? AND event_object_table = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, triggerName);
+            stmt.setString(2, tableName);
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
             }

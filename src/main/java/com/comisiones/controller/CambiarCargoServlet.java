@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Servlet para gestionar el cambio de cargo de miembros en comisiones.
@@ -156,7 +155,7 @@ public class CambiarCargoServlet extends HttpServlet {
 
             Map<String, String> erroresValidacion = ValidationUtil.validateWithFields(validacionCambio);
             if (!erroresValidacion.isEmpty()) {
-                request.setAttribute("error", "Datos inválidos para cambiar cargo: " + formatValidationErrors(erroresValidacion));
+                request.setAttribute("error", "Datos inválidos para cambiar cargo: " + ServletHelper.formatValidationErrors(erroresValidacion));
                 doGet(request, response);
                 return;
             }
@@ -185,11 +184,5 @@ public class CambiarCargoServlet extends HttpServlet {
         } catch (SQLException e) {
             throw new ServletException("Error al cambiar el cargo", e);
         }
-    }
-
-    private String formatValidationErrors(Map<String, String> fieldErrors) {
-        return fieldErrors.entrySet().stream()
-                .map(entry -> entry.getKey() + ": " + entry.getValue())
-                .collect(Collectors.joining("; "));
     }
 }
