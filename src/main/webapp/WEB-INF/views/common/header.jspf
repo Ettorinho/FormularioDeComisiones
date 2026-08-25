@@ -25,13 +25,15 @@
                     </h1>
                 </div>
                 <div class="text-end" style="flex:1 1 0;">
-                    <span class="text-white me-3 small">
-                        <i class="bi bi-person-circle me-1"></i>
-                        <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
-                    </span>
-                    <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
-                        <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
-                    </a>
+                    <c:if test="${not empty sessionScope.usuarioLogueado}">
+                        <span class="text-white me-3 small">
+                            <i class="bi bi-person-circle me-1"></i>
+                            <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
+                        </span>
+                        <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+                        </a>
+                    </c:if>
                 </div>
             </div>
         </div>
