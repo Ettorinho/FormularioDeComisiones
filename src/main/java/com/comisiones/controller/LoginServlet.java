@@ -158,9 +158,10 @@ public class LoginServlet extends HttpServlet {
 
         } catch (AuthenticationException ae) {
             log("⚠️ Login fallido (credenciales incorrectas): " + username);
-            AuditoriaService.getInstance().registrar(request, username,
+            AuditoriaService.getInstance().registrarConResultado(request, username,
                 "LOGIN_FALLIDO", "SESION", null,
-                "Intento de login fallido (credenciales incorrectas)");
+                "Intento de login fallido (credenciales incorrectas)",
+                com.comisiones.dao.AuditoriaDAO.Resultado.FALLIDO, null, null);
             request.setAttribute("error", "Usuario o contraseña incorrectos.");
             request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
 
