@@ -48,6 +48,9 @@
                         <a href="${pageContext.request.contextPath}/actas/generate-blank-template" class="btn btn-outline-secondary ms-2">
                             <i class="bi bi-file-earmark-arrow-down"></i> Descargar Plantilla de Acta en Blanco
                         </a>
+                        <a href="${pageContext.request.contextPath}/actas/generate-blank-template-word" class="btn btn-outline-secondary ms-2">
+                            <i class="bi bi-file-earmark-word"></i> Descargar Plantilla de Acta en Blanco (Word)
+                        </a>
                     </div>
                 </c:if>
             </div>

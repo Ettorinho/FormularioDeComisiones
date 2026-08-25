@@ -75,6 +75,8 @@ public class ActaController extends HttpServlet {
                 generateWordActa(request, response);
             } else if (pathInfo.equals("/generate-blank-template")) {
                 generateBlankTemplate(request, response);
+            } else if (pathInfo.equals("/generate-blank-template-word")) {
+                generateBlankTemplateWord(request, response);
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -604,6 +606,38 @@ public class ActaController extends HttpServlet {
         } catch (IOException e) {
             AppLogger.error("Error al generar la plantilla de acta vacía", e);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al generar la plantilla");
+        }
+    }
+
+    /**
+     * Genera y descarga una plantilla de acta completamente vacía en Word (.docx).
+     */
+    private void generateBlankTemplateWord(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        AppLogger.debug("Generando plantilla de acta vacía Word");
+
+        ActaGeneratorService generatorService = new ActaGeneratorService();
+
+        try {
+            byte[] wordBytes = generatorService.generarPlantillaVaciaWord();
+
+            response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+            response.setHeader("Content-Disposition", "attachment; filename=\"Plantilla_Acta_Vacia.docx\"");
+            response.setContentLength(wordBytes.length);
+
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(wordBytes);
+                out.flush();
+            }
+
+            AppLogger.debug("Plantilla de acta vacía Word generada y descargada");
+            AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
+                    "DESCARGAR", "PLANTILLA_WORD", null, "Descargó la plantilla de acta vacía Word");
+
+        } catch (IOException e) {
+            AppLogger.error("Error al generar la plantilla de acta vacía Word", e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al generar la plantilla Word");
         }
     }
 }

@@ -422,47 +422,39 @@ Los endpoints seguirán funcionando si alguien los llama directamente.
 
 ### Qué es
 
-La plantilla de acta vacía es un **PDF rellenable (formulario AcroForm) de 1 página A4** que replica fielmente el layout visual de la plantilla oficial "MC-2_SA(P)E". Todos los campos de texto son `PDTextField` editables directamente en Adobe Reader u otro lector compatible, y el bloque "TIPO REUNIÓN" usa `PDCheckBox` interactivos. El campo de "Resumen de la Reunión" es un campo multilínea con **scroll interno habilitado**, lo que permite escribir cualquier cantidad de texto sin que el campo se expanda ni genere páginas nuevas. No contiene datos de ninguna acta concreta almacenada en la base de datos.
+La plantilla de acta vacía se ofrece en **dos formatos**:
+- **PDF rellenable (AcroForm)** de 1 página A4.
+- **Word (.docx)** con la misma estructura visual.
 
-> **Nota técnica:** En el documento original en papel las páginas adicionales surgían porque a mano se continuaba en hojas adicionales. En un PDF rellenable digital (AcroForm), los campos de texto no pueden generar páginas nuevas dinámicamente (eso solo sería posible con XFA dinámico, no soportado por PDFBox). El diseño correcto para un formulario digital es usar una sola página con un campo de texto extenso con scroll interno, tal y como se ha implementado.
+No contiene datos de ninguna acta concreta almacenada en la base de datos.
 
 #### Estructura visual (1 página)
 
 **Encabezado** de 3 columnas con bordes:
-- Columna izquierda: **logo oficial de Salud** embebido en el PDF (imagen PNG cargada desde `src/main/resources/images/logo_salud.png`, redimensionada con proporción de aspecto preservada). Si el archivo no está disponible, se muestra el texto placeholder `[LOGO]`.
+- Columna izquierda: **logo Salud** y subtítulo **"SECTOR DE BARBASTRO"**.
+- Columna central: título **"ACTA DE REUNIÓN"**.
+- Columna derecha: **"Revisión A"** y **"Página 1 de 1"**.
 
-  > **⚠️ Logo placeholder:** El archivo `src/main/resources/images/logo_salud.png` incluido actualmente es un **placeholder generado automáticamente** con texto "salud" y "servicio aragonés de salud" en los colores oficiales (naranja/turquesa). Para sustituirlo por el logo oficial real, sube el archivo PNG real a la misma ruta y reconstruye el proyecto (`mvn clean install`).
+**Cuerpo del documento**:
+1. Banda de título **"COMISIÓN DE"**.
+2. Fila con **"Fecha"**, **"Hora inicio"** y **"Hora fin"**.
+3. Dos columnas: **"ASISTENTES (Nombre y Cargo)"** y **"EXCUSAN SU ASISTENCIA (Nombre, Cargo y Razón de la no asistencia)"**.
+4. Bloque **"ORDEN DEL DÍA"**.
+5. Bloque **"RESUMEN DE LA REUNIÓN"**.
+6. Bloque de firma (Nombre, Cargo, Fecha/Hora cierre, Firma).
 
-- Columna central: título "ACTA DE REUNIÓN:" y campo de texto rellenable para el nombre del grupo/comisión (`nombreGrupo`).
-- Columna derecha: campos rellenables de referencia (`referencia`), revisión (`revision`) y número de página editable (`numeroPagina`, p.ej. "1 de 1").
-
-**Bloque principal** de 3 columnas (con bordes):
-1. Columna izquierda (~45%): "ASISTENTES (Nombre y Cargo)" + área de texto multilínea (`asistentes`).
-2. Columna central (~35%): "Fecha y Hora:" (`fechaHora`), "TIPO REUNIÓN:" con checkboxes interactivos (`tipoReunionCalidad`, `tipoReunionInterna`, `tipoReunionOtros`) + campo "otros especificar" (`tipoReunionOtrosEspecificar`), "Excusa asistencia:" multilínea (`excusaAsistencia`).
-3. Columna derecha (~20%): "Duración:" (`duracion`).
-
-**ORDEN DEL DÍA** (recuadro con borde): área de texto multilínea (`ordenDelDia`).
-
-**RESUMEN DE LA REUNIÓN** (recuadro grande entre el orden del día y el bloque de firma): campo de texto multilínea con **scroll interno habilitado** (`resumenReunion`). El usuario puede escribir un texto tan extenso como necesite; el contenido no se recorta y el campo permite hacer scroll dentro de él en cualquier visor PDF compatible.
-
-**Bloque de firma** al pie de la página: campos rellenables "Nombre:" (`firmaNombre`), "Cargo:" (`firmaCargo`), "Fecha/Hora cierre:" (`firmaFechaCierre`) y un recuadro visual para la firma manuscrita.
+En PDF, el bloque **Resumen** sigue siendo un `PDTextField` multilínea con scroll interno.
 
 #### Campos AcroForm del formulario
 
 | Campo                         | Tipo        | Descripción                                    |
 |-------------------------------|-------------|------------------------------------------------|
-| `nombreGrupo`                 | TextField   | Nombre del grupo/comisión (multilínea)         |
-| `referencia`                  | TextField   | Código de referencia                           |
-| `revision`                    | TextField   | Campo revisión                                 |
-| `numeroPagina`                | TextField   | Número de página editable (p.ej. "1 de 1")    |
+| `nombreGrupo`                 | TextField   | Nombre del grupo/comisión                       |
+| `fecha`                       | TextField   | Fecha de la reunión                            |
+| `horaInicio`                  | TextField   | Hora de inicio                                 |
+| `horaFin`                     | TextField   | Hora de fin                                    |
 | `asistentes`                  | TextField   | Lista de asistentes (multilínea)               |
-| `fechaHora`                   | TextField   | Fecha y hora de la reunión                     |
-| `tipoReunionCalidad`          | CheckBox    | Checkbox: Revisión del Sis. Calidad            |
-| `tipoReunionInterna`          | CheckBox    | Checkbox: Reunión Interna                      |
-| `tipoReunionOtros`            | CheckBox    | Checkbox: Otros                                |
-| `tipoReunionOtrosEspecificar` | TextField   | Detalle para "Otros"                           |
-| `excusaAsistencia`            | TextField   | Excusa de asistencia (multilínea)              |
-| `duracion`                    | TextField   | Duración de la reunión                         |
+| `excusaAsistencia`            | TextField   | Excusan su asistencia (multilínea)             |
 | `ordenDelDia`                 | TextField   | Orden del día (multilínea)                     |
 | `resumenReunion`              | TextField   | Resumen de la reunión (multilínea, con scroll) |
 | `firmaNombre`                 | TextField   | Nombre del firmante                            |
@@ -471,7 +463,12 @@ La plantilla de acta vacía es un **PDF rellenable (formulario AcroForm) de 1 p�
 
 ### Cómo se genera
 
-El método responsable es `generarPlantillaVaciaPdf()` en `ActaGeneratorService.java`. Usa `PDAcroForm`, `PDTextField` y `PDCheckBox` de Apache PDFBox 2.0.30 (ya presente en el proyecto — sin dependencias nuevas). Dibuja los recuadros con bordes mediante `PDPageContentStream`, inserta el logo usando `PDImageXObject.createFromByteArray()` y añade los campos interactivos como anotaciones de formulario. El campo `resumenReunion` se crea con `setMultiline(true)` y `setDoNotScroll(false)` para habilitar el scroll interno. No accede a la base de datos.
+Los métodos responsables son:
+- `generarPlantillaVaciaPdf()` en `ActaGeneratorService.java`.
+- `generarPlantillaVaciaWord()` en `ActaGeneratorService.java`.
+
+La versión PDF usa `PDAcroForm` y `PDTextField` de PDFBox, dibuja recuadros con `PDPageContentStream` e inserta el logo con `PDImageXObject.createFromByteArray()`.  
+La versión Word usa Apache POI (`XWPFDocument`, `XWPFTable`, `XWPFHeader`) para replicar el mismo encabezado y bloques.
 
 ### Verificación de campos
 
@@ -479,7 +476,7 @@ El PDF generado puede verificarse mediante la API de PDFBox:
 ```java
 PDDocument doc = PDDocument.load(new File("Plantilla_Acta_Vacia.pdf"));
 PDAcroForm form = doc.getDocumentCatalog().getAcroForm();
-// form.getFields().size() → 17 campos
+// form.getFields().size() → 10 campos
 for (PDField f : form.getFields()) {
     System.out.println(f.getClass().getSimpleName() + ": " + f.getFullyQualifiedName());
 }
@@ -487,25 +484,36 @@ for (PDField f : form.getFields()) {
 doc.close();
 ```
 
+El Word generado puede verificarse con Apache POI:
+```java
+XWPFDocument docx = new XWPFDocument(new FileInputStream("Plantilla_Acta_Vacia.docx"));
+System.out.println("Body tables: " + docx.getTables().size());
+XWPFHeader header = docx.getHeaderList().isEmpty() ? null : docx.getHeaderList().get(0);
+System.out.println("Header tables: " + (header != null ? header.getTables().size() : 0));
+docx.close();
+```
+
 ### Verificación visual
 
-Al abrir el PDF generado en Adobe Acrobat Reader:
-- El encabezado muestra el logo (o el placeholder) correctamente proporcionado dentro de su recuadro.
-- El campo "Resumen de la Reunión" ocupa el espacio entre el orden del día y el bloque de firma.
-- Al escribir texto extenso en ese campo, el texto no se corta y aparece una barra de scroll interna.
-- El campo "Página" en el encabezado es editable (se puede escribir "1 de 1" u otro valor).
-- Todos los demás campos son rellenables y los checkboxes de tipo reunión son marcables.
+Al abrir PDF/Word:
+- El encabezado muestra logo + "SECTOR DE BARBASTRO", "ACTA DE REUNIÓN" y "Revisión A / Página 1 de 1".
+- Se visualizan los bloques de COMISIÓN, Fecha/Horas, Asistentes/Excusan, Orden del día, Resumen y Firma.
+- En PDF, todos los campos definidos son rellenables y `resumenReunion` mantiene scroll interno.
 
 ### Cómo se accede desde la UI
 
-- **Desde la vista de una comisión** (`/comisiones/view?id=...`): aparece un botón **"Descargar Plantilla de Acta en Blanco"** junto a los botones de gestión de miembros. Solo visible para usuarios con rol ADMIN o GESTOR en comisiones activas.
-- **URL directa:** `GET /actas/generate-blank-template` — devuelve el PDF con `Content-Type: application/pdf` y el header `Content-Disposition: attachment; filename="Plantilla_Acta_Vacia.pdf"`. No requiere ningún parámetro.
+- **Desde la vista de una comisión** (`/comisiones/view?id=...`): aparecen botones para descargar la plantilla en PDF y Word. Solo visibles para usuarios con rol ADMIN o GESTOR en comisiones activas.
+- **URL PDF:** `GET /actas/generate-blank-template` — `Content-Type: application/pdf`, `filename="Plantilla_Acta_Vacia.pdf"`.
+- **URL Word:** `GET /actas/generate-blank-template-word` — `Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document`, `filename="Plantilla_Acta_Vacia.docx"`.
 
 ### Ejemplo
 
 ```
 GET http://localhost:8080/FormularioDeComisiones/actas/generate-blank-template
-→ descarga Plantilla_Acta_Vacia.pdf  (AcroForm rellenable, 1 página A4, campo de resumen con scroll)
+→ descarga Plantilla_Acta_Vacia.pdf
+
+GET http://localhost:8080/FormularioDeComisiones/actas/generate-blank-template-word
+→ descarga Plantilla_Acta_Vacia.docx
 ```
 
 ## Soporte y Contacto
