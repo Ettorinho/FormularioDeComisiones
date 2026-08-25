@@ -1,13 +1,8 @@
 <%@ page isErrorPage="true" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Error</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
+<c:set var="pageTitle" value="Error" />
+<c:set var="headerIcon" value="bi-exclamation-triangle" />
+<%@ include file="/WEB-INF/views/common/header.jspf" %>
 <div class="container mt-5">
     <div class="alert alert-danger">
         <h4 class="alert-heading">Ha ocurrido un error</h4>
@@ -20,5 +15,4 @@
     </div>
     <a href="${pageContext.request.contextPath}/" class="btn btn-primary">Volver al inicio</a>
 </div>
-</body>
-</html>
+<%@ include file="/WEB-INF/views/common/footer.jspf" %>

@@ -14,8 +14,8 @@ class JspEscapingTest {
     void jspViewsEscapePreviouslyRawUserControlledExpressions() throws IOException {
         assertContains("/src/main/webapp/WEB-INF/views/common/header.jspf", "<c:out value=\"${sessionScope.usuarioLogueado.nombreCompleto}\"/>");
         assertContains("/src/main/webapp/index.jsp", "/WEB-INF/views/common/header.jspf");
-        assertContains("/src/main/webapp/WEB-INF/views/miembros/list.jsp", "<c:out value=\"${sessionScope.usuarioLogueado.nombreCompleto}\"/>");
-        assertContains("/src/main/webapp/WEB-INF/views/comisiones/list.jsp", "<c:out value=\"${sessionScope.usuarioLogueado.nombreCompleto}\"/>");
+        assertContains("/src/main/webapp/WEB-INF/views/miembros/list.jsp", "/WEB-INF/views/common/header.jspf");
+        assertContains("/src/main/webapp/WEB-INF/views/comisiones/list.jsp", "/WEB-INF/views/common/header.jspf");
         assertContains("/src/main/webapp/WEB-INF/views/comisiones/form.jsp", "/WEB-INF/views/common/header.jspf");
         assertContains("/src/main/webapp/WEB-INF/views/actas/form.jsp", "/WEB-INF/views/common/header.jspf");
         assertContains("/src/main/webapp/WEB-INF/views/actas/view.jsp", "<c:out value=\"${acta.observaciones}\"/>");

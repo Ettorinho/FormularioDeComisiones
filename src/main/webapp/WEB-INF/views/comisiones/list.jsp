@@ -2,43 +2,8 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <jsp:useBean id="now" class="java.util.Date" />
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Listado de Comisiones</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
-</head>
-<body>
-    <!-- Header -->
-    <header class="header-app">
-        <div class="container">
-            <div class="d-flex align-items-center">
-                <div class="d-flex align-items-center" style="flex:1 1 0;">
-                    <img src="${pageContext.request.contextPath}/resources/images/logo_salud.png"
-                         alt="Gobierno de Aragón"
-                         style="height:44px; width:auto;">
-                </div>
-                <div class="text-center" style="flex:1 1 0;">
-                    <h1 class="h3 mb-0 text-white text-nowrap">
-                        <i class="bi bi-file-earmark-text"></i>
-                        Gestión de Comisiones
-                    </h1>
-                </div>
-                <div class="text-end" style="flex:1 1 0;">
-                    <span class="text-white me-3 small">
-                        <i class="bi bi-person-circle me-1"></i>
-                        <c:out value="${sessionScope.usuarioLogueado.nombreCompleto}"/>
-                    </span>
-                    <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">
-                        <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
+<c:set var="pageTitle" value="Listado de Comisiones" />
+<%@ include file="/WEB-INF/views/common/header.jspf" %>
 
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -107,5 +72,4 @@
         </c:if>
         <a href="${pageContext.request.contextPath}/" class="btn btn-secondary mt-3">Volver al Inicio</a>
     </div>
-</body>
-</html>
+<%@ include file="/WEB-INF/views/common/footer.jspf" %>

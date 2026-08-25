@@ -1,36 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Iniciar Sesión — Gestión de Comisiones</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
-</head>
-<body>
-
-    <!-- Cabecera corporativa -->
-    <header class="header-app">
-        <div class="container">
-            <div class="d-flex align-items-center">
-                <div class="d-flex align-items-center" style="flex:1 1 0;">
-                    <img src="${pageContext.request.contextPath}/resources/images/logo_salud.png"
-                         alt="Gobierno de Aragón"
-                         style="height:40px; width:auto;">
-                </div>
-                <div class="text-center" style="flex:1 1 0;">
-                    <h1 class="h3 mb-0 text-nowrap">
-                        <i class="bi bi-file-earmark-text"></i>
-                        Gestión de Comisiones
-                    </h1>
-                </div>
-                <div style="flex:1 1 0;"></div>
-            </div>
-        </div>
-    </header>
+<c:set var="pageTitle" value="Iniciar Sesión — Gestión de Comisiones" />
+<%@ include file="/WEB-INF/views/common/header.jspf" %>
 
     <div class="container mt-5">
         <div class="row justify-content-center">
@@ -100,5 +71,4 @@
         </div>
     </div>
 
-</body>
-</html>
+<%@ include file="/WEB-INF/views/common/footer.jspf" %>
