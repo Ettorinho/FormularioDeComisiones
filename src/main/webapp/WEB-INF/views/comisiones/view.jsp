@@ -39,17 +39,17 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4>Miembros</h4>
                 <c:if test="${(empty comision.fechaFin || comision.fechaFin > now) && (rolUsuario == 'ADMIN' || rolUsuario == 'GESTOR')}">
-                    <div>
-                        <a href="${pageContext.request.contextPath}/actas/new?comisionId=${comision.id}" class="btn btn-success me-2">
+                    <div class="d-flex flex-nowrap align-items-center gap-2 overflow-auto">
+                        <a href="${pageContext.request.contextPath}/actas/new?comisionId=${comision.id}" class="btn btn-success text-nowrap">
                             <i class="bi bi-file-earmark-plus"></i> Crear Acta
                         </a>
-                        <a href="${pageContext.request.contextPath}/comisiones/addMember/${comision.id}" class="btn btn-primary me-2">Añadir Miembro</a>
-                        <a href="${pageContext.request.contextPath}/comisiones/bajaMiembros/${comision.id}" class="btn btn-warning">Dar de baja a Miembros</a>
-                        <a href="${pageContext.request.contextPath}/actas/generate-blank-template" class="btn btn-outline-secondary ms-2">
-                            <i class="bi bi-file-earmark-arrow-down"></i> Descargar Plantilla de Acta en Blanco
+                        <a href="${pageContext.request.contextPath}/comisiones/addMember/${comision.id}" class="btn btn-primary text-nowrap">Añadir Miembro</a>
+                        <a href="${pageContext.request.contextPath}/comisiones/bajaMiembros/${comision.id}" class="btn btn-warning text-nowrap">Dar de baja a Miembros</a>
+                        <a href="${pageContext.request.contextPath}/actas/generate-blank-template" class="btn btn-outline-secondary text-nowrap">
+                            <i class="bi bi-file-earmark-arrow-down"></i> Plantilla Acta PDF
                         </a>
-                        <a href="${pageContext.request.contextPath}/actas/generate-blank-template-word" class="btn btn-outline-secondary ms-2">
-                            <i class="bi bi-file-earmark-word"></i> Descargar Plantilla de Acta en Blanco (Word)
+                        <a href="${pageContext.request.contextPath}/actas/generate-blank-template-word" class="btn btn-outline-secondary text-nowrap">
+                            <i class="bi bi-file-earmark-word"></i> Plantilla Acta Word
                         </a>
                     </div>
                 </c:if>
