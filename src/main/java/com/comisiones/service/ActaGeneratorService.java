@@ -16,13 +16,13 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
 
 import org.apache.poi.xwpf.usermodel.*;
-import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
 import org.apache.poi.util.Units;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.STHdrFtr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -380,49 +380,49 @@ public class ActaGeneratorService {
      * @throws IOException Si hay un error al generar el PDF
      */
     public byte[] generarPlantillaVaciaPdf() throws IOException {
-        AppLogger.debug("Generando plantilla de acta vacía (AcroForm, 1 página) en PDF");
+        AppLogger.debug("Generando plantilla de acta vacía en PDF a partir del modelo oficial");
 
         try (PDDocument document = new PDDocument()) {
-            final float PW = PDRectangle.A4.getWidth();   // 595.28
-            final float PH = PDRectangle.A4.getHeight();  // 841.89
-            final float M  = MARGIN;
-            final float CW = PW - 2 * M;
-
-            final float HDR_H      = 70f;
-            final float HDR_LOGO_W = 130f;
-            final float HDR_RIGHT_W = 120f;
-            final float HDR_CENTER_W = CW - HDR_LOGO_W - HDR_RIGHT_W;
-            final float HDR_TOP    = PH - M;
-            final float HDR_BOT    = HDR_TOP - HDR_H;
-
-            final float COM_H      = 28f;
-            final float COM_TOP    = HDR_BOT - 6f;
-            final float COM_BOT    = COM_TOP - COM_H;
-
-            final float DATE_H     = 28f;
-            final float DATE_TOP   = COM_BOT - 4f;
-            final float DATE_BOT   = DATE_TOP - DATE_H;
-
-            final float ATT_TOP    = DATE_BOT - 4f;
-            final float ATT_H      = 190f;
-            final float ATT_BOT    = ATT_TOP - ATT_H;
-            final float ATT_COL_W  = CW * 0.5f;
-
-            final float ORD_TOP    = ATT_BOT - 4f;
-            final float ORD_H      = 88f;
-            final float ORD_BOT    = ORD_TOP - ORD_H;
-
-            final float SIG_H      = 72f;
-            final float SIG_BOT    = M;
-            final float SIG_TOP    = SIG_BOT + SIG_H;
-
-            final float RES_TOP    = ORD_BOT - 4f;
-            final float RES_BOT    = SIG_TOP + 4f;
-            final float RES_H      = RES_TOP - RES_BOT;
-
-            // Crear única página
             PDPage page1 = new PDPage(PDRectangle.A4);
             document.addPage(page1);
+
+            final float pageWidth = PDRectangle.A4.getWidth();
+            final float pageHeight = PDRectangle.A4.getHeight();
+            final float leftMargin = 40f;
+            final float rightMargin = 40f;
+            final float topMargin = 38f;
+            final float bottomMargin = 40f;
+            final float contentWidth = pageWidth - leftMargin - rightMargin;
+            final float contentHeight = pageHeight - topMargin - bottomMargin;
+
+            final float headerHeight = 71f;
+            final float headerTop = pageHeight - topMargin;
+            final float headerBottom = headerTop - headerHeight;
+            final float headerLeftWidth = contentWidth * (3001f / 10366f);
+            final float headerCenterWidth = contentWidth * (5137f / 10366f);
+            final float headerRightWidth = contentWidth - headerLeftWidth - headerCenterWidth;
+
+            final float bodyTop = headerBottom - 8f;
+            final float bodyBottom = bottomMargin;
+            final float bodyHeight = bodyTop - bodyBottom;
+            final float bodyCol1Width = contentWidth * (4930f / 9790f);
+            final float bodyCol2Width = contentWidth * (2553f / 9790f);
+            final float bodyCol3Width = contentWidth - bodyCol1Width - bodyCol2Width;
+
+            final float row1Height = 36f;
+            final float row2Height = 28f;
+            final float row3Height = 42f;
+            final float row4Height = 82f;
+            final float row5Height = 54f;
+            final float row6Height = 110f;
+            final float row7Height = bodyHeight - row1Height - row2Height - row3Height - row4Height - row5Height - row6Height;
+
+            final float row1Bottom = bodyTop - row1Height;
+            final float row2Bottom = row1Bottom - row2Height;
+            final float row3Bottom = row2Bottom - row3Height;
+            final float row4Bottom = row3Bottom - row4Height;
+            final float row5Bottom = row4Bottom - row5Height;
+            final float row6Bottom = row5Bottom - row6Height;
 
             // Cargar logo desde recursos de classpath
             PDImageXObject logoImage = null;
@@ -445,172 +445,79 @@ public class ActaGeneratorService {
             // ════════════════════════════════════════════════════════════════════
             try (PDPageContentStream cs = new PDPageContentStream(document, page1)) {
                 drawPageHeaderStatic(cs, document, page1, logoImage,
-                        M, CW, HDR_TOP, HDR_BOT, HDR_LOGO_W, HDR_CENTER_W, HDR_RIGHT_W, HDR_H, 1, 1);
+                        leftMargin, contentWidth, headerTop, headerBottom,
+                        headerLeftWidth, headerCenterWidth, headerRightWidth, headerHeight, 1, 1);
             }
 
-            // Banda COMISIÓN DE
             try (PDPageContentStream cs = new PDPageContentStream(document, page1,
                     PDPageContentStream.AppendMode.APPEND, false)) {
                 cs.setLineWidth(0.8f);
-                cs.addRect(M, COM_BOT, CW, COM_H);
+                cs.setNonStrokingColor(229, 229, 229);
+                cs.addRect(leftMargin, row1Bottom, contentWidth, row1Height);
+                cs.fill();
+                cs.setNonStrokingColor(0, 0, 0);
+
+                cs.addRect(leftMargin, bodyBottom, contentWidth, bodyHeight);
+                cs.addRect(leftMargin + 2f, bodyBottom + 2f, contentWidth - 4f, bodyHeight - 4f);
+                cs.moveTo(leftMargin, row1Bottom);
+                cs.lineTo(leftMargin + contentWidth, row1Bottom);
+                cs.moveTo(leftMargin, row2Bottom);
+                cs.lineTo(leftMargin + contentWidth, row2Bottom);
+                cs.moveTo(leftMargin, row3Bottom);
+                cs.lineTo(leftMargin + contentWidth, row3Bottom);
+                cs.moveTo(leftMargin + bodyCol1Width, row4Bottom);
+                cs.lineTo(leftMargin + contentWidth, row4Bottom);
+                cs.moveTo(leftMargin, row5Bottom);
+                cs.lineTo(leftMargin + contentWidth, row5Bottom);
+                cs.moveTo(leftMargin, row6Bottom);
+                cs.lineTo(leftMargin + contentWidth, row6Bottom);
+
+                cs.moveTo(leftMargin + bodyCol1Width, row1Bottom);
+                cs.lineTo(leftMargin + bodyCol1Width, row2Bottom);
+                cs.moveTo(leftMargin + bodyCol1Width + bodyCol2Width, row1Bottom);
+                cs.lineTo(leftMargin + bodyCol1Width + bodyCol2Width, row2Bottom);
+                cs.moveTo(leftMargin + bodyCol1Width, row2Bottom);
+                cs.lineTo(leftMargin + bodyCol1Width, row5Bottom);
                 cs.stroke();
 
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, 11f);
-                cs.newLineAtOffset(M + 4f, COM_TOP - 18f);
-                cs.showText("COMISIÓN DE:");
-                cs.endText();
+                drawCenteredText(cs, "COMISIÓN DE", leftMargin, bodyTop - 21f, contentWidth, PDType1Font.HELVETICA_BOLD, 12f);
+
+                drawLeftText(cs, "Fecha :", leftMargin + 6f, row1Bottom - 17f, PDType1Font.HELVETICA_BOLD, 10f);
+                drawLeftText(cs, "Hora inicio:", leftMargin + bodyCol1Width + 6f, row1Bottom - 17f, PDType1Font.HELVETICA_BOLD, 10f);
+                drawLeftText(cs, "Hora fin:", leftMargin + bodyCol1Width + bodyCol2Width + 6f, row1Bottom - 17f, PDType1Font.HELVETICA_BOLD, 10f);
+
+                drawCenteredText(cs, "ASISTENTES", leftMargin, row2Bottom - 16f, bodyCol1Width, PDType1Font.HELVETICA_BOLD, 10f);
+                drawCenteredText(cs, "(Nombre y Cargo)", leftMargin, row2Bottom - 29f, bodyCol1Width, PDType1Font.HELVETICA_OBLIQUE, 9f);
+                drawCenteredText(cs, "EXCUSAN SU ASISTENCIA", leftMargin + bodyCol1Width, row2Bottom - 16f,
+                        bodyCol2Width + bodyCol3Width, PDType1Font.HELVETICA_BOLD, 10f);
+                drawCenteredText(cs, "(Nombre, Cargo y Razón de la no asistencia)", leftMargin + bodyCol1Width,
+                        row2Bottom - 29f, bodyCol2Width + bodyCol3Width, PDType1Font.HELVETICA_OBLIQUE, 8f);
+
+                drawLeftText(cs, "ORDEN DEL DIA:", leftMargin + 6f, row5Bottom - 16f, PDType1Font.HELVETICA_BOLD, 10f);
+                drawLeftText(cs, "RESUMEN DE LA REUNION:", leftMargin + 6f, row6Bottom - 16f, PDType1Font.HELVETICA_BOLD, 10f);
+                cs.stroke();
             }
+
             addTextField(acroForm, page1, "nombreGrupo", false,
-                    M + 84f, COM_BOT + 5f, CW - 88f, COM_H - 10f);
-
-            // Fila Fecha / Hora inicio / Hora fin
-            float dateColW = CW / 3f;
-            try (PDPageContentStream cs = new PDPageContentStream(document, page1,
-                    PDPageContentStream.AppendMode.APPEND, false)) {
-                cs.setLineWidth(0.8f);
-                cs.addRect(M, DATE_BOT, CW, DATE_H);
-                cs.moveTo(M + dateColW, DATE_BOT);
-                cs.lineTo(M + dateColW, DATE_TOP);
-                cs.moveTo(M + 2f * dateColW, DATE_BOT);
-                cs.lineTo(M + 2f * dateColW, DATE_TOP);
-                cs.stroke();
-
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, 10f);
-                cs.newLineAtOffset(M + 4f, DATE_TOP - 18f);
-                cs.showText("Fecha:");
-                cs.endText();
-
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, 10f);
-                cs.newLineAtOffset(M + dateColW + 4f, DATE_TOP - 18f);
-                cs.showText("Hora inicio:");
-                cs.endText();
-
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, 10f);
-                cs.newLineAtOffset(M + 2f * dateColW + 4f, DATE_TOP - 18f);
-                cs.showText("Hora fin:");
-                cs.endText();
-            }
+                    leftMargin + 8f, row1Bottom + 5f, contentWidth - 16f, 12f);
             addTextField(acroForm, page1, "fecha", false,
-                    M + 42f, DATE_BOT + 5f, dateColW - 46f, DATE_H - 10f);
+                    leftMargin + 48f, row2Bottom + 5f, bodyCol1Width - 56f, 12f);
             addTextField(acroForm, page1, "horaInicio", false,
-                    M + dateColW + 68f, DATE_BOT + 5f, dateColW - 72f, DATE_H - 10f);
+                    leftMargin + bodyCol1Width + 70f, row2Bottom + 5f, bodyCol2Width - 78f, 12f);
             addTextField(acroForm, page1, "horaFin", false,
-                    M + 2f * dateColW + 54f, DATE_BOT + 5f, dateColW - 58f, DATE_H - 10f);
-
-            // Bloque asistentes/excusas
-            try (PDPageContentStream cs = new PDPageContentStream(document, page1,
-                    PDPageContentStream.AppendMode.APPEND, false)) {
-                cs.setLineWidth(0.8f);
-                cs.addRect(M, ATT_BOT, CW, ATT_H);
-                cs.moveTo(M + ATT_COL_W, ATT_BOT);
-                cs.lineTo(M + ATT_COL_W, ATT_TOP);
-                cs.moveTo(M, ATT_TOP - 18f);
-                cs.lineTo(M + CW, ATT_TOP - 18f);
-                cs.stroke();
-
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, 9f);
-                cs.newLineAtOffset(M + 3f, ATT_TOP - 13f);
-                cs.showText("ASISTENTES (Nombre y Cargo)");
-                cs.endText();
-
-                float rx = M + ATT_COL_W + 3f;
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, 8f);
-                cs.newLineAtOffset(rx, ATT_TOP - 13f);
-                cs.showText("EXCUSAN SU ASISTENCIA (Nombre, Cargo y Razón de la no asistencia)");
-                cs.endText();
-            }
+                    leftMargin + bodyCol1Width + bodyCol2Width + 56f, row2Bottom + 5f, bodyCol3Width - 64f, 12f);
             addTextField(acroForm, page1, "asistentes", true,
-                    M + 2f, ATT_BOT + 2f, ATT_COL_W - 4f, ATT_H - 22f);
+                    leftMargin + 3f, row5Bottom + 3f, bodyCol1Width - 6f, row3Bottom - row5Bottom - 6f);
             addTextField(acroForm, page1, "excusaAsistencia", true,
-                    M + ATT_COL_W + 2f, ATT_BOT + 2f, ATT_COL_W - 4f, ATT_H - 22f);
-
-            // ORDEN DEL DÍA
-            try (PDPageContentStream cs = new PDPageContentStream(document, page1,
-                    PDPageContentStream.AppendMode.APPEND, false)) {
-                cs.setLineWidth(0.8f);
-                cs.addRect(M, ORD_BOT, CW, ORD_H);
-                cs.stroke();
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, 11f);
-                cs.newLineAtOffset(M + 3f, ORD_TOP - 13f);
-                cs.showText("ORDEN DEL D\u00CDA:");
-                cs.endText();
-            }
+                    leftMargin + bodyCol1Width + 3f, row4Bottom + 3f, bodyCol2Width + bodyCol3Width - 6f, row3Bottom - row4Bottom - 6f);
             addTextField(acroForm, page1, "ordenDelDia", true,
-                    M + 2f, ORD_BOT + 2f, CW - 4f, ORD_H - 16f);
-
-            // RESUMEN DE LA REUNIÓN
-            try (PDPageContentStream cs = new PDPageContentStream(document, page1,
-                    PDPageContentStream.AppendMode.APPEND, false)) {
-                cs.setLineWidth(0.8f);
-                cs.addRect(M, RES_BOT, CW, RES_H);
-                cs.stroke();
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, 11f);
-                cs.newLineAtOffset(M + 3f, RES_TOP - 13f);
-                cs.showText("RESUMEN DE LA REUNI\u00D3N:");
-                cs.endText();
-            }
+                    leftMargin + 3f, row6Bottom + 3f, contentWidth - 6f, row5Bottom - row6Bottom - 20f);
             addScrollableTextField(acroForm, page1, "resumenReunion",
-                    M + 2f, RES_BOT + 2f, CW - 4f, RES_H - 16f);
-
-            // Bloque de firma
-            try (PDPageContentStream cs = new PDPageContentStream(document, page1,
-                    PDPageContentStream.AppendMode.APPEND, false)) {
-                cs.setLineWidth(0.5f);
-                cs.addRect(M, SIG_BOT, CW, SIG_H);
-                cs.moveTo(M + CW * 0.5f, SIG_BOT);
-                cs.lineTo(M + CW * 0.5f, SIG_TOP);
-                cs.stroke();
-
-                float sLb = 10f;
-                float halfX = M + CW * 0.5f;
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, sLb);
-                cs.newLineAtOffset(M + 3f, SIG_TOP - 14f);
-                cs.showText("Nombre:");
-                cs.endText();
-
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, sLb);
-                cs.newLineAtOffset(M + 3f, SIG_TOP - 36f);
-                cs.showText("Cargo:");
-                cs.endText();
-
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, sLb);
-                cs.newLineAtOffset(halfX + 3f, SIG_TOP - 14f);
-                cs.showText("Fecha/Hora cierre:");
-                cs.endText();
-
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, sLb);
-                cs.newLineAtOffset(halfX + 3f, SIG_TOP - 36f);
-                cs.showText("Firma:");
-                cs.endText();
-
-                cs.setLineWidth(0.5f);
-                cs.addRect(halfX + 50f, SIG_BOT + 3f, 70f, 30f);
-                cs.stroke();
-            }
-
-            float halfCW = CW * 0.5f;
-            addTextField(acroForm, page1, "firmaNombre", false,
-                    M + 52f, SIG_TOP - 28f, halfCW - 56f, 16f);
-            addTextField(acroForm, page1, "firmaCargo", false,
-                    M + 44f, SIG_TOP - 50f, halfCW - 48f, 16f);
-            addTextField(acroForm, page1, "firmaFechaCierre", false,
-                    M + halfCW + 115f, SIG_TOP - 28f, halfCW - 120f, 16f);
+                    leftMargin + 3f, bodyBottom + 3f, contentWidth - 6f, row6Bottom - bodyBottom - 20f);
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             document.save(baos);
-            AppLogger.debug("Plantilla de acta vacía (AcroForm, 1 página) generada correctamente");
+            AppLogger.debug("Plantilla de acta vacía PDF generada correctamente");
             return baos.toByteArray();
         }
     }
@@ -623,97 +530,16 @@ public class ActaGeneratorService {
         AppLogger.debug("Generando plantilla de acta vacía en Word");
 
         try (XWPFDocument document = new XWPFDocument()) {
-            XWPFHeaderFooterPolicy headerFooterPolicy = document.createHeaderFooterPolicy();
-            XWPFHeader header = headerFooterPolicy.createHeader(STHdrFtr.DEFAULT);
-            XWPFTable headerTable = header.createTable(1, 3);
-            headerTable.setWidth("100%");
+            configureBlankTemplateSection(document);
 
-            // Columna izquierda: logo + subtítulo
-            XWPFTableCell logoCell = headerTable.getRow(0).getCell(0);
-            clearCell(logoCell);
-            XWPFParagraph logoParagraph = logoCell.addParagraph();
-            logoParagraph.setAlignment(ParagraphAlignment.CENTER);
-            XWPFRun logoRun = logoParagraph.createRun();
-            try (InputStream logoStream = getClass().getResourceAsStream("/images/logo_salud.png")) {
-                if (logoStream != null) {
-                    logoRun.addPicture(logoStream, XWPFDocument.PICTURE_TYPE_PNG,
-                            "logo_salud.png", Units.toEMU(95), Units.toEMU(26));
-                    logoRun.addBreak();
-                }
-            } catch (Exception e) {
-                AppLogger.debug("No se pudo insertar logo en Word: " + e.getMessage());
-            }
-            XWPFRun subtitleRun = logoParagraph.createRun();
-            subtitleRun.setText("SECTOR DE BARBASTRO");
-            subtitleRun.setFontSize(9);
-            subtitleRun.setBold(true);
+            XWPFTable headerTable = document.createTable(1, 3);
+            configureFixedWidthTable(headerTable, false, 10366, 3001, 5137, 2228);
+            headerTable.getRow(0).setHeight(1422);
+            buildBlankTemplateHeaderRow(headerTable.getRow(0));
 
-            // Columna central: título
-            XWPFTableCell titleCell = headerTable.getRow(0).getCell(1);
-            clearCell(titleCell);
-            XWPFParagraph titleParagraph = titleCell.addParagraph();
-            titleParagraph.setAlignment(ParagraphAlignment.CENTER);
-            XWPFRun titleRun = titleParagraph.createRun();
-            titleRun.setText("ACTA DE REUNIÓN");
-            titleRun.setBold(true);
-            titleRun.setFontSize(14);
-
-            // Columna derecha: revisión y página
-            XWPFTableCell rightCell = headerTable.getRow(0).getCell(2);
-            clearCell(rightCell);
-            XWPFParagraph revisionParagraph = rightCell.addParagraph();
-            revisionParagraph.setAlignment(ParagraphAlignment.RIGHT);
-            XWPFRun revisionRun = revisionParagraph.createRun();
-            revisionRun.setText("Revisión A");
-            revisionRun.setFontSize(10);
-            revisionRun.setBold(true);
-
-            XWPFParagraph pageParagraph = rightCell.addParagraph();
-            pageParagraph.setAlignment(ParagraphAlignment.RIGHT);
-            XWPFRun pageRun = pageParagraph.createRun();
-            pageRun.setText("Página 1 de 1");
-            pageRun.setFontSize(10);
-
-            // Bloque COMISIÓN DE
-            XWPFTable comisionTable = document.createTable(1, 1);
-            comisionTable.setWidth("100%");
-            setTableCellText(comisionTable.getRow(0).getCell(0), "COMISIÓN DE: ", true);
-
-            // Fila Fecha / Hora inicio / Hora fin
-            XWPFTable fechaHoraTable = document.createTable(1, 3);
-            fechaHoraTable.setWidth("100%");
-            setTableCellText(fechaHoraTable.getRow(0).getCell(0), "Fecha: ____________________", true);
-            setTableCellText(fechaHoraTable.getRow(0).getCell(1), "Hora inicio: _______________", true);
-            setTableCellText(fechaHoraTable.getRow(0).getCell(2), "Hora fin: __________________", true);
-
-            // Tabla Asistentes / Excusan asistencia
-            XWPFTable asistentesTable = document.createTable(1, 2);
-            asistentesTable.setWidth("100%");
-            setTableCellText(asistentesTable.getRow(0).getCell(0), "ASISTENTES (Nombre y Cargo)", true);
-            setTableCellText(asistentesTable.getRow(0).getCell(1),
-                    "EXCUSAN SU ASISTENCIA (Nombre, Cargo y Razón de la no asistencia)", true);
-            addBlankLines(asistentesTable.getRow(0).getCell(0), 12);
-            addBlankLines(asistentesTable.getRow(0).getCell(1), 12);
-
-            // ORDEN DEL DÍA
-            XWPFTable ordenTable = document.createTable(1, 1);
-            ordenTable.setWidth("100%");
-            setTableCellText(ordenTable.getRow(0).getCell(0), "ORDEN DEL DÍA:", true);
-            addBlankLines(ordenTable.getRow(0).getCell(0), 5);
-
-            // RESUMEN DE LA REUNIÓN
-            XWPFTable resumenTable = document.createTable(1, 1);
-            resumenTable.setWidth("100%");
-            setTableCellText(resumenTable.getRow(0).getCell(0), "RESUMEN DE LA REUNIÓN:", true);
-            addBlankLines(resumenTable.getRow(0).getCell(0), 11);
-
-            // Firma
-            XWPFTable firmaTable = document.createTable(2, 2);
-            firmaTable.setWidth("100%");
-            setTableCellText(firmaTable.getRow(0).getCell(0), "Nombre: ___________________________", true);
-            setTableCellText(firmaTable.getRow(0).getCell(1), "Fecha/Hora cierre: _________________", true);
-            setTableCellText(firmaTable.getRow(1).getCell(0), "Cargo: ____________________________", true);
-            setTableCellText(firmaTable.getRow(1).getCell(1), "Firma: ____________________________", true);
+            XWPFTable mainTable = document.createTable(7, 3);
+            configureFixedWidthTable(mainTable, true, 9790, 4930, 2553, 2307);
+            buildBlankTemplateMainTable(mainTable);
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             document.write(baos);
@@ -743,41 +569,28 @@ public class ActaGeneratorService {
         if (logoImage != null) {
             float imgNatW = logoImage.getWidth();
             float imgNatH = logoImage.getHeight();
-            float cellW = logoW - 8f;
-            float cellH = hdrH - 24f;
+            float cellW = logoW - 12f;
+            float cellH = hdrH - 28f;
             float scale = Math.min(cellW / imgNatW, cellH / imgNatH);
             float drawW = imgNatW * scale;
             float drawH = imgNatH * scale;
-            float imgX = m + 4f + (cellW - drawW) / 2f;
-            float imgY = hdrBot + 16f + (cellH - drawH) / 2f;
+            float imgX = m + 6f + (cellW - drawW) / 2f;
+            float imgY = hdrBot + 18f + (cellH - drawH) / 2f;
             cs.drawImage(logoImage, imgX, imgY, drawW, drawH);
         }
-        cs.beginText();
-        cs.setFont(PDType1Font.HELVETICA_BOLD, 8f);
-        cs.newLineAtOffset(m + 8f, hdrBot + 6f);
-        cs.showText("SECTOR DE BARBASTRO");
-        cs.endText();
+        cs.setNonStrokingColor(0, 153, 153);
+        drawCenteredText(cs, "SECTOR DE BARBASTRO", m, hdrBot + 8f, logoW, PDType1Font.HELVETICA_BOLD, 8f);
+        cs.setNonStrokingColor(0, 0, 0);
 
         // Título centrado
-        cs.beginText();
-        cs.setFont(PDType1Font.HELVETICA_BOLD, 14f);
-        cs.newLineAtOffset(m + logoW + col2W / 2f - 63f, hdrBot + hdrH / 2f - 5f);
-        cs.showText("ACTA DE REUNI\u00D3N");
-        cs.endText();
+        drawCenteredText(cs, "ACTA DE REUNI\u00D3N", m + logoW, hdrBot + hdrH / 2f - 4f,
+                col2W, PDType1Font.HELVETICA_BOLD, 12f);
 
         // Columna derecha: revisión y página
-        float col3X = m + logoW + col2W + 5f;
-        cs.beginText();
-        cs.setFont(PDType1Font.HELVETICA_BOLD, 10f);
-        cs.newLineAtOffset(col3X, hdrTop - 24f);
-        cs.showText("Revisi\u00F3n A");
-        cs.endText();
-
-        cs.beginText();
-        cs.setFont(PDType1Font.HELVETICA, 10f);
-        cs.newLineAtOffset(col3X, hdrTop - 44f);
-        cs.showText("P\u00E1gina " + pageNumber + " de " + totalPages);
-        cs.endText();
+        drawCenteredText(cs, "Revisi\u00F3n A", m + logoW + col2W, hdrTop - 25f,
+                col3W, PDType1Font.HELVETICA_BOLD, 9f);
+        drawCenteredText(cs, "P\u00E1gina " + pageNumber + " de " + totalPages, m + logoW + col2W,
+                hdrTop - 43f, col3W, PDType1Font.HELVETICA_BOLD, 9f);
     }
 
     /**
@@ -894,6 +707,21 @@ public class ActaGeneratorService {
         }
     }
 
+    private void drawLeftText(PDPageContentStream cs, String text, float x, float y,
+                              PDType1Font font, float fontSize) throws IOException {
+        cs.beginText();
+        cs.setFont(font, fontSize);
+        cs.newLineAtOffset(x, y);
+        cs.showText(text);
+        cs.endText();
+    }
+
+    private void drawCenteredText(PDPageContentStream cs, String text, float x, float y,
+                                  float width, PDType1Font font, float fontSize) throws IOException {
+        float textWidth = font.getStringWidth(text) / 1000f * fontSize;
+        drawLeftText(cs, text, x + Math.max(0f, (width - textWidth) / 2f), y, font, fontSize);
+    }
+
     /**
      * Divide un texto en líneas de longitud máxima.
      */
@@ -954,5 +782,246 @@ public class ActaGeneratorService {
         for (int i = paragraphCount - 1; i >= 0; i--) {
             cell.removeParagraph(i);
         }
+    }
+
+    private void configureBlankTemplateSection(XWPFDocument document) {
+        CTSectPr section = document.getDocument().getBody().isSetSectPr()
+                ? document.getDocument().getBody().getSectPr()
+                : document.getDocument().getBody().addNewSectPr();
+
+        CTPageSz pageSize = section.isSetPgSz() ? section.getPgSz() : section.addNewPgSz();
+        pageSize.setW(BigInteger.valueOf(11906));
+        pageSize.setH(BigInteger.valueOf(16838));
+        pageSize.setOrient(STPageOrientation.PORTRAIT);
+
+        CTPageMar pageMargins = section.isSetPgMar() ? section.getPgMar() : section.addNewPgMar();
+        pageMargins.setTop(BigInteger.valueOf(720));
+        pageMargins.setBottom(BigInteger.valueOf(720));
+        pageMargins.setLeft(BigInteger.valueOf(720));
+        pageMargins.setRight(BigInteger.valueOf(720));
+        pageMargins.setHeader(BigInteger.valueOf(360));
+        pageMargins.setFooter(BigInteger.valueOf(360));
+        pageMargins.setGutter(BigInteger.ZERO);
+    }
+
+    private void buildBlankTemplateHeaderRow(XWPFTableRow row) throws IOException {
+        XWPFTableCell logoCell = row.getCell(0);
+        clearCell(logoCell);
+        logoCell.setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+        XWPFParagraph logoParagraph = createCellParagraph(logoCell, ParagraphAlignment.CENTER, 0, 0);
+        XWPFRun logoRun = logoParagraph.createRun();
+        try (InputStream logoStream = getClass().getResourceAsStream("/images/logo_salud.png")) {
+            if (logoStream != null) {
+                logoRun.addPicture(logoStream, XWPFDocument.PICTURE_TYPE_PNG,
+                        "logo_salud.png", Units.toEMU(101), Units.toEMU(51));
+            }
+        } catch (Exception e) {
+            AppLogger.debug("No se pudo insertar logo en Word: " + e.getMessage());
+        }
+        XWPFParagraph sectorParagraph = createCellParagraph(logoCell, ParagraphAlignment.CENTER, 0, 0);
+        XWPFRun sectorRun = sectorParagraph.createRun();
+        sectorRun.setText("SECTOR DE BARBASTRO");
+        sectorRun.setBold(true);
+        sectorRun.setColor("009999");
+        sectorRun.setFontFamily("Verdana");
+        sectorRun.setFontSize(8);
+
+        XWPFTableCell titleCell = row.getCell(1);
+        clearCell(titleCell);
+        titleCell.setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+        XWPFParagraph titleParagraph = createCellParagraph(titleCell, ParagraphAlignment.CENTER, 0, 0);
+        XWPFRun titleRun = titleParagraph.createRun();
+        titleRun.setText("ACTA DE REUNIÓN");
+        titleRun.setBold(true);
+        titleRun.setFontFamily("Tahoma");
+        titleRun.setFontSize(12);
+
+        XWPFTableCell rightCell = row.getCell(2);
+        clearCell(rightCell);
+        rightCell.setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+        XWPFParagraph revisionParagraph = createCellParagraph(rightCell, ParagraphAlignment.CENTER, 0, 0);
+        XWPFRun revisionRun = revisionParagraph.createRun();
+        revisionRun.setText("Revisión A");
+        revisionRun.setBold(true);
+        revisionRun.setFontSize(9);
+
+        XWPFParagraph pageParagraph = createCellParagraph(rightCell, ParagraphAlignment.CENTER, 0, 0);
+        XWPFRun pageRun = pageParagraph.createRun();
+        pageRun.setText("Página 1 de 1");
+        pageRun.setBold(true);
+        pageRun.setFontSize(9);
+    }
+
+    private void buildBlankTemplateMainTable(XWPFTable table) {
+        XWPFTableRow row1 = table.getRow(0);
+        row1.setHeight(620);
+        mergeCellsHorizontally(row1, 0, 3);
+        fillCell(row1.getCell(0), "COMISIÓN DE", true, "Arial", 12, null, ParagraphAlignment.CENTER, 0, 0);
+        row1.getCell(0).setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+        setCellShading(row1.getCell(0), "E5E5E5");
+
+        XWPFTableRow row2 = table.getRow(1);
+        row2.setHeight(560);
+        fillCell(row2.getCell(0), "Fecha :", true, "Arial", 10, null, ParagraphAlignment.LEFT, 0, 0);
+        fillCell(row2.getCell(1), "Hora inicio:", true, "Arial", 10, null, ParagraphAlignment.LEFT, 0, 0);
+        fillCell(row2.getCell(2), "Hora fin:", true, "Arial", 10, null, ParagraphAlignment.LEFT, 0, 0);
+
+        XWPFTableRow row3 = table.getRow(2);
+        row3.setHeight(780);
+        fillCell(row3.getCell(0), "ASISTENTES", false, "Arial", 10, null, ParagraphAlignment.CENTER, 0, 0);
+        appendCellParagraph(row3.getCell(0), "(Nombre y Cargo)", false, true, "Arial", 10, null, ParagraphAlignment.CENTER, 0, 0);
+        mergeCellsHorizontally(row3, 1, 2);
+        fillCell(row3.getCell(1), "EXCUSAN SU ASISTENCIA", false, "Arial", 10, null, ParagraphAlignment.CENTER, 0, 0);
+        appendCellParagraph(row3.getCell(1), "(Nombre, Cargo y Razón de la no asistencia)",
+                false, true, "Arial", 10, null, ParagraphAlignment.CENTER, 0, 0);
+
+        XWPFTableRow row4 = table.getRow(3);
+        row4.setHeight(1465);
+        setVerticalMerge(row4.getCell(0), STMerge.RESTART);
+        fillCell(row4.getCell(0), "", false, "Arial", 10, null, ParagraphAlignment.BOTH, 0, 0);
+        mergeCellsHorizontally(row4, 1, 2);
+        fillCell(row4.getCell(1), "", false, "Arial", 10, null, ParagraphAlignment.BOTH, 0, 0);
+
+        XWPFTableRow row5 = table.getRow(4);
+        row5.setHeight(950);
+        setVerticalMerge(row5.getCell(0), STMerge.CONTINUE);
+        fillCell(row5.getCell(0), "", false, "Arial", 10, null, ParagraphAlignment.BOTH, 0, 0);
+        mergeCellsHorizontally(row5, 1, 2);
+        fillCell(row5.getCell(1), "", false, "Arial", 10, null, ParagraphAlignment.BOTH, 0, 0);
+
+        XWPFTableRow row6 = table.getRow(5);
+        row6.setHeight(2268);
+        mergeCellsHorizontally(row6, 0, 3);
+        fillCell(row6.getCell(0), "ORDEN DEL DIA:", true, "Arial", 10, null, ParagraphAlignment.LEFT, 0, 0);
+
+        XWPFTableRow row7 = table.getRow(6);
+        row7.setHeight(5209);
+        mergeCellsHorizontally(row7, 0, 3);
+        fillCell(row7.getCell(0), "RESUMEN DE LA REUNION:", true, "Arial", 10, null, ParagraphAlignment.BOTH, 60, 0);
+    }
+
+    private void configureFixedWidthTable(XWPFTable table, boolean doubleOuterBorder, int totalWidth, int... columnWidths) {
+        table.setTableAlignment(TableRowAlign.CENTER);
+        table.setCellMargins(0, 70, 0, 70);
+
+        CTTbl ctTable = table.getCTTbl();
+        CTTblPr tableProperties = ctTable.getTblPr() != null ? ctTable.getTblPr() : ctTable.addNewTblPr();
+
+        CTTblWidth width = tableProperties.isSetTblW() ? tableProperties.getTblW() : tableProperties.addNewTblW();
+        width.setType(STTblWidth.DXA);
+        width.setW(BigInteger.valueOf(totalWidth));
+
+        CTTblLayoutType layout = tableProperties.isSetTblLayout() ? tableProperties.getTblLayout() : tableProperties.addNewTblLayout();
+        layout.setType(STTblLayoutType.FIXED);
+
+        CTTblGrid grid = ctTable.getTblGrid() != null ? ctTable.getTblGrid() : ctTable.addNewTblGrid();
+        while (grid.sizeOfGridColArray() > 0) {
+            grid.removeGridCol(0);
+        }
+        for (int columnWidth : columnWidths) {
+            CTTblGridCol column = grid.addNewGridCol();
+            column.setW(BigInteger.valueOf(columnWidth));
+        }
+
+        applyTableBorders(table, doubleOuterBorder);
+        for (XWPFTableRow row : table.getRows()) {
+            for (int i = 0; i < row.getTableCells().size() && i < columnWidths.length; i++) {
+                setCellWidth(row.getCell(i), columnWidths[i]);
+            }
+        }
+    }
+
+    private void applyTableBorders(XWPFTable table, boolean doubleOuterBorder) {
+        CTTblPr tableProperties = table.getCTTbl().getTblPr() != null
+                ? table.getCTTbl().getTblPr()
+                : table.getCTTbl().addNewTblPr();
+        CTTblBorders borders = tableProperties.isSetTblBorders()
+                ? tableProperties.getTblBorders()
+                : tableProperties.addNewTblBorders();
+
+        STBorder.Enum outerStyle = doubleOuterBorder ? STBorder.DOUBLE : STBorder.SINGLE;
+        setBorder(borders.isSetTop() ? borders.getTop() : borders.addNewTop(), outerStyle);
+        setBorder(borders.isSetBottom() ? borders.getBottom() : borders.addNewBottom(), outerStyle);
+        setBorder(borders.isSetLeft() ? borders.getLeft() : borders.addNewLeft(), outerStyle);
+        setBorder(borders.isSetRight() ? borders.getRight() : borders.addNewRight(), outerStyle);
+        setBorder(borders.isSetInsideH() ? borders.getInsideH() : borders.addNewInsideH());
+        setBorder(borders.isSetInsideV() ? borders.getInsideV() : borders.addNewInsideV());
+    }
+
+    private void setBorder(CTBorder border) {
+        setBorder(border, STBorder.SINGLE);
+    }
+
+    private void setBorder(CTBorder border, STBorder.Enum style) {
+        border.setVal(style);
+        border.setSz(BigInteger.valueOf(STBorder.DOUBLE.equals(style) ? 8 : 4));
+        border.setColor("000000");
+        border.setSpace(BigInteger.ZERO);
+    }
+
+    private void setCellShading(XWPFTableCell cell, String fillColor) {
+        CTTcPr properties = cell.getCTTc().isSetTcPr() ? cell.getCTTc().getTcPr() : cell.getCTTc().addNewTcPr();
+        CTShd shading = properties.isSetShd() ? properties.getShd() : properties.addNewShd();
+        shading.setFill(fillColor);
+    }
+
+    private void setCellWidth(XWPFTableCell cell, int width) {
+        CTTcPr properties = cell.getCTTc().isSetTcPr() ? cell.getCTTc().getTcPr() : cell.getCTTc().addNewTcPr();
+        CTTblWidth cellWidth = properties.isSetTcW() ? properties.getTcW() : properties.addNewTcW();
+        cellWidth.setType(STTblWidth.DXA);
+        cellWidth.setW(BigInteger.valueOf(width));
+    }
+
+    private void mergeCellsHorizontally(XWPFTableRow row, int fromCell, int span) {
+        XWPFTableCell cell = row.getCell(fromCell);
+        CTTcPr properties = cell.getCTTc().isSetTcPr() ? cell.getCTTc().getTcPr() : cell.getCTTc().addNewTcPr();
+        CTDecimalNumber gridSpan = properties.isSetGridSpan() ? properties.getGridSpan() : properties.addNewGridSpan();
+        gridSpan.setVal(BigInteger.valueOf(span));
+        for (int index = row.getTableCells().size() - 1; index > fromCell; index--) {
+            row.removeCell(index);
+        }
+    }
+
+    private void setVerticalMerge(XWPFTableCell cell, STMerge.Enum mergeType) {
+        CTTcPr properties = cell.getCTTc().isSetTcPr() ? cell.getCTTc().getTcPr() : cell.getCTTc().addNewTcPr();
+        CTVMerge verticalMerge = properties.isSetVMerge() ? properties.getVMerge() : properties.addNewVMerge();
+        verticalMerge.setVal(mergeType);
+    }
+
+    private void fillCell(XWPFTableCell cell, String text, boolean bold, String fontFamily, int fontSize,
+                          String color, ParagraphAlignment alignment, int spacingBefore, int spacingAfter) {
+        clearCell(cell);
+        appendCellParagraph(cell, text, bold, false, fontFamily, fontSize, color, alignment, spacingBefore, spacingAfter);
+    }
+
+    private void appendCellParagraph(XWPFTableCell cell, String text, boolean bold, String fontFamily, int fontSize,
+                                     String color, ParagraphAlignment alignment, int spacingBefore, int spacingAfter) {
+        appendCellParagraph(cell, text, bold, false, fontFamily, fontSize, color, alignment, spacingBefore, spacingAfter);
+    }
+
+    private void appendCellParagraph(XWPFTableCell cell, String text, boolean bold, boolean italic,
+                                     String fontFamily, int fontSize, String color, ParagraphAlignment alignment,
+                                     int spacingBefore, int spacingAfter) {
+        XWPFParagraph paragraph = createCellParagraph(cell, alignment, spacingBefore, spacingAfter);
+        XWPFRun run = paragraph.createRun();
+        if (text != null && !text.isEmpty()) {
+            run.setText(text);
+        }
+        run.setBold(bold);
+        run.setItalic(italic);
+        run.setFontFamily(fontFamily);
+        run.setFontSize(fontSize);
+        if (color != null) {
+            run.setColor(color);
+        }
+    }
+
+    private XWPFParagraph createCellParagraph(XWPFTableCell cell, ParagraphAlignment alignment,
+                                              int spacingBefore, int spacingAfter) {
+        XWPFParagraph paragraph = cell.addParagraph();
+        paragraph.setAlignment(alignment);
+        paragraph.setSpacingBefore(spacingBefore);
+        paragraph.setSpacingAfter(spacingAfter);
+        return paragraph;
     }
 }
