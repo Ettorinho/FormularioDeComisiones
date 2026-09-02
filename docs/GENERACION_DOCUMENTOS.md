@@ -12,6 +12,8 @@ El sistema de gestión de comisiones ahora cuenta con la capacidad de generar au
 
 Los documentos generados son independientes de la funcionalidad existente de adjuntar PDFs a las actas. Ambas opciones coexisten y pueden usarse según las necesidades.
 
+Además, el servicio genera una **plantilla de acta en blanco** en PDF y `.docx` mediante los métodos `generarPlantillaVaciaPdf()` y `generarPlantillaVaciaWord()`. Desde septiembre de 2026 esta plantilla ya no se basa en una simple aproximación visual a una captura, sino en el **análisis directo del archivo oficial** `/home/runner/work/FormularioDeComisiones/FormularioDeComisiones/docs/Modelo acta.doc`.
+
 ## Dependencias Utilizadas
 
 ### Apache PDFBox 2.0.30
@@ -28,7 +30,7 @@ Apache PDFBox es una biblioteca Java de código abierto para trabajar con docume
 
 **Documentación:** https://pdfbox.apache.org/
 
-### Apache POI 5.2.5
+### Apache POI 5.3.0
 
 **Propósito:** Generación de documentos Word (.docx)
 
@@ -70,6 +72,74 @@ Usuario → Vista JSP → ActaController → ActaGeneratorService → Documento 
    - El controller establece los headers HTTP apropiados
    - Envía el documento al navegador para descarga
 
+## Plantilla en blanco basada en `docs/Modelo acta.doc`
+
+### Cómo se analizó el modelo oficial
+
+Para reconstruir fielmente la plantilla se analizó directamente `docs/Modelo acta.doc` con varias herramientas del entorno:
+
+- `file`: confirmó que el origen es un documento Word 97-2003 OLE2 de una sola página.
+- `antiword` y `catdoc`: permitieron recuperar el texto lineal y validar la distribución general de filas y columnas.
+- `LibreOffice --headless --convert-to docx`: permitió inspeccionar el XML resultante (`word/header1.xml` y `word/document.xml`) para extraer anchos de columnas, `gridSpan`, `vMerge`, alturas de fila y presencia del logo.
+
+### Estructura real extraída del `.doc`
+
+El modelo oficial se compone de **dos tablas principales**:
+
+1. **Cabecera de 1 fila y 3 columnas**
+   - Columna izquierda: logo + texto `SECTOR DE BARBASTRO`
+   - Columna central: `ACTA DE REUNIÓN`
+   - Columna derecha: `Revisión A` y `Página 1 de 1`
+   - Proporciones recuperadas: **3001 / 5137 / 2228**
+
+2. **Tabla principal de 7 filas y 3 columnas base**
+   - Fila 1: `COMISIÓN DE` ocupando las 3 columnas
+   - Fila 2: `Fecha :` | `Hora inicio:` | `Hora fin:`
+   - Fila 3: `ASISTENTES` (columna izquierda) y `EXCUSAN SU ASISTENCIA` ocupando las columnas 2-3
+   - Filas 4-5: zona en blanco, con **merge vertical en la primera columna** y **merge horizontal en las columnas 2-3**
+   - Fila 6: `ORDEN DEL DIA:` ocupando las 3 columnas
+   - Fila 7: `RESUMEN DE LA REUNION:` ocupando las 3 columnas
+   - Proporciones recuperadas: **4930 / 2553 / 2307**
+
+### Implementación actual de la plantilla
+
+- **PDF (`generarPlantillaVaciaPdf`)**
+  - Reproduce la cabecera de 3 columnas y la tabla principal de 7 filas con sus merges equivalentes.
+  - Conserva los nombres de campos AcroForm existentes: `nombreGrupo`, `fecha`, `horaInicio`, `horaFin`, `asistentes`, `excusaAsistencia`, `ordenDelDia` y `resumenReunion`.
+  - Se eliminaron los antiguos campos de firma porque no forman parte del modelo oficial analizado.
+  - El documento sigue generándose completamente en memoria mediante `ByteArrayOutputStream`.
+
+- **Word (`generarPlantillaVaciaWord`)**
+  - No usa `XWPFHeaderFooterPolicy`: la cabecera se construye como una **tabla normal en el cuerpo** para evitar problemas de renderizado de POI con tablas e imágenes en headers.
+  - Todas las tablas creadas aplican bordes visibles explícitos en `CTTblBorders`.
+  - La tabla principal usa `gridSpan` y `vMerge` para reproducir la estructura real del `.doc`.
+  - El documento sigue generándose completamente en memoria mediante `ByteArrayOutputStream`.
+
+### Fuentes, colores y sustituciones
+
+Hallazgos principales del modelo original:
+
+- `SECTOR DE BARBASTRO`: verde azulado aproximado `#009999`, texto pequeño en negrita.
+- `ACTA DE REUNIÓN`: título centrado en negrita.
+- `COMISIÓN DE`: banda sombreada en gris claro.
+- Cabeceras y etiquetas del cuerpo: tipografía tipo Arial/Tahoma/Verdana en tamaños pequeños (aprox. 8pt-12pt).
+
+Limitaciones conocidas:
+
+- En **PDF** se usan fuentes estándar de PDFBox (`Helvetica`, `Helvetica Bold`, `Helvetica Oblique`) como sustitutas de Arial/Tahoma/Verdana, porque esas fuentes no forman parte del core estándar de PDFBox.
+- En **`.docx`** la cabecera del modelo original estaba en el header del documento Word, pero se replica en el cuerpo por fiabilidad de Apache POI; visualmente mantiene la misma estructura de tabla.
+
+### Verificación recomendada de la plantilla
+
+La verificación estructural mínima debe confirmar:
+
+- 1 página en el PDF.
+- 8 campos AcroForm: `nombreGrupo`, `fecha`, `horaInicio`, `horaFin`, `asistentes`, `excusaAsistencia`, `ordenDelDia`, `resumenReunion`.
+- 2 tablas en el `.docx`: una para la cabecera y otra para el cuerpo.
+- 7 filas en la tabla principal del `.docx`.
+- `gridSpan` en las filas `COMISIÓN DE`, `ORDEN DEL DIA` y `RESUMEN DE LA REUNION`.
+- `vMerge` en la primera columna de las filas 4-5 del bloque de asistentes.
+
 ### Formato del PDF
 
 - **Fuente:** Helvetica (estándar PDF)
@@ -84,6 +154,8 @@ Usuario → Vista JSP → ActaController → ActaGeneratorService → Documento 
   - Encabezados en negrita
 - **Pie de Página:** Fecha de generación en 10pt
 
+> Nota: esta sección describe `generarPdf()` (actas con datos reales). La plantilla en blanco usa una maquetación distinta basada en `docs/Modelo acta.doc`.
+
 ### Formato del Word
 
 - **Título:** Centrado, 18pt en negrita
@@ -93,6 +165,8 @@ Usuario → Vista JSP → ActaController → ActaGeneratorService → Documento 
   - 4 columnas con ancho automático
   - Bordes visibles
 - **Pie de Página:** Alineado a la derecha, itálica, 10pt
+
+> Nota: esta sección describe `generarWord()` (actas con datos reales). La plantilla en blanco `.docx` replica la tabla del modelo oficial y no comparte esta estructura simple.
 
 ## Cómo Personalizar las Plantillas
 
