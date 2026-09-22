@@ -45,12 +45,6 @@
                         </a>
                         <a href="${pageContext.request.contextPath}/comisiones/addMember/${comision.id}" class="btn btn-primary text-nowrap">Añadir Miembro</a>
                         <a href="${pageContext.request.contextPath}/comisiones/bajaMiembros/${comision.id}" class="btn btn-warning text-nowrap">Dar de baja a Miembros</a>
-                        <a href="${pageContext.request.contextPath}/actas/generate-blank-template" class="btn btn-outline-secondary text-nowrap">
-                            <i class="bi bi-file-earmark-arrow-down"></i> Plantilla Acta PDF
-                        </a>
-                        <a href="${pageContext.request.contextPath}/actas/generate-blank-template-word" class="btn btn-outline-secondary text-nowrap">
-                            <i class="bi bi-file-earmark-word"></i> Plantilla Acta Word
-                        </a>
                     </div>
                 </c:if>
             </div>

@@ -8,6 +8,7 @@ public class AsistenciaActa {
     private Miembro miembro;
     private boolean asistio;
     private String justificacion;  // ⭐ NUEVO CAMPO
+    private String cargoMiembro;
     private LocalDateTime fechaCreacion;
     
     public AsistenciaActa() {
@@ -68,6 +69,14 @@ public class AsistenciaActa {
     
     public void setJustificacion(String justificacion) {
         this.justificacion = justificacion;
+    }
+
+    public String getCargoMiembro() {
+        return cargoMiembro;
+    }
+
+    public void setCargoMiembro(String cargoMiembro) {
+        this.cargoMiembro = cargoMiembro;
     }
     
     public LocalDateTime getFechaCreacion() {

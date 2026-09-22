@@ -20,19 +20,27 @@ public class ActaDAO {
      */
     private Long saveActa(Connection conn, Acta acta) throws SQLException {
         String sql = String.join(" ",
-                "INSERT INTO actas (comision_id, titulo, fecha_reunion, observaciones, fecha_creacion,",
-                "pdf_nombre, pdf_contenido, pdf_tipo_mime)",
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                "INSERT INTO actas (comision_id, titulo, fecha_reunion, observaciones,",
+                "hora_inicio, hora_fin, duracion, tipo_reunion, tipo_reunion_otros_detalle,",
+                "orden_dia, excusa_asistencia, fecha_creacion, pdf_nombre, pdf_contenido, pdf_tipo_mime)",
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setLong(1, acta.getComision().getId());
             stmt.setString(2, acta.getTitulo());
             stmt.setDate(3, java.sql.Date.valueOf(acta.getFechaReunion()));
             stmt.setString(4, acta.getObservaciones());
-            stmt.setTimestamp(5, java.sql.Timestamp.valueOf(acta.getFechaCreacion()));
-            stmt.setString(6, acta.getPdfNombre());
-            stmt.setBytes(7, acta.getPdfContenido());
-            stmt.setString(8, acta.getPdfTipoMime());
+            stmt.setString(5, acta.getHoraInicio());
+            stmt.setString(6, acta.getHoraFin());
+            stmt.setString(7, acta.getDuracion());
+            stmt.setString(8, acta.getTipoReunion());
+            stmt.setString(9, acta.getTipoReunionOtrosDetalle());
+            stmt.setString(10, acta.getOrdenDia());
+            stmt.setString(11, acta.getExcusaAsistencia());
+            stmt.setTimestamp(12, java.sql.Timestamp.valueOf(acta.getFechaCreacion()));
+            stmt.setString(13, acta.getPdfNombre());
+            stmt.setBytes(14, acta.getPdfContenido());
+            stmt.setString(15, acta.getPdfTipoMime());
             
             stmt.executeUpdate();
             
@@ -168,7 +176,9 @@ public class ActaDAO {
      */
     public Acta findById(Long id) throws SQLException {
         String sql = String.join(" ",
-                "SELECT a.id, a.titulo, a.fecha_reunion, a.observaciones, a.fecha_creacion,",
+                "SELECT a.id, a.titulo, a.fecha_reunion, a.observaciones,",
+                "a.hora_inicio, a.hora_fin, a.duracion, a.tipo_reunion, a.tipo_reunion_otros_detalle,",
+                "a.orden_dia, a.excusa_asistencia, a.fecha_creacion,",
                 "a.pdf_nombre, a.pdf_tipo_mime,",
                 "c.id as comision_id, c.nombre as comision_nombre",
                 "FROM actas a",
@@ -187,6 +197,13 @@ public class ActaDAO {
                     acta.setTitulo(rs.getString("titulo"));
                     acta.setFechaReunion(rs.getDate("fecha_reunion").toLocalDate());
                     acta.setObservaciones(rs.getString("observaciones"));
+                    acta.setHoraInicio(rs.getString("hora_inicio"));
+                    acta.setHoraFin(rs.getString("hora_fin"));
+                    acta.setDuracion(rs.getString("duracion"));
+                    acta.setTipoReunion(rs.getString("tipo_reunion"));
+                    acta.setTipoReunionOtrosDetalle(rs.getString("tipo_reunion_otros_detalle"));
+                    acta.setOrdenDia(rs.getString("orden_dia"));
+                    acta.setExcusaAsistencia(rs.getString("excusa_asistencia"));
                     acta.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
                     
                     // Información del PDF (sin cargar el contenido)
@@ -217,7 +234,8 @@ public class ActaDAO {
 
         String sql = String.join(" ",
                 "SELECT a.id, a.comision_id, a.titulo, a.fecha_reunion, a.observaciones,",
-                "a.fecha_creacion, a.pdf_nombre, a.pdf_tipo_mime,",
+                "a.hora_inicio, a.hora_fin, a.duracion, a.tipo_reunion, a.tipo_reunion_otros_detalle,",
+                "a.orden_dia, a.excusa_asistencia, a.fecha_creacion, a.pdf_nombre, a.pdf_tipo_mime,",
                 "c.nombre as comision_nombre",
                 "FROM actas a",
                 "INNER JOIN comisiones c ON a.comision_id = c.id",
@@ -236,6 +254,13 @@ public class ActaDAO {
                     acta.setTitulo(rs.getString("titulo"));
                     acta.setFechaReunion(rs.getDate("fecha_reunion").toLocalDate());
                     acta.setObservaciones(rs.getString("observaciones"));
+                    acta.setHoraInicio(rs.getString("hora_inicio"));
+                    acta.setHoraFin(rs.getString("hora_fin"));
+                    acta.setDuracion(rs.getString("duracion"));
+                    acta.setTipoReunion(rs.getString("tipo_reunion"));
+                    acta.setTipoReunionOtrosDetalle(rs.getString("tipo_reunion_otros_detalle"));
+                    acta.setOrdenDia(rs.getString("orden_dia"));
+                    acta.setExcusaAsistencia(rs.getString("excusa_asistencia"));
                     acta.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
                     acta.setPdfNombre(rs.getString("pdf_nombre"));
                     acta.setPdfTipoMime(rs.getString("pdf_tipo_mime"));
@@ -313,9 +338,11 @@ public class ActaDAO {
         
         String sql = String.join(" ",
                 "SELECT aa.id, aa.acta_id, aa.miembro_id, aa.asistio, aa.justificacion, aa.fecha_creacion,",
-                "m.nombre_apellidos, m.dni_nif",
+                "m.nombre_apellidos, m.dni_nif, cm.cargo",
                 "FROM asistencias_actas aa",
+                "INNER JOIN actas a ON aa.acta_id = a.id",
                 "INNER JOIN miembros m ON aa.miembro_id = m.id",
+                "LEFT JOIN comision_miembros cm ON cm.comision_id = a.comision_id AND cm.miembro_id = aa.miembro_id",
                 "WHERE aa.acta_id = ?",
                 "ORDER BY m.nombre_apellidos");
         
@@ -338,6 +365,7 @@ public class ActaDAO {
                     asistencia.setMiembro(miembro);
                     asistencia.setAsistio(rs.getBoolean("asistio"));
                     asistencia.setJustificacion(rs.getString("justificacion"));
+                    asistencia.setCargoMiembro(rs.getString("cargo"));
                     asistencia.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
                     
                     asistencias.add(asistencia);

@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PastOrPresent;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import com.comisiones.util.DateFormatUtil;
 
@@ -24,6 +25,28 @@ public class Acta {
 
     @Size(max = 500, message = "Las observaciones no pueden superar 500 caracteres")
     private String observaciones;
+    
+    @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "La hora de inicio debe tener formato HH:mm")
+    private String horaInicio;
+    
+    @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "La hora de fin debe tener formato HH:mm")
+    private String horaFin;
+    
+    @Size(max = 100, message = "La duración no puede superar 100 caracteres")
+    private String duracion;
+    
+    @Size(max = 20, message = "El tipo de reunión no puede superar 20 caracteres")
+    private String tipoReunion;
+    
+    @Size(max = 1000, message = "El detalle de 'Otros' no puede superar 1000 caracteres")
+    private String tipoReunionOtrosDetalle;
+    
+    @Size(max = 10000, message = "El orden del día no puede superar 10000 caracteres")
+    private String ordenDia;
+    
+    @Size(max = 4000, message = "La excusa de asistencia no puede superar 4000 caracteres")
+    private String excusaAsistencia;
+
     private LocalDateTime fechaCreacion;
     
     // Campos para PDF adjunto
@@ -74,6 +97,62 @@ public class Acta {
     
     public void setObservaciones(String observaciones) {
         this.observaciones = observaciones;
+    }
+
+    public String getHoraInicio() {
+        return horaInicio;
+    }
+
+    public void setHoraInicio(String horaInicio) {
+        this.horaInicio = horaInicio;
+    }
+
+    public String getHoraFin() {
+        return horaFin;
+    }
+
+    public void setHoraFin(String horaFin) {
+        this.horaFin = horaFin;
+    }
+
+    public String getDuracion() {
+        return duracion;
+    }
+
+    public void setDuracion(String duracion) {
+        this.duracion = duracion;
+    }
+
+    public String getTipoReunion() {
+        return tipoReunion;
+    }
+
+    public void setTipoReunion(String tipoReunion) {
+        this.tipoReunion = tipoReunion;
+    }
+
+    public String getTipoReunionOtrosDetalle() {
+        return tipoReunionOtrosDetalle;
+    }
+
+    public void setTipoReunionOtrosDetalle(String tipoReunionOtrosDetalle) {
+        this.tipoReunionOtrosDetalle = tipoReunionOtrosDetalle;
+    }
+
+    public String getOrdenDia() {
+        return ordenDia;
+    }
+
+    public void setOrdenDia(String ordenDia) {
+        this.ordenDia = ordenDia;
+    }
+
+    public String getExcusaAsistencia() {
+        return excusaAsistencia;
+    }
+
+    public void setExcusaAsistencia(String excusaAsistencia) {
+        this.excusaAsistencia = excusaAsistencia;
     }
     
     public LocalDateTime getFechaCreacion() {
@@ -137,6 +216,10 @@ public class Acta {
                 ", comision=" + (comision != null ? comision.getNombre() : "null") +
                 ", fechaReunion=" + fechaReunion +
                 ", observaciones='" + observaciones + '\'' +
+                ", horaInicio='" + horaInicio + '\'' +
+                ", horaFin='" + horaFin + '\'' +
+                ", duracion='" + duracion + '\'' +
+                ", tipoReunion='" + tipoReunion + '\'' +
                 ", fechaCreacion=" + fechaCreacion +
                 ", pdfNombre='" + pdfNombre + '\'' +
                 ", tienePdf=" + tienePdf() +
