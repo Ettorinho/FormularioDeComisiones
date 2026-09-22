@@ -631,6 +631,12 @@ public class ActaController extends HttpServlet {
     }
 
     private String generarTituloActa(Comision comision, LocalDate fechaReunion) {
-        return "Acta " + fechaReunion.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " - " + comision.getNombre();
+        String base = "Acta " + fechaReunion.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " - ";
+        String nombreComision = comision != null && comision.getNombre() != null ? comision.getNombre().trim() : "Comisión";
+        int maxNombre = Math.max(0, 200 - base.length());
+        if (nombreComision.length() > maxNombre) {
+            nombreComision = maxNombre > 3 ? nombreComision.substring(0, maxNombre - 3).trim() + "..." : nombreComision.substring(0, maxNombre);
+        }
+        return base + nombreComision;
     }
 }

@@ -65,10 +65,10 @@ class ActaGeneratorServiceTest {
         acta.setTipoReunion("OTROS");
         acta.setTipoReunionOtrosDetalle("Sesión extraordinaria de diseño");
         acta.setDuracion("");
-        acta.setExcusaAsistencia("");
+        acta.setExcusaAsistencia("María Labarta Bellostas");
 
         List<AsistenciaActa> asistencias = List.of(
-                createAsistencia("María Labarta Bellostas", "MIEMBRO", false, "Ausencia justificada")
+                createAsistencia("María Labarta Bellostas", "RESPONSABLE", false, "Ausencia justificada")
         );
 
         byte[] generated = service.generarPdf(acta, asistencias, 4);
@@ -78,7 +78,8 @@ class ActaGeneratorServiceTest {
             assertTrue(text.contains("Sin asistentes registrados."));
             assertTrue(text.contains("Otros"));
             assertTrue(text.contains("Sesión extraordinaria de diseño"));
-            assertTrue(!text.contains("Responsable") && !text.contains("María Labarta Bellostas"));
+            assertTrue(text.contains("María Labarta Bellostas"));
+            assertTrue(!text.contains("Responsable"));
         }
     }
 

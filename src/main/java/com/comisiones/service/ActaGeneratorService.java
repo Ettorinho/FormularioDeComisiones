@@ -362,7 +362,22 @@ public class ActaGeneratorService {
         if (isBlank(cargo)) {
             return "";
         }
-        return cargo.toLowerCase(Locale.ROOT).replace('_', ' ');
+        StringBuilder formatted = new StringBuilder();
+        String[] parts = cargo.split("_");
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+            if (part.isEmpty()) {
+                continue;
+            }
+            if (formatted.length() > 0) {
+                formatted.append(' ');
+            }
+            formatted.append(part.substring(0, 1).toUpperCase(Locale.ROOT));
+            if (part.length() > 1) {
+                formatted.append(part.substring(1).toLowerCase(Locale.ROOT));
+            }
+        }
+        return formatted.toString();
     }
 
     private void drawDetailLines(PDPageContentStream content, List<String> lines, float x, float topY, float width) throws IOException {
@@ -631,6 +646,14 @@ public class ActaGeneratorService {
         List<String> lines = new ArrayList<>();
         StringBuilder current = new StringBuilder();
         for (String word : text.trim().split("\\s+")) {
+            if (font.getStringWidth(word) / 1000f * fontSize > width) {
+                if (current.length() > 0) {
+                    lines.add(current.toString());
+                    current.setLength(0);
+                }
+                lines.addAll(splitLongWord(word, width, font, fontSize));
+                continue;
+            }
             String candidate = current.length() == 0 ? word : current + " " + word;
             if (font.getStringWidth(candidate) / 1000f * fontSize <= width) {
                 current.setLength(0);
@@ -647,6 +670,23 @@ public class ActaGeneratorService {
             lines.add(current.toString());
         }
         return lines.isEmpty() ? Collections.singletonList("") : lines;
+    }
+
+    private List<String> splitLongWord(String word, float width, PDType1Font font, float fontSize) throws IOException {
+        List<String> chunks = new ArrayList<>();
+        StringBuilder chunk = new StringBuilder();
+        for (char character : word.toCharArray()) {
+            String candidate = chunk.toString() + character;
+            if (chunk.length() > 0 && font.getStringWidth(candidate) / 1000f * fontSize > width) {
+                chunks.add(chunk.toString());
+                chunk.setLength(0);
+            }
+            chunk.append(character);
+        }
+        if (chunk.length() > 0) {
+            chunks.add(chunk.toString());
+        }
+        return chunks;
     }
 
     private void drawBox(PDPageContentStream content, float x, float y, float width, float height) throws IOException {
