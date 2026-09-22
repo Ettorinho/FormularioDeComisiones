@@ -276,7 +276,8 @@ public class ActaGeneratorService {
         float centerX = MARGIN + leftWidth;
         drawCentered(content, "ACTA DE REUNIÓN:", centerX, top - 18f, centerWidth, PDType1Font.HELVETICA_BOLD, TITLE_FONT_SIZE);
         drawCentered(content, DOCUMENT_CODE, centerX, top - 33f, centerWidth, PDType1Font.HELVETICA_BOLD, BODY_FONT_SIZE);
-        List<String> headerLines = wrapLine(acta.getComision().getNombre(), centerWidth - 18f, PDType1Font.HELVETICA, BODY_FONT_SIZE);
+        String nombreComision = acta.getComision() != null ? acta.getComision().getNombre() : "Comisión sin nombre";
+        List<String> headerLines = wrapLine(nombreComision, centerWidth - 18f, PDType1Font.HELVETICA, BODY_FONT_SIZE);
         float headerY = top - 49f;
         for (String line : headerLines) {
             drawCentered(content, line, centerX, headerY, centerWidth, PDType1Font.HELVETICA, BODY_FONT_SIZE);
@@ -409,7 +410,7 @@ public class ActaGeneratorService {
             if (stream != null) {
                 logoRun.addPicture(stream, XWPFDocument.PICTURE_TYPE_PNG, "logo_salud.png", Units.toEMU(92), Units.toEMU(46));
             }
-        } catch (Exception e) {
+        } catch (IOException | org.apache.poi.openxml4j.exceptions.InvalidFormatException e) {
             AppLogger.debug("No se pudo insertar logo en Word: " + e.getMessage());
         }
         XWPFRun leftRun = left.addParagraph().createRun();
@@ -421,7 +422,7 @@ public class ActaGeneratorService {
         clearCell(center);
         appendCentered(center, "ACTA DE REUNIÓN:", true, 12);
         appendCentered(center, DOCUMENT_CODE, true, 10);
-        appendCentered(center, acta.getComision().getNombre(), false, 10);
+        appendCentered(center, acta.getComision() != null ? acta.getComision().getNombre() : "Comisión sin nombre", false, 10);
 
         XWPFTableCell right = row.getCell(2);
         clearCell(right);

@@ -338,11 +338,16 @@ public class ActaDAO {
         
         String sql = String.join(" ",
                 "SELECT aa.id, aa.acta_id, aa.miembro_id, aa.asistio, aa.justificacion, aa.fecha_creacion,",
-                "m.nombre_apellidos, m.dni_nif, cm.cargo",
+                "m.nombre_apellidos, m.dni_nif,",
+                "(SELECT cm.cargo FROM comision_miembros cm",
+                " WHERE cm.comision_id = a.comision_id",
+                "   AND cm.miembro_id = aa.miembro_id",
+                "   AND (cm.fecha_baja IS NULL OR cm.fecha_baja >= a.fecha_reunion)",
+                " ORDER BY cm.fecha_baja NULLS FIRST, cm.fecha_incorporacion DESC",
+                " LIMIT 1) AS cargo",
                 "FROM asistencias_actas aa",
                 "INNER JOIN actas a ON aa.acta_id = a.id",
                 "INNER JOIN miembros m ON aa.miembro_id = m.id",
-                "LEFT JOIN comision_miembros cm ON cm.comision_id = a.comision_id AND cm.miembro_id = aa.miembro_id",
                 "WHERE aa.acta_id = ?",
                 "ORDER BY m.nombre_apellidos");
         

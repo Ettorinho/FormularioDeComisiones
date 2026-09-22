@@ -211,6 +211,7 @@
             const inicioMinutos = inicio[0] * 60 + inicio[1];
             const finMinutos = fin[0] * 60 + fin[1];
             if (finMinutos <= inicioMinutos) {
+                duracionInput.value = '';
                 return;
             }
 

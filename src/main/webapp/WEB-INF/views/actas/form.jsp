@@ -143,6 +143,7 @@
                     </div>
                     <div class="p-3">
                         <textarea class="form-control" id="observaciones" name="observaciones" rows="10" placeholder="Detalle aquí el resumen de la reunión, acuerdos y observaciones"></textarea>
+                        <div class="form-text">Máximo 20.000 caracteres.</div>
                     </div>
                 </div>
 

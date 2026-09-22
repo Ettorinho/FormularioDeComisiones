@@ -23,7 +23,7 @@ public class Acta {
     @PastOrPresent(message = "La fecha de reunión no puede ser futura")
     private LocalDate fechaReunion;
 
-    @Size(max = 500, message = "Las observaciones no pueden superar 500 caracteres")
+    @Size(max = 20000, message = "El resumen de la reunión no puede superar 20000 caracteres")
     private String observaciones;
     
     @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "La hora de inicio debe tener formato HH:mm")

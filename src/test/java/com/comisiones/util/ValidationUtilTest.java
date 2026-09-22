@@ -192,9 +192,9 @@ public class ValidationUtilTest {
         Acta a = new Acta();
         a.setComision(new Comision());
         a.setFechaReunion(LocalDate.now());
-        a.setObservaciones("X".repeat(501));
+        a.setObservaciones("X".repeat(20001));
         List<String> errors = ValidationUtil.validate(a);
-        assertTrue(errors.stream().anyMatch(e -> e.contains("500 caracteres")));
+        assertTrue(errors.stream().anyMatch(e -> e.contains("20000 caracteres")));
     }
 
     // ─────────────────────────────────────────────

@@ -59,6 +59,29 @@ class ActaGeneratorServiceTest {
         }
     }
 
+    @Test
+    void generarPdf_soportaTipoOtrosYSinFirmaDeducible() throws IOException {
+        Acta acta = createActa("Resumen breve.");
+        acta.setTipoReunion("OTROS");
+        acta.setTipoReunionOtrosDetalle("Sesión extraordinaria de diseño");
+        acta.setDuracion("");
+        acta.setExcusaAsistencia("");
+
+        List<AsistenciaActa> asistencias = List.of(
+                createAsistencia("María Labarta Bellostas", "MIEMBRO", false, "Ausencia justificada")
+        );
+
+        byte[] generated = service.generarPdf(acta, asistencias, 4);
+
+        try (PDDocument document = PDDocument.load(generated)) {
+            String text = new PDFTextStripper().getText(document);
+            assertTrue(text.contains("Sin asistentes registrados."));
+            assertTrue(text.contains("Otros"));
+            assertTrue(text.contains("Sesión extraordinaria de diseño"));
+            assertTrue(!text.contains("Responsable") && !text.contains("María Labarta Bellostas"));
+        }
+    }
+
     private Acta createActa(String resumen) {
         Comision comision = new Comision();
         comision.setId(5L);
