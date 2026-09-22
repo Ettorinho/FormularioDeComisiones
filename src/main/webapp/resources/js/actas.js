@@ -117,6 +117,23 @@
         const tipoReunionOtrosRadio = document.getElementById('tipoReunionOtros');
         const tipoReunionOtrosDetalleContainer = document.getElementById('tipoReunionOtrosDetalleContainer');
         const tipoReunionOtrosDetalleInput = document.getElementById('tipoReunionOtrosDetalle');
+        const comisionNombreHeader = document.getElementById('comisionNombreHeader');
+
+        function actualizarComisionHeader() {
+            if (!comisionNombreHeader || !comisionSelect) {
+                return;
+            }
+
+            // Si el campo de comisión está bloqueado (input hidden por preselección),
+            // el nombre ya viene renderizado desde el servidor y no debe tocarse.
+            if (comisionSelect.tagName !== 'SELECT') {
+                return;
+            }
+
+            const opcionSeleccionada = comisionSelect.options[comisionSelect.selectedIndex];
+            const nombre = opcionSeleccionada && opcionSeleccionada.value ? opcionSeleccionada.textContent.trim() : '';
+            comisionNombreHeader.textContent = nombre || 'Seleccione una comisión';
+        }
 
         function cargarMiembros(comisionId) {
             if (!comisionId) {
@@ -227,6 +244,7 @@
 
         comisionSelect.addEventListener('change', function () {
             cargarMiembros(comisionSelect.value);
+            actualizarComisionHeader();
         });
 
         form.addEventListener('submit', function (event) {
@@ -301,6 +319,7 @@
                 if (comisionSelect && comisionSelect.tagName === 'SELECT') {
                     comisionSelect.value = '';
                     renderInfo(miembrosContainer, 'Seleccione una comisión para cargar los miembros');
+                    actualizarComisionHeader();
                 } else {
                     // Comisión bloqueada (input oculto): solo reiniciamos las asistencias ya cargadas
                     window.limpiarTodo();
@@ -346,6 +365,7 @@
 
         resetFecha();
         updateTipoReunionOtros();
+        actualizarComisionHeader();
 
         document.querySelectorAll('input[name="tipoReunion"]').forEach(function (radio) {
             radio.addEventListener('change', updateTipoReunionOtros);
