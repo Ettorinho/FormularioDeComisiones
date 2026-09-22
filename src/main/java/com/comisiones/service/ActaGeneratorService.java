@@ -274,19 +274,21 @@ public class ActaGeneratorService {
         drawCentered(content, "SECTOR DE BARBASTRO", MARGIN, bottom + 7f, leftWidth, PDType1Font.HELVETICA_BOLD, SMALL_FONT_SIZE);
 
         float centerX = MARGIN + leftWidth;
-        drawCentered(content, "ACTA DE REUNIÓN:", centerX, top - 18f, centerWidth, PDType1Font.HELVETICA_BOLD, TITLE_FONT_SIZE);
-        drawCentered(content, DOCUMENT_CODE, centerX, top - 33f, centerWidth, PDType1Font.HELVETICA_BOLD, BODY_FONT_SIZE);
+        drawCentered(content, "ACTA DE REUNIÓN:", centerX, top - 20f, centerWidth, PDType1Font.HELVETICA_BOLD, TITLE_FONT_SIZE);
         String nombreComision = acta.getComision() != null ? acta.getComision().getNombre() : "Comisión sin nombre";
-        List<String> headerLines = wrapLine(nombreComision, centerWidth - 18f, PDType1Font.HELVETICA, BODY_FONT_SIZE);
-        float headerY = top - 49f;
+        List<String> headerLines = wrapLine(nombreComision, centerWidth - 18f, PDType1Font.HELVETICA_BOLD, BODY_FONT_SIZE);
+        float headerY = top - 36f;
         for (String line : headerLines) {
-            drawCentered(content, line, centerX, headerY, centerWidth, PDType1Font.HELVETICA, BODY_FONT_SIZE);
+            drawCentered(content, line, centerX, headerY, centerWidth, PDType1Font.HELVETICA_BOLD, BODY_FONT_SIZE);
             headerY -= 11f;
         }
 
+        // Recuadro derecho: código de documento, revisión y numeración de página,
+        // tal como aparece en el modelo oficial (docs/20251010 ... .pdf).
         float rightX = MARGIN + leftWidth + centerWidth;
-        drawCentered(content, "Revisión: " + REVISION, rightX, top - 25f, rightWidth, PDType1Font.HELVETICA_BOLD, BODY_FONT_SIZE);
-        drawCentered(content, "Página " + pageNumber + " de " + totalPages, rightX, top - 43f, rightWidth, PDType1Font.HELVETICA_BOLD, BODY_FONT_SIZE);
+        drawCentered(content, DOCUMENT_CODE, rightX, top - 20f, rightWidth, PDType1Font.HELVETICA_BOLD, SMALL_FONT_SIZE);
+        drawCentered(content, "Revisión: " + REVISION, rightX, top - 34f, rightWidth, PDType1Font.HELVETICA_BOLD, SMALL_FONT_SIZE);
+        drawCentered(content, "Página " + pageNumber + " de " + totalPages, rightX, top - 48f, rightWidth, PDType1Font.HELVETICA_BOLD, SMALL_FONT_SIZE);
     }
 
     private List<String> buildDetallesLines(Acta acta) throws IOException {
@@ -436,11 +438,11 @@ public class ActaGeneratorService {
         XWPFTableCell center = row.getCell(1);
         clearCell(center);
         appendCentered(center, "ACTA DE REUNIÓN:", true, 12);
-        appendCentered(center, DOCUMENT_CODE, true, 10);
-        appendCentered(center, acta.getComision() != null ? acta.getComision().getNombre() : "Comisión sin nombre", false, 10);
+        appendCentered(center, acta.getComision() != null ? acta.getComision().getNombre() : "Comisión sin nombre", true, 10);
 
         XWPFTableCell right = row.getCell(2);
         clearCell(right);
+        appendCentered(right, DOCUMENT_CODE, true, 9);
         appendCentered(right, "Revisión: " + REVISION, true, 9);
         XWPFParagraph pageParagraph = right.addParagraph();
         pageParagraph.setAlignment(ParagraphAlignment.CENTER);
