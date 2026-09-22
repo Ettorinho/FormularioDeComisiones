@@ -5,7 +5,7 @@
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
 <div class="container mt-4 mb-5">
-    <nav aria-label="breadcrumb">
+    <nav aria-label="breadcrumb" class="no-print">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/">Inicio</a></li>
             <li class="breadcrumb-item active">Nueva Acta</li>
@@ -13,7 +13,7 @@
     </nav>
 
     <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-primary text-white no-print">
             <h3 class="mb-0">
                 <i class="bi bi-file-earmark-plus"></i> Crear Acta de Reunión
             </h3>
@@ -27,9 +27,39 @@
             <form id="formActa" method="post" action="${pageContext.request.contextPath}/actas/save" enctype="multipart/form-data">
                 <input type="hidden" name="csrfToken" value="${csrfToken}" />
 
+                <!-- Encabezado estilo documento oficial: logo | ACTA DE REUNIÓN + comisión | código/revisión -->
+                <div class="border rounded mb-4 overflow-hidden acta-doc-header">
+                    <div class="row g-0 align-items-stretch">
+                        <div class="col-3 border-end d-flex flex-column align-items-center justify-content-center text-center p-2">
+                            <img src="${pageContext.request.contextPath}/resources/images/logo_salud.png"
+                                 alt="Servicio Aragonés de Salud" style="max-height:46px; width:auto;">
+                            <div class="fw-bold small mt-1">SECTOR DE BARBASTRO</div>
+                        </div>
+                        <div class="col-6 border-end d-flex flex-column align-items-center justify-content-center text-center p-2">
+                            <div class="fw-bold">ACTA DE REUNIÓN:</div>
+                            <div class="fw-bold" id="comisionNombreHeader">
+                                <c:choose>
+                                    <c:when test="${not empty comisionPreseleccionada}">
+                                        <c:forEach var="comision" items="${comisiones}">
+                                            <c:if test="${comisionPreseleccionada == comision.id}">
+                                                <c:out value="${comision.nombre}"/>
+                                            </c:if>
+                                        </c:forEach>
+                                    </c:when>
+                                    <c:otherwise>Seleccione una comisión</c:otherwise>
+                                </c:choose>
+                            </div>
+                        </div>
+                        <div class="col-3 d-flex flex-column align-items-center justify-content-center text-center p-2 small">
+                            <div class="fw-bold">MC-2_SA(P)E</div>
+                            <div class="fw-bold">Revisión: A</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="border rounded mb-4">
                     <div class="bg-light border-bottom px-3 py-2 text-center fw-bold">
-                        ACTA DE REUNIÓN
+                        DATOS DE LA REUNIÓN
                     </div>
                     <div class="p-3">
                         <div class="mb-3">
@@ -49,9 +79,7 @@
                                     <select class="form-select" id="comisionId" name="comisionId" required>
                                         <option value="">Seleccione una comisión...</option>
                                         <c:forEach var="comision" items="${comisiones}">
-                                            <option value="${comision.id}">
-                                                <c:out value="${comision.nombre}"/>
-                                            </option>
+                                            <option value="${comision.id}"><c:out value="${comision.nombre}"/></option>
                                         </c:forEach>
                                     </select>
                                 </c:otherwise>
@@ -147,7 +175,7 @@
                     </div>
                 </div>
 
-                <div class="mb-4">
+                <div class="mb-4 no-print">
                     <label for="pdfFile" class="form-label fw-bold">
                         <i class="bi bi-file-pdf text-danger"></i> Adjuntar documento PDF (opcional)
                     </label>
@@ -156,7 +184,7 @@
                     <div id="pdfInfo" class="mt-2" style="display: none;"></div>
                 </div>
 
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between no-print">
                     <a href="${pageContext.request.contextPath}/" class="btn btn-secondary">
                         <i class="bi bi-x-circle"></i> Cancelar
                     </a>
