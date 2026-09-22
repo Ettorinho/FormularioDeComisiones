@@ -629,7 +629,8 @@ public class ActaGeneratorService {
 
     private List<String> wrapParagraphs(String text, float width, PDType1Font font, float fontSize) throws IOException {
         List<String> lines = new ArrayList<>();
-        String[] paragraphs = text.replace("\r", "").split("\n", -1);
+        String sanitized = sanitizeForPdf(text);
+        String[] paragraphs = sanitized.replace("\r", "").split("\n", -1);
         for (int i = 0; i < paragraphs.length; i++) {
             lines.addAll(wrapLine(paragraphs[i], width, font, fontSize));
             if (i < paragraphs.length - 1) {
@@ -640,12 +641,13 @@ public class ActaGeneratorService {
     }
 
     private List<String> wrapLine(String text, float width, PDType1Font font, float fontSize) throws IOException {
-        if (isBlank(text)) {
+        String sanitized = sanitizeForPdf(text);
+        if (isBlank(sanitized)) {
             return Collections.singletonList("");
         }
         List<String> lines = new ArrayList<>();
         StringBuilder current = new StringBuilder();
-        for (String word : text.trim().split("\\s+")) {
+        for (String word : sanitized.trim().split("\\s+")) {
             if (font.getStringWidth(word) / 1000f * fontSize > width) {
                 if (current.length() > 0) {
                     lines.add(current.toString());
@@ -689,6 +691,79 @@ public class ActaGeneratorService {
         return chunks;
     }
 
+    /**
+     * Sanitiza el texto de entrada para que sea seguro de dibujar en el PDF con
+     * fuentes estándar (Helvetica) y codificación WinAnsiEncoding.
+     * <p>
+     * Los datos guardados en base de datos (observaciones, resumen, asistentes, etc.)
+     * pueden contener caracteres tipográficos especiales pegados desde Word/Outlook
+     * (comillas curvas, guiones largos, espacios de no separación, caracteres de
+     * control invisibles como U+0087, etc.) que no existen en WinAnsiEncoding y que
+     * provocan un IllegalArgumentException al intentar dibujarlos (ver PDFBox
+     * PDType1Font#encode). Este método los sustituye por equivalentes ASCII seguros
+     * o los elimina, evitando el error 500 al generar el PDF.
+     */
+    private String sanitizeForPdf(String text) {
+        if (text == null) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder(text.length());
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            switch (c) {
+                case '\u2018':
+                case '\u2019':
+                case '\u201A':
+                case '\u2032':
+                    sb.append('\'');
+                    break;
+                case '\u201C':
+                case '\u201D':
+                case '\u201E':
+                case '\u2033':
+                    sb.append('"');
+                    break;
+                case '\u2013':
+                    sb.append('-');
+                    break;
+                case '\u2014':
+                    sb.append("--");
+                    break;
+                case '\u2026':
+                    sb.append("...");
+                    break;
+                case '\u00A0':
+                case '\u2007':
+                case '\u202F':
+                    sb.append(' ');
+                    break;
+                case '\u2022':
+                    sb.append('-');
+                    break;
+                case '\t':
+                case '\n':
+                    sb.append(c);
+                    break;
+                default:
+                    if (c < 0x20) {
+                        // Carácter de control (excepto tab/nueva línea ya tratados arriba): se descarta.
+                        break;
+                    }
+                    if (c >= 0x80 && c <= 0x9F) {
+                        // Rango C1: no representable en WinAnsiEncoding, se descarta.
+                        break;
+                    }
+                    if (c > 0xFF) {
+                        // Fuera del rango Latin-1/WinAnsi (p. ej. emojis, símbolos exóticos): se sustituye.
+                        sb.append('?');
+                        break;
+                    }
+                    sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
     private void drawBox(PDPageContentStream content, float x, float y, float width, float height) throws IOException {
         content.setLineWidth(0.8f);
         content.addRect(x, y, width, height);
@@ -710,16 +785,18 @@ public class ActaGeneratorService {
     }
 
     private void drawLeft(PDPageContentStream content, String text, float x, float y, PDType1Font font, float fontSize) throws IOException {
+        String safeText = sanitizeForPdf(text);
         content.beginText();
         content.setFont(font, fontSize);
         content.newLineAtOffset(x, y);
-        content.showText(text);
+        content.showText(safeText);
         content.endText();
     }
 
     private void drawCentered(PDPageContentStream content, String text, float x, float y, float width, PDType1Font font, float fontSize) throws IOException {
-        float textWidth = font.getStringWidth(text) / 1000f * fontSize;
-        drawLeft(content, text, x + Math.max(0f, (width - textWidth) / 2f), y, font, fontSize);
+        String safeText = sanitizeForPdf(text);
+        float textWidth = font.getStringWidth(safeText) / 1000f * fontSize;
+        drawLeft(content, safeText, x + Math.max(0f, (width - textWidth) / 2f), y, font, fontSize);
     }
 
     private String formatDate(LocalDate date) {
