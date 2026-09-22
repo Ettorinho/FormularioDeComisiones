@@ -108,8 +108,15 @@
         const pdfInfo = document.getElementById('pdfInfo');
         const btnGuardar = document.getElementById('btnGuardar');
         const btnLimpiar = document.getElementById('btnLimpiarActa');
-        const tituloInput = document.getElementById('titulo');
         const observacionesInput = document.getElementById('observaciones');
+        const horaInicioInput = document.getElementById('horaInicio');
+        const horaFinInput = document.getElementById('horaFin');
+        const duracionInput = document.getElementById('duracion');
+        const ordenDiaInput = document.getElementById('ordenDia');
+        const excusaAsistenciaInput = document.getElementById('excusaAsistencia');
+        const tipoReunionOtrosRadio = document.getElementById('tipoReunionOtros');
+        const tipoReunionOtrosDetalleContainer = document.getElementById('tipoReunionOtrosDetalleContainer');
+        const tipoReunionOtrosDetalleInput = document.getElementById('tipoReunionOtrosDetalle');
 
         function cargarMiembros(comisionId) {
             if (!comisionId) {
@@ -179,6 +186,45 @@
             fechaInput.setAttribute('max', today);
         }
 
+        function updateTipoReunionOtros() {
+            if (!tipoReunionOtrosDetalleContainer) {
+                return;
+            }
+            const checked = tipoReunionOtrosRadio && tipoReunionOtrosRadio.checked;
+            tipoReunionOtrosDetalleContainer.style.display = checked ? 'block' : 'none';
+            if (!checked && tipoReunionOtrosDetalleInput) {
+                tipoReunionOtrosDetalleInput.value = '';
+            }
+        }
+
+        function updateDuracion() {
+            if (!horaInicioInput || !horaFinInput || !duracionInput || !horaInicioInput.value || !horaFinInput.value) {
+                return;
+            }
+
+            const inicio = horaInicioInput.value.split(':').map(Number);
+            const fin = horaFinInput.value.split(':').map(Number);
+            if (inicio.length < 2 || fin.length < 2) {
+                return;
+            }
+
+            const inicioMinutos = inicio[0] * 60 + inicio[1];
+            const finMinutos = fin[0] * 60 + fin[1];
+            if (finMinutos <= inicioMinutos) {
+                duracionInput.value = '';
+                return;
+            }
+
+            const diferencia = finMinutos - inicioMinutos;
+            const horas = Math.floor(diferencia / 60);
+            const minutos = diferencia % 60;
+            duracionInput.value = horas > 0 && minutos > 0
+                ? horas + 'h ' + minutos + ' min'
+                : horas > 0
+                    ? horas + 'h'
+                    : minutos + ' min';
+        }
+
         comisionSelect.addEventListener('change', function () {
             cargarMiembros(comisionSelect.value);
         });
@@ -186,7 +232,6 @@
         form.addEventListener('submit', function (event) {
             const comisionId = comisionSelect.value;
             const fechaReunion = fechaInput.value;
-            const titulo = document.getElementById('titulo').value.trim();
             const radiosChecked = document.querySelectorAll('input[type="radio"][name^="asistencia_"]:checked');
             const pdfFile = pdfInput.files[0];
 
@@ -196,15 +241,15 @@
                 return;
             }
 
-            if (!titulo || titulo.length < 5) {
-                event.preventDefault();
-                window.alert('Por favor, introduzca un título para el acta (mínimo 5 caracteres)');
-                return;
-            }
-
             if (!fechaReunion) {
                 event.preventDefault();
                 window.alert('Por favor, seleccione la fecha de reunión');
+                return;
+            }
+
+            if (tipoReunionOtrosRadio && tipoReunionOtrosRadio.checked && !tipoReunionOtrosDetalleInput.value.trim()) {
+                event.preventDefault();
+                window.alert('Por favor, especifique el detalle del tipo de reunión "Otros"');
                 return;
             }
 
@@ -261,13 +306,34 @@
                     window.limpiarTodo();
                 }
 
-                if (tituloInput) {
-                    tituloInput.value = '';
-                }
-
                 if (observacionesInput) {
                     observacionesInput.value = '';
                 }
+
+                if (horaInicioInput) {
+                    horaInicioInput.value = '';
+                }
+
+                if (horaFinInput) {
+                    horaFinInput.value = '';
+                }
+
+                if (duracionInput) {
+                    duracionInput.value = '';
+                }
+
+                if (ordenDiaInput) {
+                    ordenDiaInput.value = '';
+                }
+
+                if (excusaAsistenciaInput) {
+                    excusaAsistenciaInput.value = '';
+                }
+
+                document.querySelectorAll('input[name="tipoReunion"]').forEach(function (radio) {
+                    radio.checked = false;
+                });
+                updateTipoReunionOtros();
 
                 resetFecha();
 
@@ -279,6 +345,19 @@
         }
 
         resetFecha();
+        updateTipoReunionOtros();
+
+        document.querySelectorAll('input[name="tipoReunion"]').forEach(function (radio) {
+            radio.addEventListener('change', updateTipoReunionOtros);
+        });
+
+        if (horaInicioInput) {
+            horaInicioInput.addEventListener('change', updateDuracion);
+        }
+
+        if (horaFinInput) {
+            horaFinInput.addEventListener('change', updateDuracion);
+        }
 
         if (comisionSelect.value) {
             cargarMiembros(comisionSelect.value);

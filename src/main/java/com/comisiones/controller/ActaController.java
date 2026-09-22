@@ -73,10 +73,6 @@ public class ActaController extends HttpServlet {
                 generatePdfActa(request, response);
             } else if (pathInfo.equals("/generate-word")) {
                 generateWordActa(request, response);
-            } else if (pathInfo.equals("/generate-blank-template")) {
-                generateBlankTemplate(request, response);
-            } else if (pathInfo.equals("/generate-blank-template-word")) {
-                generateBlankTemplateWord(request, response);
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -159,8 +155,14 @@ public class ActaController extends HttpServlet {
         // Obtener parámetros principales
         String comisionIdStr = request.getParameter("comisionId");
         String fechaReunionStr = request.getParameter("fechaReunion");
-        String observaciones = request.getParameter("observaciones");
-        String titulo = request.getParameter("titulo");
+        String observaciones = normalizeText(request.getParameter("observaciones"));
+        String horaInicio = normalizeText(request.getParameter("horaInicio"));
+        String horaFin = normalizeText(request.getParameter("horaFin"));
+        String duracion = normalizeText(request.getParameter("duracion"));
+        String tipoReunion = normalizeText(request.getParameter("tipoReunion"));
+        String tipoReunionOtrosDetalle = normalizeText(request.getParameter("tipoReunionOtrosDetalle"));
+        String ordenDia = normalizeText(request.getParameter("ordenDia"));
+        String excusaAsistencia = normalizeText(request.getParameter("excusaAsistencia"));
         
         // Procesar archivo PDF
         Part pdfPart = null;
@@ -209,11 +211,6 @@ public class ActaController extends HttpServlet {
             return;
         }
         
-        if (titulo == null || titulo.trim().isEmpty()) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "El título del acta es obligatorio");
-            return;
-        }
-        
         Long comisionId = ServletHelper.parseIdSafely(comisionIdStr);
         if (comisionId == null) {
             ServletHelper.sendBadRequest(response, "ID de comisión no válido: " + comisionIdStr);
@@ -237,13 +234,34 @@ public class ActaController extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, AppConstants.ERROR_INVALID_DATE);
             return;
         }
+
+        if (!horaInicio.isEmpty() && !horaFin.isEmpty() && duracion.isEmpty()) {
+            duracion = calcularDuracion(horaInicio, horaFin);
+        }
+
+        if ("OTROS".equals(tipoReunion) && tipoReunionOtrosDetalle.isEmpty()) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Debe indicar el detalle del tipo de reunión 'Otros'");
+            return;
+        }
+
+        if (!isTipoReunionValido(tipoReunion)) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "El tipo de reunión indicado no es válido");
+            return;
+        }
         
         // Crear acta
         Acta acta = new Acta();
         acta.setComision(comision);
-        acta.setTitulo(titulo.trim());
+        acta.setTitulo(generarTituloActa(comision, fechaReunion));
         acta.setFechaReunion(fechaReunion);
         acta.setObservaciones(observaciones);
+        acta.setHoraInicio(horaInicio);
+        acta.setHoraFin(horaFin);
+        acta.setDuracion(duracion);
+        acta.setTipoReunion(tipoReunion);
+        acta.setTipoReunionOtrosDetalle(tipoReunionOtrosDetalle);
+        acta.setOrdenDia(ordenDia);
+        acta.setExcusaAsistencia(excusaAsistencia);
         acta.setFechaCreacion(LocalDateTime.now());
         
         // Añadir PDF si existe
@@ -577,67 +595,48 @@ public class ActaController extends HttpServlet {
         }
     }
 
-    /**
-     * Genera y descarga una plantilla de acta completamente vacía en PDF.
-     */
-    private void generateBlankTemplate(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    private String normalizeText(String value) {
+        return value == null ? "" : value.trim();
+    }
 
-        AppLogger.debug("Generando plantilla de acta vacía");
+    private boolean isTipoReunionValido(String tipoReunion) {
+        return tipoReunion.isEmpty()
+                || "CALIDAD".equals(tipoReunion)
+                || "INTERNA".equals(tipoReunion)
+                || "OTROS".equals(tipoReunion);
+    }
 
-        ActaGeneratorService generatorService = new ActaGeneratorService();
-
+    private String calcularDuracion(String horaInicio, String horaFin) {
         try {
-            byte[] pdfBytes = generatorService.generarPlantillaVaciaPdf();
-
-            response.setContentType(AppConstants.PDF_MIME_TYPE);
-            response.setHeader("Content-Disposition", "attachment; filename=\"Plantilla_Acta_Vacia.pdf\"");
-            response.setContentLength(pdfBytes.length);
-
-            try (OutputStream out = response.getOutputStream()) {
-                out.write(pdfBytes);
-                out.flush();
+            int inicioMinutos = Integer.parseInt(horaInicio.substring(0, 2)) * 60 + Integer.parseInt(horaInicio.substring(3, 5));
+            int finMinutos = Integer.parseInt(horaFin.substring(0, 2)) * 60 + Integer.parseInt(horaFin.substring(3, 5));
+            if (finMinutos <= inicioMinutos) {
+                return "";
             }
 
-            AppLogger.debug("Plantilla de acta vacía generada y descargada");
-            AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
-                    "DESCARGAR", "PLANTILLA", null, "Descargó la plantilla de acta vacía");
-
-        } catch (IOException e) {
-            AppLogger.error("Error al generar la plantilla de acta vacía", e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al generar la plantilla");
+            int duracionMinutos = finMinutos - inicioMinutos;
+            int horas = duracionMinutos / 60;
+            int minutos = duracionMinutos % 60;
+            if (horas > 0 && minutos > 0) {
+                return horas + "h " + minutos + " min";
+            }
+            if (horas > 0) {
+                return horas + "h";
+            }
+            return minutos + " min";
+        } catch (RuntimeException e) {
+            AppLogger.debug("No se pudo calcular la duración automáticamente: " + e.getMessage());
+            return "";
         }
     }
 
-    /**
-     * Genera y descarga una plantilla de acta completamente vacía en Word (.docx).
-     */
-    private void generateBlankTemplateWord(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-
-        AppLogger.debug("Generando plantilla de acta vacía Word");
-
-        ActaGeneratorService generatorService = new ActaGeneratorService();
-
-        try {
-            byte[] wordBytes = generatorService.generarPlantillaVaciaWord();
-
-            response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-            response.setHeader("Content-Disposition", "attachment; filename=\"Plantilla_Acta_Vacia.docx\"");
-            response.setContentLength(wordBytes.length);
-
-            try (OutputStream out = response.getOutputStream()) {
-                out.write(wordBytes);
-                out.flush();
-            }
-
-            AppLogger.debug("Plantilla de acta vacía Word generada y descargada");
-            AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
-                    "DESCARGAR", "PLANTILLA_WORD", null, "Descargó la plantilla de acta vacía Word");
-
-        } catch (IOException e) {
-            AppLogger.error("Error al generar la plantilla de acta vacía Word", e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al generar la plantilla Word");
+    private String generarTituloActa(Comision comision, LocalDate fechaReunion) {
+        String base = "Acta " + fechaReunion.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " - ";
+        String nombreComision = comision != null && comision.getNombre() != null ? comision.getNombre().trim() : "Comisión";
+        int maxNombre = Math.max(0, 200 - base.length());
+        if (nombreComision.length() > maxNombre) {
+            nombreComision = maxNombre > 3 ? nombreComision.substring(0, maxNombre - 3).trim() + "..." : nombreComision.substring(0, maxNombre);
         }
+        return base + nombreComision;
     }
 }

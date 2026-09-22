@@ -34,33 +34,40 @@
                 
                 <div class="card-body">
                     
-                    <!-- Información General -->
-                    <div class="acta-header mb-4">
-                        <h4 class="text-primary mb-3">
-                            <i class="bi bi-building"></i> <c:out value="${acta.comision.nombre}"/>
-                        </h4>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <c:if test="${not empty acta.comision.area}">
-                                    <p class="mb-2">
-                                        <strong><i class="bi bi-diagram-3"></i> Área: </strong>
-                                       <span class="badge bg-info ms-2"><c:out value="${acta.comision.area.descripcion}"/></span>
-                                    </p>
-                                </c:if>
-                                <p class="mb-2">
-                                    <strong><i class="bi bi-calendar-event"></i> Fecha de Reunión:</strong>
-                                    <span class="ms-2">
-                                        <c:out value="${acta.fechaReunionFormateada}"/>
-                                    </span>
-                                </p>
+                    <div class="border rounded mb-4">
+                        <div class="bg-light border-bottom px-3 py-2 fw-bold text-center">
+                            ACTA DE REUNIÓN · <c:out value="${acta.comision.nombre}"/>
+                        </div>
+                        <div class="p-3">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <strong>Fecha y hora:</strong><br>
+                                    <span><c:out value="${acta.fechaReunionFormateada}"/></span>
+                                    <c:if test="${not empty acta.horaInicio}">
+                                        <span> <c:out value="${acta.horaInicio}"/>h</span>
+                                    </c:if>
+                                    <c:if test="${not empty acta.horaFin}">
+                                        <span> - <c:out value="${acta.horaFin}"/>h</span>
+                                    </c:if>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Duración:</strong><br>
+                                    <c:out value="${empty acta.duracion ? '—' : acta.duracion}"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Tipo de reunión:</strong><br>
+                                    <c:choose>
+                                        <c:when test="${acta.tipoReunion == 'CALIDAD'}">Revisión del Sist. Calidad</c:when>
+                                        <c:when test="${acta.tipoReunion == 'INTERNA'}">Reunión Interna</c:when>
+                                        <c:when test="${acta.tipoReunion == 'OTROS'}">
+                                            Otros<c:if test="${not empty acta.tipoReunionOtrosDetalle}">: <c:out value="${acta.tipoReunionOtrosDetalle}"/></c:if>
+                                        </c:when>
+                                        <c:otherwise>—</c:otherwise>
+                                    </c:choose>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <p class="mb-0 text-muted">
-                                    <small>
-                                        <i class="bi bi-clock-history"></i> Acta creada el: 
-                                        <c:out value="${acta.fechaCreacionFormateada}"/>
-                                    </small>
-                                </p>
+                            <div class="mt-3 text-muted">
+                                <small><i class="bi bi-clock-history"></i> Acta creada el: <c:out value="${acta.fechaCreacionFormateada}"/></small>
                             </div>
                         </div>
                     </div>
@@ -211,10 +218,46 @@
                         </div>
                     </div>
 
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2 mb-3">
+                            <i class="bi bi-list-ul"></i> Orden del día
+                        </h5>
+                        <c:choose>
+                            <c:when test="${not empty acta.ordenDia}">
+                                <div class="observaciones-box">
+                                    <p class="mb-0" style="white-space: pre-wrap; line-height: 1.6;"><c:out value="${acta.ordenDia}"/></p>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <p class="text-muted fst-italic">
+                                    <i class="bi bi-info-circle"></i> No se registró orden del día
+                                </p>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2 mb-3">
+                            <i class="bi bi-person-x"></i> Excusa asistencia
+                        </h5>
+                        <c:choose>
+                            <c:when test="${not empty acta.excusaAsistencia}">
+                                <div class="observaciones-box">
+                                    <p class="mb-0" style="white-space: pre-wrap; line-height: 1.6;"><c:out value="${acta.excusaAsistencia}"/></p>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <p class="text-muted fst-italic">
+                                    <i class="bi bi-info-circle"></i> No se registró excusa de asistencia general
+                                </p>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+
                     <!-- Observaciones -->
                     <div class="mb-4">
                         <h5 class="border-bottom pb-2 mb-3">
-                            <i class="bi bi-file-text"></i> Observaciones / Notas de la Reunión
+                            <i class="bi bi-file-text"></i> Resumen de la reunión
                         </h5>
                         <c:choose>
                             <c:when test="${not empty acta.observaciones}">

@@ -2,17 +2,21 @@
 
 ## Descripción de la Funcionalidad
 
-El sistema de gestión de comisiones ahora cuenta con la capacidad de generar automáticamente documentos de actas en formato PDF y Word (.docx). Esta funcionalidad permite crear documentos profesionales y autocontenidos con toda la información de un acta, incluyendo:
+El sistema de gestión de comisiones genera automáticamente documentos de actas en formato PDF y Word (.docx) a partir de un único diseño oficial. Ese diseño se basa exclusivamente en el análisis directo del PDF real `docs/20251010 Grupo de trabajo Sistema Registro y Certifcacion.pdf`, que actúa como fuente de verdad para el formulario de creación y para los documentos descargados.
+
+Los documentos generados incluyen:
 
 - Información de la comisión
 - Fecha de reunión
-- Observaciones
-- Tabla completa de asistencias con justificaciones
-- Fecha de generación del documento
+- Hora de inicio y hora de fin
+- Duración
+- Tipo de reunión
+- Excusa de asistencia general
+- Orden del día
+- Resumen de la reunión
+- Listado de asistencias con justificaciones individuales
 
-Los documentos generados son independientes de la funcionalidad existente de adjuntar PDFs a las actas. Ambas opciones coexisten y pueden usarse según las necesidades.
-
-Además, el servicio genera una **plantilla de acta en blanco** en PDF y `.docx` mediante los métodos `generarPlantillaVaciaPdf()` y `generarPlantillaVaciaWord()`. Desde septiembre de 2026 esta plantilla ya no se basa en una simple aproximación visual a una captura, sino en el **análisis directo del archivo oficial** `/home/runner/work/FormularioDeComisiones/FormularioDeComisiones/docs/Modelo acta.doc`.
+Los documentos generados siguen coexistiendo con la funcionalidad de adjuntar un PDF externo a una acta, pero **ya no existe una descarga separada de plantilla en blanco**: el propio formulario de creación de acta hace ese papel.
 
 ## Dependencias Utilizadas
 
@@ -72,48 +76,47 @@ Usuario → Vista JSP → ActaController → ActaGeneratorService → Documento 
    - El controller establece los headers HTTP apropiados
    - Envía el documento al navegador para descarga
 
-## Plantilla en blanco basada en `docs/Modelo acta.doc`
+## Diseño oficial unificado basado en el PDF real de referencia
 
-### Cómo se analizó el modelo oficial
+### Cómo se analizó el documento oficial
 
-Para reconstruir fielmente la plantilla se analizó directamente `docs/Modelo acta.doc` con varias herramientas del entorno:
+Para reconstruir fielmente el diseño se analizó directamente `docs/20251010 Grupo de trabajo Sistema Registro y Certifcacion.pdf` con Apache PDFBox y extracción posicional de texto:
 
-- `file`: confirmó que el origen es un documento Word 97-2003 OLE2 de una sola página.
-- `antiword` y `catdoc`: permitieron recuperar el texto lineal y validar la distribución general de filas y columnas.
-- `LibreOffice --headless --convert-to docx`: permitió inspeccionar el XML resultante (`word/header1.xml` y `word/document.xml`) para extraer anchos de columnas, `gridSpan`, `vMerge`, alturas de fila y presencia del logo.
+- Se verificó que el PDF de referencia tiene **3 páginas**.
+- Se extrajeron literalmente los bloques `ACTA DE REUNIÓN`, `MC-2_SA(P)E`, `Revisión: A`, `Página X de Y`, `ASISTENTES`, `Fecha y Hora`, `Duración`, `TIPO REUNIÓN`, `Excusa asistencia`, `ORDEN DEL DÍA` y `RESUMEN DE LA REUNIÓN`.
+- Se tomó ese PDF como fuente única de verdad, descartando aproximaciones anteriores basadas en `docs/Modelo acta.doc` o en capturas.
 
-### Estructura real extraída del `.doc`
+### Estructura real extraída del PDF
 
-El modelo oficial se compone de **dos tablas principales**:
+El documento oficial se compone de:
 
-1. **Cabecera de 1 fila y 3 columnas**
-   - Columna izquierda: logo + texto `SECTOR DE BARBASTRO`
-   - Columna central: `ACTA DE REUNIÓN`
-   - Columna derecha: `Revisión A` y `Página 1 de 1`
-   - Proporciones recuperadas: **3001 / 5137 / 2228**
+1. **Cabecera de 3 columnas**
+   - Izquierda: logo oficial del Servicio Aragonés de Salud + `SECTOR DE BARBASTRO`
+   - Centro: `ACTA DE REUNIÓN`, código `MC-2_SA(P)E` y nombre de la comisión o grupo
+   - Derecha: `Revisión: A` y `Página X de Y`
 
-2. **Tabla principal de 7 filas y 3 columnas base**
-   - Fila 1: `COMISIÓN DE` ocupando las 3 columnas
-   - Fila 2: `Fecha :` | `Hora inicio:` | `Hora fin:`
-   - Fila 3: `ASISTENTES` (columna izquierda) y `EXCUSAN SU ASISTENCIA` ocupando las columnas 2-3
-   - Filas 4-5: zona en blanco, con **merge vertical en la primera columna** y **merge horizontal en las columnas 2-3**
-   - Fila 6: `ORDEN DEL DIA:` ocupando las 3 columnas
-   - Fila 7: `RESUMEN DE LA REUNION:` ocupando las 3 columnas
-   - Proporciones recuperadas: **4930 / 2553 / 2307**
+2. **Bloque principal superior**
+   - Columna izquierda: `ASISTENTES (Nombre y cargo)`
+   - Columna derecha: `Fecha y Hora`, `Duración`, `TIPO REUNIÓN` y `Excusa asistencia`
 
-### Implementación actual de la plantilla
+3. **Bloques de contenido**
+   - `ORDEN DEL DÍA`
+   - `RESUMEN DE LA REUNIÓN`
+   - En la última página, bloque de firma si hay firmante deducible de la asistencia/cargo
 
-- **PDF (`generarPlantillaVaciaPdf`)**
-  - Reproduce la cabecera de 3 columnas y la tabla principal de 7 filas con sus merges equivalentes.
-  - Conserva los nombres de campos AcroForm existentes: `nombreGrupo`, `fecha`, `horaInicio`, `horaFin`, `asistentes`, `excusaAsistencia`, `ordenDelDia` y `resumenReunion`.
-  - Se eliminaron los antiguos campos de firma porque no forman parte del modelo oficial analizado.
-  - El documento sigue generándose completamente en memoria mediante `ByteArrayOutputStream`.
+### Implementación actual
 
-- **Word (`generarPlantillaVaciaWord`)**
-  - No usa `XWPFHeaderFooterPolicy`: la cabecera se construye como una **tabla normal en el cuerpo** para evitar problemas de renderizado de POI con tablas e imágenes en headers.
-  - Todas las tablas creadas aplican bordes visibles explícitos en `CTTblBorders`.
-  - La tabla principal usa `gridSpan` y `vMerge` para reproducir la estructura real del `.doc`.
-  - El documento sigue generándose completamente en memoria mediante `ByteArrayOutputStream`.
+- **PDF (`generarPdf`)**
+  - Dibuja directamente el layout oficial con PDFBox, sin AcroForm editable.
+  - Repite la cabecera en todas las páginas.
+  - Calcula previamente cuántas líneas de resumen caben por página para poder renderizar `Página X de Y` con el total real.
+  - Si el resumen es largo, crea tantas páginas adicionales como sea necesario.
+
+- **Word (`generarWord`)**
+  - Usa tablas con bordes explícitos (`CTTblBorders`) para replicar la estructura del PDF oficial.
+  - Inserta el logo oficial `src/main/resources/images/logo_salud.png`.
+  - Mantiene el mismo reparto lógico: cabecera, asistentes/detalles, orden del día y resumen.
+  - La paginación larga queda delegada al propio motor de Word.
 
 ### Fuentes, colores y sustituciones
 
@@ -129,44 +132,28 @@ Limitaciones conocidas:
 - En **PDF** se usan fuentes estándar de PDFBox (`Helvetica`, `Helvetica Bold`, `Helvetica Oblique`) como sustitutas de Arial/Tahoma/Verdana, porque esas fuentes no forman parte del core estándar de PDFBox.
 - En **`.docx`** la cabecera del modelo original estaba en el header del documento Word, pero se replica en el cuerpo por fiabilidad de Apache POI; visualmente mantiene la misma estructura de tabla.
 
-### Verificación recomendada de la plantilla
+### Nuevos campos persistidos en `actas`
 
-La verificación estructural mínima debe confirmar:
+La migración `V21__add_campos_acta_oficial.sql` añade, todos ellos como **nullable**:
 
-- 1 página en el PDF.
-- 8 campos AcroForm: `nombreGrupo`, `fecha`, `horaInicio`, `horaFin`, `asistentes`, `excusaAsistencia`, `ordenDelDia`, `resumenReunion`.
-- 2 tablas en el `.docx`: una para la cabecera y otra para el cuerpo.
-- 7 filas en la tabla principal del `.docx`.
-- `gridSpan` en las filas `COMISIÓN DE`, `ORDEN DEL DIA` y `RESUMEN DE LA REUNION`.
-- `vMerge` en la primera columna de las filas 4-5 del bloque de asistentes.
+- `hora_inicio`
+- `hora_fin`
+- `duracion`
+- `tipo_reunion`
+- `tipo_reunion_otros_detalle`
+- `orden_dia`
+- `excusa_asistencia`
 
-### Formato del PDF
+Esto permite que las actas históricas sigan funcionando sin backfill obligatorio.
 
-- **Fuente:** Helvetica (estándar PDF)
-- **Tamaños:**
-  - Título: 18pt en negrita
-  - Subtítulos: 14pt en negrita
-  - Texto normal: 12pt
-- **Márgenes:** 50 puntos en todos los lados
-- **Tabla de Asistencias:**
-  - 4 columnas: Nombre, DNI, Asistencia, Justificación
-  - Bordes visibles
-  - Encabezados en negrita
-- **Pie de Página:** Fecha de generación en 10pt
+### Verificación recomendada
 
-> Nota: esta sección describe `generarPdf()` (actas con datos reales). La plantilla en blanco usa una maquetación distinta basada en `docs/Modelo acta.doc`.
+La verificación mínima recomendada debe confirmar:
 
-### Formato del Word
-
-- **Título:** Centrado, 18pt en negrita
-- **Información:** Etiquetas en negrita (14pt), valores en texto normal (12pt)
-- **Tabla de Asistencias:**
-  - Encabezados en negrita
-  - 4 columnas con ancho automático
-  - Bordes visibles
-- **Pie de Página:** Alineado a la derecha, itálica, 10pt
-
-> Nota: esta sección describe `generarWord()` (actas con datos reales). La plantilla en blanco `.docx` replica la tabla del modelo oficial y no comparte esta estructura simple.
+- Que el formulario `/actas/new` contiene los bloques de fecha/hora, duración, tipo de reunión, excusa de asistencia, orden del día y resumen.
+- Que PDF y Word reutilizan el mismo diseño oficial.
+- Que un resumen largo provoca varias páginas en PDF con cabecera repetida y numeración `Página X de Y` coherente.
+- Que ya no existen las rutas ni botones de descarga de plantilla en blanco separada.
 
 ## Cómo Personalizar las Plantillas
 
@@ -510,85 +497,35 @@ No contiene datos de ninguna acta concreta almacenada en la base de datos.
 - Columna derecha: **"Revisión A"** y **"Página 1 de 1"**.
 
 **Cuerpo del documento**:
-1. Banda de título **"COMISIÓN DE"**.
-2. Fila con **"Fecha"**, **"Hora inicio"** y **"Hora fin"**.
-3. Dos columnas: **"ASISTENTES (Nombre y Cargo)"** y **"EXCUSAN SU ASISTENCIA (Nombre, Cargo y Razón de la no asistencia)"**.
-4. Bloque **"ORDEN DEL DÍA"**.
-5. Bloque **"RESUMEN DE LA REUNIÓN"**.
-6. Bloque de firma (Nombre, Cargo, Fecha/Hora cierre, Firma).
-
-En PDF, el bloque **Resumen** sigue siendo un `PDTextField` multilínea con scroll interno.
-
-#### Campos AcroForm del formulario
-
-| Campo                         | Tipo        | Descripción                                    |
-|-------------------------------|-------------|------------------------------------------------|
-| `nombreGrupo`                 | TextField   | Nombre del grupo/comisión                       |
-| `fecha`                       | TextField   | Fecha de la reunión                            |
-| `horaInicio`                  | TextField   | Hora de inicio                                 |
-| `horaFin`                     | TextField   | Hora de fin                                    |
-| `asistentes`                  | TextField   | Lista de asistentes (multilínea)               |
-| `excusaAsistencia`            | TextField   | Excusan su asistencia (multilínea)             |
-| `ordenDelDia`                 | TextField   | Orden del día (multilínea)                     |
-| `resumenReunion`              | TextField   | Resumen de la reunión (multilínea, con scroll) |
-| `firmaNombre`                 | TextField   | Nombre del firmante                            |
-| `firmaCargo`                  | TextField   | Cargo del firmante                             |
-| `firmaFechaCierre`            | TextField   | Fecha/hora de cierre                           |
+1. Cabecera con logo, `ACTA DE REUNIÓN`, código `MC-2_SA(P)E`, revisión y página.
+2. Bloque superior con `ASISTENTES` a la izquierda y `Fecha y Hora`, `Duración`, `TIPO REUNIÓN` y `Excusa asistencia` a la derecha.
+3. Bloque `ORDEN DEL DÍA`.
+4. Bloque `RESUMEN DE LA REUNIÓN`.
+5. Bloque de firma en la última página cuando puede deducirse un firmante a partir de las asistencias/cargos.
 
 ### Cómo se genera
 
 Los métodos responsables son:
-- `generarPlantillaVaciaPdf()` en `ActaGeneratorService.java`.
-- `generarPlantillaVaciaWord()` en `ActaGeneratorService.java`.
+- `generarPdf(Acta, List<AsistenciaActa>, int)` en `ActaGeneratorService.java`
+- `generarWord(Acta, List<AsistenciaActa>, int)` en `ActaGeneratorService.java`
 
-La versión PDF usa `PDAcroForm` y `PDTextField` de PDFBox, dibuja recuadros con `PDPageContentStream` e inserta el logo con `PDImageXObject.createFromByteArray()`.  
-La versión Word usa Apache POI (`XWPFDocument`, `XWPFTable`, `XWPFHeader`) para replicar el mismo encabezado y bloques.
-
-### Verificación de campos
-
-El PDF generado puede verificarse mediante la API de PDFBox:
-```java
-PDDocument doc = PDDocument.load(new File("Plantilla_Acta_Vacia.pdf"));
-PDAcroForm form = doc.getDocumentCatalog().getAcroForm();
-// form.getFields().size() → 10 campos
-for (PDField f : form.getFields()) {
-    System.out.println(f.getClass().getSimpleName() + ": " + f.getFullyQualifiedName());
-}
-// doc.getNumberOfPages() → 1 página
-doc.close();
-```
-
-El Word generado puede verificarse con Apache POI:
-```java
-XWPFDocument docx = new XWPFDocument(new FileInputStream("Plantilla_Acta_Vacia.docx"));
-System.out.println("Body tables: " + docx.getTables().size());
-XWPFHeader header = docx.getHeaderList().isEmpty() ? null : docx.getHeaderList().get(0);
-System.out.println("Header tables: " + (header != null ? header.getTables().size() : 0));
-docx.close();
-```
+La versión PDF usa `PDPageContentStream` para dibujar los recuadros y una fase previa de planificación para repartir el resumen en varias páginas y renderizar correctamente `Página X de Y`.  
+La versión Word usa Apache POI (`XWPFDocument`, `XWPFTable` y `CTTblBorders`) para replicar el mismo reparto visual con tablas.
 
 ### Verificación visual
 
 Al abrir PDF/Word:
-- El encabezado muestra logo + "SECTOR DE BARBASTRO", "ACTA DE REUNIÓN" y "Revisión A / Página 1 de 1".
-- Se visualizan los bloques de COMISIÓN, Fecha/Horas, Asistentes/Excusan, Orden del día, Resumen y Firma.
-- En PDF, todos los campos definidos son rellenables y `resumenReunion` mantiene scroll interno.
+- El encabezado muestra logo + `SECTOR DE BARBASTRO`, `ACTA DE REUNIÓN`, `MC-2_SA(P)E` y `Revisión: A`.
+- Se visualizan los bloques oficiales de asistentes, datos de reunión, orden del día y resumen.
+- Si el resumen es extenso, el PDF crea tantas páginas como haga falta y repite la cabecera con la numeración final correcta.
 
 ### Cómo se accede desde la UI
 
-- **Desde la vista de una comisión** (`/comisiones/view?id=...`): aparecen botones para descargar la plantilla en PDF y Word. Solo visibles para usuarios con rol ADMIN o GESTOR en comisiones activas.
-- **URL PDF:** `GET /actas/generate-blank-template` — `Content-Type: application/pdf`, `filename="Plantilla_Acta_Vacia.pdf"`.
-- **URL Word:** `GET /actas/generate-blank-template-word` — `Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document`, `filename="Plantilla_Acta_Vacia.docx"`.
+- **Formulario de creación**: `GET /actas/new`
+- **Descarga PDF oficial**: `GET /actas/generate-pdf?id={actaId}`
+- **Descarga Word oficial**: `GET /actas/generate-word?id={actaId}`
 
-### Ejemplo
-
-```
-GET http://localhost:8080/FormularioDeComisiones/actas/generate-blank-template
-→ descarga Plantilla_Acta_Vacia.pdf
-
-GET http://localhost:8080/FormularioDeComisiones/actas/generate-blank-template-word
-→ descarga Plantilla_Acta_Vacia.docx
-```
+Ya no existe una descarga separada de plantilla en blanco.
 
 ## Soporte y Contacto
 
