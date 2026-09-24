@@ -71,7 +71,7 @@
                             <td colspan="4" class="bg-light">
                                 <div class="ms-4">
                                     <label for="justificacion_${loop.index}" class="form-label">
-                                        <i class="bi bi-chat-left-text"></i> Justificación (opcional):
+                                        <i class="bi bi-chat-left-text"></i> Justificación <span class="text-danger">*</span>:
                                     </label>
                                     <textarea class="form-control" 
                                               id="justificacion_${loop.index}" 
