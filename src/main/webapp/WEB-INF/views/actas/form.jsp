@@ -150,7 +150,9 @@
                             </div>
                             <div class="p-3">
                                 <label for="excusaAsistencia" class="form-label fw-bold">Excusa asistencia</label>
-                                <textarea class="form-control" id="excusaAsistencia" name="excusaAsistencia" rows="6" placeholder="Bloque general de excusa de asistencia"></textarea>
+                                <textarea class="form-control bg-light" id="excusaAsistencia" name="excusaAsistencia" rows="6" readonly
+                                          placeholder="Se rellena automáticamente al justificar la ausencia de un miembro en la lista de asistentes"></textarea>
+                                <div class="form-text">Este campo se genera automáticamente a partir de las justificaciones indicadas en "Excusa asistencia" de la lista de asistentes.</div>
                             </div>
                         </div>
                     </div>
