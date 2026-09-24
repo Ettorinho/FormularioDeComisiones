@@ -54,20 +54,24 @@ public class ActaDAO {
     }
     
     /**
-     * Guarda una asistencia usando una conexión existente
+     * Guarda una asistencia usando una conexión existente.
+     * @param estadoAsistencia ASISTIO | EXCUSA | NO_ASISTIO (ver AsistenciaActa)
      */
-    private Long saveAsistencia(Connection conn, Long actaId, Long miembroId, 
-                               boolean asistio, String justificacion) throws SQLException {
+    private Long saveAsistencia(Connection conn, Long actaId, Long miembroId,
+                               String estadoAsistencia, String justificacion) throws SQLException {
         String sql = String.join(" ",
-                "INSERT INTO asistencias_actas (acta_id, miembro_id, asistio, justificacion, fecha_creacion)",
-                "VALUES (?, ?, ?, ?, ?)");
+                "INSERT INTO asistencias_actas (acta_id, miembro_id, asistio, estado_asistencia, justificacion, fecha_creacion)",
+                "VALUES (?, ?, ?, ?, ?, ?)");
+        
+        boolean asistio = AsistenciaActa.ESTADO_ASISTIO.equals(estadoAsistencia);
         
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setLong(1, actaId);
             stmt.setLong(2, miembroId);
             stmt.setBoolean(3, asistio);
-            stmt.setString(4, justificacion);
-            stmt.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
+            stmt.setString(4, estadoAsistencia);
+            stmt.setString(5, justificacion);
+            stmt.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
             
             stmt.executeUpdate();
             
@@ -81,9 +85,10 @@ public class ActaDAO {
     }
     
     /**
-     * Guarda el acta con todas sus asistencias en una transacción atómica
+     * Guarda el acta con todas sus asistencias en una transacción atómica.
+     * @param estadosAsistencia mapa miembroId -> estado (ASISTIO | EXCUSA | NO_ASISTIO)
      */
-    public Long saveActaConAsistencias(Acta acta, Map<Long, Boolean> asistencias, 
+    public Long saveActaConAsistencias(Acta acta, Map<Long, String> estadosAsistencia,
                                        Map<Long, String> justificaciones) throws SQLException {
         try (Connection conn = DBUtil.getConnection()) {
             conn.setAutoCommit(false);
@@ -100,12 +105,12 @@ public class ActaDAO {
 
                 // 2. Guardar asistencias
                 int guardadas = 0;
-                for (Map.Entry<Long, Boolean> entry : asistencias.entrySet()) {
+                for (Map.Entry<Long, String> entry : estadosAsistencia.entrySet()) {
                     Long miembroId = entry.getKey();
-                    Boolean asistio = entry.getValue();
+                    String estado = entry.getValue();
                     String justificacion = justificaciones.get(miembroId);
 
-                    saveAsistencia(conn, actaId, miembroId, asistio, justificacion);
+                    saveAsistencia(conn, actaId, miembroId, estado, justificacion);
                     guardadas++;
                 }
 
@@ -131,13 +136,16 @@ public class ActaDAO {
      * Guarda una asistencia de acta.
      * Versión pública independiente para uso directo por callers externos.
      * Internamente, el guardado en bulk de actas usa la sobrecarga privada con Connection.
+     * @param estadoAsistencia ASISTIO | EXCUSA | NO_ASISTIO (ver AsistenciaActa)
      */
-    public Long saveAsistencia(Long actaId, Long miembroId, boolean asistio, String justificacion) 
+    public Long saveAsistencia(Long actaId, Long miembroId, String estadoAsistencia, String justificacion)
             throws SQLException {
         
         String sql = String.join(" ",
-                "INSERT INTO asistencias_actas (acta_id, miembro_id, asistio, justificacion, fecha_creacion)",
-                "VALUES (?, ?, ?, ?, ?)");
+                "INSERT INTO asistencias_actas (acta_id, miembro_id, asistio, estado_asistencia, justificacion, fecha_creacion)",
+                "VALUES (?, ?, ?, ?, ?, ?)");
+        
+        boolean asistio = AsistenciaActa.ESTADO_ASISTIO.equals(estadoAsistencia);
         
         AppLogger.debug("Guardando asistencia para miembro ID: " + miembroId);
         
@@ -147,8 +155,9 @@ public class ActaDAO {
             stmt.setLong(1, actaId);
             stmt.setLong(2, miembroId);
             stmt.setBoolean(3, asistio);
-            stmt.setString(4, justificacion);
-            stmt.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
+            stmt.setString(4, estadoAsistencia);
+            stmt.setString(5, justificacion);
+            stmt.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
             
             int affectedRows = stmt.executeUpdate();
             
@@ -337,7 +346,7 @@ public class ActaDAO {
         List<AsistenciaActa> asistencias = new ArrayList<>();
         
         String sql = String.join(" ",
-                "SELECT aa.id, aa.acta_id, aa.miembro_id, aa.asistio, aa.justificacion, aa.fecha_creacion,",
+                "SELECT aa.id, aa.acta_id, aa.miembro_id, aa.asistio, aa.estado_asistencia, aa.justificacion, aa.fecha_creacion,",
                 "m.nombre_apellidos, m.dni_nif,",
                 "(SELECT cm.cargo FROM comision_miembros cm",
                 " WHERE cm.comision_id = a.comision_id",
@@ -368,7 +377,13 @@ public class ActaDAO {
                     AsistenciaActa asistencia = new AsistenciaActa();
                     asistencia.setId(rs.getLong("id"));
                     asistencia.setMiembro(miembro);
-                    asistencia.setAsistio(rs.getBoolean("asistio"));
+                    String estado = rs.getString("estado_asistencia");
+                    if (estado != null && !estado.trim().isEmpty()) {
+                        asistencia.setEstadoAsistencia(estado);
+                    } else {
+                        // Compatibilidad con filas antiguas sin estado_asistencia poblado
+                        asistencia.setAsistio(rs.getBoolean("asistio"));
+                    }
                     asistencia.setJustificacion(rs.getString("justificacion"));
                     asistencia.setCargoMiembro(rs.getString("cargo"));
                     asistencia.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
