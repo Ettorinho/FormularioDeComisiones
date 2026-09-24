@@ -35,6 +35,8 @@
                 justificacionTextarea.value = '';
             }
         }
+
+        window.actualizarExcusaAsistencia();
     };
 
     window.marcarTodos = function (valor) {
@@ -66,6 +68,38 @@
         document.querySelectorAll('textarea[id^="justificacion_"]').forEach(function (textarea) {
             textarea.value = '';
         });
+        window.actualizarExcusaAsistencia();
+    };
+
+    /**
+     * Recalcula el contenido del bloque general "Excusa asistencia" (readonly)
+     * a partir de los miembros marcados con el radio "EXCUSA" y su justificación
+     * individual, mostrando "Nombre del miembro: justificación" por cada uno.
+     */
+    window.actualizarExcusaAsistencia = function () {
+        const excusaAsistenciaInput = document.getElementById('excusaAsistencia');
+        if (!excusaAsistenciaInput) {
+            return;
+        }
+
+        const lineas = [];
+        document.querySelectorAll('input[type="radio"][value="EXCUSA"]:checked').forEach(function (radio) {
+            const index = radio.getAttribute('data-index');
+            if (index === null) {
+                return;
+            }
+
+            const fila = radio.closest('tr');
+            const nombreEl = fila ? fila.querySelector('strong') : null;
+            const nombre = nombreEl ? nombreEl.textContent.trim() : 'Miembro';
+
+            const textarea = document.getElementById('justificacion_' + index);
+            const justificacion = textarea ? textarea.value.trim() : '';
+
+            lineas.push(nombre + (justificacion ? ': ' + justificacion : ''));
+        });
+
+        excusaAsistenciaInput.value = lineas.join('\n');
     };
 
     function renderMessage(container, title, message) {
@@ -162,6 +196,7 @@
                         throw new Error('Respuesta vacía del servidor');
                     }
                     miembrosContainer.innerHTML = html;
+                    window.actualizarExcusaAsistencia();
                 })
                 .catch(function (error) {
                     console.error('Error al cargar miembros', error);
@@ -255,6 +290,16 @@
             actualizarComisionHeader();
         });
 
+        // Delegación de eventos sobre el contenedor de miembros (se recarga dinámicamente por AJAX):
+        // al escribir en cualquier textarea de justificación, refrescar el bloque "Excusa asistencia".
+        if (miembrosContainer) {
+            miembrosContainer.addEventListener('input', function (event) {
+                if (event.target && event.target.matches('textarea[id^="justificacion_"]')) {
+                    window.actualizarExcusaAsistencia();
+                }
+            });
+        }
+
         form.addEventListener('submit', function (event) {
             const comisionId = comisionSelect.value;
             const fechaReunion = fechaInput.value;
@@ -301,6 +346,9 @@
                 window.alert('Por favor, rellene la justificación para cada miembro marcado como "Excusa asistencia"');
                 return;
             }
+
+            // Recalcular el bloque general antes de enviar, por si el usuario no disparó el evento input
+            window.actualizarExcusaAsistencia();
 
             if (pdfFile) {
                 if (pdfFile.size > 5 * 1024 * 1024) {
