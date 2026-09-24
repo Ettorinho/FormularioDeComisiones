@@ -33,9 +33,70 @@
             justificacionRow.style.display = 'none';
             if (justificacionTextarea) {
                 justificacionTextarea.value = '';
+                justificacionTextarea.dataset.confirmado = 'false';
             }
+            ocultarAvisoPendiente(index);
+            // Al deseleccionar "Excusa asistencia" se retira también del bloque general
+            window.actualizarExcusaAsistencia();
+        }
+    };
+
+    function ocultarAvisoPendiente(index) {
+        const aviso = document.getElementById('justificacion_pendiente_' + index);
+        if (aviso) {
+            aviso.style.display = 'none';
+        }
+    }
+
+    function mostrarAvisoPendiente(index) {
+        const aviso = document.getElementById('justificacion_pendiente_' + index);
+        if (aviso) {
+            aviso.style.display = 'block';
+        }
+    }
+
+    /**
+     * Se dispara mientras el usuario escribe en el textarea de justificación.
+     * Marca la justificación como "no confirmada" (pendiente) para que NO se
+     * incluya en el bloque general "Excusa asistencia" hasta que se pulse
+     * explícitamente el botón "Confirmar".
+     */
+    window.marcarJustificacionPendiente = function (index) {
+        const textarea = document.getElementById('justificacion_' + index);
+        if (!textarea) {
+            return;
+        }
+        if (textarea.dataset.confirmado === 'true') {
+            textarea.dataset.confirmado = 'false';
+            mostrarAvisoPendiente(index);
+            window.actualizarExcusaAsistencia();
+        } else if (textarea.value.trim()) {
+            mostrarAvisoPendiente(index);
+        } else {
+            ocultarAvisoPendiente(index);
+        }
+    };
+
+    /**
+     * Confirma la justificación del miembro indicado: si el textarea tiene
+     * contenido, lo marca como confirmado y vuelca su nombre + justificación
+     * en el bloque general readonly "Excusa asistencia". Si está vacío, avisa
+     * al usuario y no confirma nada.
+     */
+    window.confirmarExcusa = function (index) {
+        const textarea = document.getElementById('justificacion_' + index);
+        if (!textarea) {
+            return;
         }
 
+        if (!textarea.value.trim()) {
+            window.alert('Escriba la justificación antes de confirmar');
+            textarea.focus();
+            return;
+        }
+
+        textarea.dataset.confirmado = 'true';
+        ocultarAvisoPendiente(index);
         window.actualizarExcusaAsistencia();
     };
 
@@ -67,14 +128,20 @@
         });
         document.querySelectorAll('textarea[id^="justificacion_"]').forEach(function (textarea) {
             textarea.value = '';
+            textarea.dataset.confirmado = 'false';
+        });
+        document.querySelectorAll('[id^="justificacion_pendiente_"]').forEach(function (aviso) {
+            aviso.style.display = 'none';
         });
         window.actualizarExcusaAsistencia();
     };
 
     /**
      * Recalcula el contenido del bloque general "Excusa asistencia" (readonly)
-     * a partir de los miembros marcados con el radio "EXCUSA" y su justificación
-     * individual, mostrando "Nombre del miembro: justificación" por cada uno.
+     * a partir de los miembros marcados con el radio "EXCUSA" cuya
+     * justificación individual haya sido explícitamente CONFIRMADA mediante
+     * el botón "Confirmar". Las justificaciones escritas pero no confirmadas
+     * no aparecen en este bloque.
      */
     window.actualizarExcusaAsistencia = function () {
         const excusaAsistenciaInput = document.getElementById('excusaAsistencia');
@@ -89,14 +156,16 @@
                 return;
             }
 
+            const textarea = document.getElementById('justificacion_' + index);
+            if (!textarea || textarea.dataset.confirmado !== 'true' || !textarea.value.trim()) {
+                return;
+            }
+
             const fila = radio.closest('tr');
             const nombreEl = fila ? fila.querySelector('strong') : null;
             const nombre = nombreEl ? nombreEl.textContent.trim() : 'Miembro';
 
-            const textarea = document.getElementById('justificacion_' + index);
-            const justificacion = textarea ? textarea.value.trim() : '';
-
-            lineas.push(nombre + (justificacion ? ': ' + justificacion : ''));
+            lineas.push(nombre + ': ' + textarea.value.trim());
         });
 
         excusaAsistenciaInput.value = lineas.join('\n');
@@ -290,16 +359,6 @@
             actualizarComisionHeader();
         });
 
-        // Delegación de eventos sobre el contenedor de miembros (se recarga dinámicamente por AJAX):
-        // al escribir en cualquier textarea de justificación, refrescar el bloque "Excusa asistencia".
-        if (miembrosContainer) {
-            miembrosContainer.addEventListener('input', function (event) {
-                if (event.target && event.target.matches('textarea[id^="justificacion_"]')) {
-                    window.actualizarExcusaAsistencia();
-                }
-            });
-        }
-
         form.addEventListener('submit', function (event) {
             const comisionId = comisionSelect.value;
             const fechaReunion = fechaInput.value;
@@ -330,24 +389,25 @@
                 return;
             }
 
-            // Validar que toda opción "Excusa asistencia" tenga su justificación rellena
-            let excusaSinJustificar = false;
+            // Validar que toda opción "Excusa asistencia" tenga su justificación
+            // rellena Y CONFIRMADA mediante el botón "Confirmar"
+            let excusaSinConfirmar = false;
             radiosChecked.forEach(function (radio) {
                 if (radio.value === 'EXCUSA') {
                     const index = radio.getAttribute('data-index');
                     const textarea = document.getElementById('justificacion_' + index);
-                    if (!textarea || !textarea.value.trim()) {
-                        excusaSinJustificar = true;
+                    if (!textarea || !textarea.value.trim() || textarea.dataset.confirmado !== 'true') {
+                        excusaSinConfirmar = true;
                     }
                 }
             });
-            if (excusaSinJustificar) {
+            if (excusaSinConfirmar) {
                 event.preventDefault();
-                window.alert('Por favor, rellene la justificación para cada miembro marcado como "Excusa asistencia"');
+                window.alert('Por favor, escriba y confirme (botón "Confirmar") la justificación de cada miembro marcado como "Excusa asistencia"');
                 return;
             }
 
-            // Recalcular el bloque general antes de enviar, por si el usuario no disparó el evento input
+            // Recalcular el bloque general antes de enviar, por si algo quedó desincronizado
             window.actualizarExcusaAsistencia();
 
             if (pdfFile) {
