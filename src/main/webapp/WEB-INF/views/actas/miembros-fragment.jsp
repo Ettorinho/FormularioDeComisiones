@@ -14,10 +14,10 @@
                 <strong>Total de miembros:</strong> ${miembros.size()}
             </p>
             <div>
-                <button type="button" class="btn btn-sm btn-success me-2" onclick="marcarTodos(true)">
+                <button type="button" class="btn btn-sm btn-success me-2" onclick="marcarTodos('ASISTIO')">
                     <i class="bi bi-check-all"></i> Todos asistieron
                 </button>
-                <button type="button" class="btn btn-sm btn-danger me-2" onclick="marcarTodos(false)">
+                <button type="button" class="btn btn-sm btn-danger me-2" onclick="marcarTodos('NO_ASISTIO')">
                     <i class="bi bi-x-circle"></i> Ninguno asistió
                 </button>
                 <button type="button" class="btn btn-sm btn-secondary" onclick="limpiarTodo()">
@@ -32,6 +32,7 @@
                     <tr>
                         <th class="col-miembro">Miembro</th>
                         <th class="col-asistencia text-center">Asistió</th>
+                        <th class="col-asistencia text-center">Excusa asistencia</th>
                         <th class="col-asistencia text-center">No asistió</th>
                         <th class="col-accion"></th>
                     </tr>
@@ -59,6 +60,15 @@
                             <td class="text-center">
                                 <input type="radio" 
                                        class="form-check-input" 
+                                       id="radio_excusa_${loop.index}" 
+                                       name="asistencia_${miembro.id}" 
+                                       value="EXCUSA"
+                                       data-index="${loop.index}"
+                                       onchange="toggleJustificacion(${loop.index})" />
+                            </td>
+                            <td class="text-center">
+                                <input type="radio" 
+                                       class="form-check-input" 
                                        id="radio_no_asistio_${loop.index}" 
                                        name="asistencia_${miembro.id}" 
                                        value="NO_ASISTIO"
@@ -68,7 +78,7 @@
                             <td></td>
                         </tr>
                         <tr id="justificacion_row_${loop.index}" style="display: none;">
-                            <td colspan="4" class="bg-light">
+                            <td colspan="5" class="bg-light">
                                 <div class="ms-4">
                                     <label for="justificacion_${loop.index}" class="form-label">
                                         <i class="bi bi-chat-left-text"></i> Justificación <span class="text-danger">*</span>:
