@@ -19,7 +19,7 @@
     }
 
     window.toggleJustificacion = function (index) {
-        const noAsistioRadio = document.getElementById('radio_no_asistio_' + index);
+        const excusaRadio = document.getElementById('radio_excusa_' + index);
         const justificacionRow = document.getElementById('justificacion_row_' + index);
         const justificacionTextarea = document.getElementById('justificacion_' + index);
 
@@ -27,7 +27,7 @@
             return;
         }
 
-        if (noAsistioRadio && noAsistioRadio.checked) {
+        if (excusaRadio && excusaRadio.checked) {
             justificacionRow.style.display = 'table-row';
         } else {
             justificacionRow.style.display = 'none';
@@ -37,8 +37,16 @@
         }
     };
 
-    window.marcarTodos = function (asistio) {
-        const selector = asistio ? '[id^="radio_asistio_"]' : '[id^="radio_no_asistio_"]';
+    window.marcarTodos = function (valor) {
+        const selectorPorValor = {
+            'ASISTIO': '[id^="radio_asistio_"]',
+            'EXCUSA': '[id^="radio_excusa_"]',
+            'NO_ASISTIO': '[id^="radio_no_asistio_"]'
+        };
+        const selector = selectorPorValor[valor];
+        if (!selector) {
+            return;
+        }
         document.querySelectorAll(selector).forEach(function (radio) {
             radio.checked = true;
             const index = radio.getAttribute('data-index');
@@ -274,6 +282,23 @@
             if (radiosChecked.length === 0) {
                 event.preventDefault();
                 window.alert('Por favor, marque la asistencia de al menos un miembro');
+                return;
+            }
+
+            // Validar que toda opción "Excusa asistencia" tenga su justificación rellena
+            let excusaSinJustificar = false;
+            radiosChecked.forEach(function (radio) {
+                if (radio.value === 'EXCUSA') {
+                    const index = radio.getAttribute('data-index');
+                    const textarea = document.getElementById('justificacion_' + index);
+                    if (!textarea || !textarea.value.trim()) {
+                        excusaSinJustificar = true;
+                    }
+                }
+            });
+            if (excusaSinJustificar) {
+                event.preventDefault();
+                window.alert('Por favor, rellene la justificación para cada miembro marcado como "Excusa asistencia"');
                 return;
             }
 
