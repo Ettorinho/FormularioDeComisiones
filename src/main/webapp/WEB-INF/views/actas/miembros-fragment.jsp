@@ -83,11 +83,23 @@
                                     <label for="justificacion_${loop.index}" class="form-label">
                                         <i class="bi bi-chat-left-text"></i> Justificación <span class="text-danger">*</span>:
                                     </label>
-                                    <textarea class="form-control" 
-                                              id="justificacion_${loop.index}" 
-                                              name="justificacion_${miembro.id}" 
-                                              rows="2" 
-                                              placeholder="Ej: Visita médica, permiso laboral, etc."></textarea>
+                                    <div class="d-flex gap-2 align-items-start">
+                                        <textarea class="form-control"
+                                                  id="justificacion_${loop.index}"
+                                                  name="justificacion_${miembro.id}"
+                                                  rows="2"
+                                                  placeholder="Ej: Visita médica, permiso laboral, etc."
+                                                  oninput="marcarJustificacionPendiente(${loop.index})"></textarea>
+                                        <button type="button"
+                                                class="btn btn-sm btn-primary text-nowrap"
+                                                id="btn_confirmar_excusa_${loop.index}"
+                                                onclick="confirmarExcusa(${loop.index})">
+                                            <i class="bi bi-check-lg"></i> Confirmar
+                                        </button>
+                                    </div>
+                                    <div class="form-text text-warning" id="justificacion_pendiente_${loop.index}" style="display: none;">
+                                        <i class="bi bi-exclamation-circle"></i> Pulse "Confirmar" para añadir esta justificación al bloque "Excusa asistencia"
+                                    </div>
                                 </div>
                             </td>
                         </tr>
