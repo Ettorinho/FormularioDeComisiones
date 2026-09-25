@@ -396,4 +396,50 @@ public class ActaDAO {
         return asistencias;
     }
 
+    /**
+     * Calcula el porcentaje de actas de una comisión en las que un miembro concreto
+     * ha sido registrado con estado EXCUSA (ausencia justificada y confirmada).
+     * <p>
+     * Se usa, por ejemplo, en la búsqueda de comisiones por DNI para resaltar en la
+     * interfaz aquellos miembros que acumulan un alto porcentaje de excusas de
+     * asistencia (ausencias justificadas) dentro de una misma comisión.
+     * <p>
+     * Solo se tienen en cuenta las actas ya existentes de la comisión en las que el
+     * miembro tenga registrada una fila de asistencia (algunas actas pueden no incluir
+     * a todos los miembros, por ejemplo si se incorporaron después). Si la comisión no
+     * tiene actas con asistencia registrada para el miembro, se devuelve 0.
+     *
+     * @param comisionId ID de la comisión
+     * @param miembroId  ID del miembro
+     * @return porcentaje (0-100) de actas de la comisión en las que el miembro consta como EXCUSA
+     */
+    public double calcularPorcentajeExcusaAsistencia(Long comisionId, Long miembroId) throws SQLException {
+        String sql = String.join(" ",
+                "SELECT",
+                "  COUNT(*) AS total,",
+                "  COUNT(*) FILTER (WHERE aa.estado_asistencia = 'EXCUSA') AS excusas",
+                "FROM asistencias_actas aa",
+                "INNER JOIN actas a ON aa.acta_id = a.id",
+                "WHERE a.comision_id = ? AND aa.miembro_id = ?");
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, comisionId);
+            stmt.setLong(2, miembroId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int total = rs.getInt("total");
+                    int excusas = rs.getInt("excusas");
+                    if (total == 0) {
+                        return 0.0;
+                    }
+                    return (excusas * 100.0) / total;
+                }
+            }
+        }
+        return 0.0;
+    }
+
 }
