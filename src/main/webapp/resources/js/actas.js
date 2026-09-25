@@ -79,9 +79,10 @@
 
     /**
      * Confirma la justificación del miembro indicado: si el textarea tiene
-     * contenido, lo marca como confirmado y vuelca su nombre + justificación
-     * en el bloque general readonly "Excusa asistencia". Si está vacío, avisa
-     * al usuario y no confirma nada.
+     * contenido, lo marca como confirmado y añade su nombre al bloque
+     * general readonly "Excusa asistencia" (solo el nombre; la justificación
+     * en sí se guarda por separado y no se muestra en ese bloque). Si está
+     * vacío, avisa al usuario y no confirma nada.
      */
     window.confirmarExcusa = function (index) {
         const textarea = document.getElementById('justificacion_' + index);
@@ -140,8 +141,10 @@
      * Recalcula el contenido del bloque general "Excusa asistencia" (readonly)
      * a partir de los miembros marcados con el radio "EXCUSA" cuya
      * justificación individual haya sido explícitamente CONFIRMADA mediante
-     * el botón "Confirmar". Las justificaciones escritas pero no confirmadas
-     * no aparecen en este bloque.
+     * el botón "Confirmar". Solo se añade el NOMBRE del miembro a este bloque;
+     * el texto de la justificación no se muestra aquí (se guarda por separado
+     * en el textarea individual de cada miembro). Las justificaciones escritas
+     * pero no confirmadas no aparecen en este bloque.
      */
     window.actualizarExcusaAsistencia = function () {
         const excusaAsistenciaInput = document.getElementById('excusaAsistencia');
@@ -165,7 +168,7 @@
             const nombreEl = fila ? fila.querySelector('strong') : null;
             const nombre = nombreEl ? nombreEl.textContent.trim() : 'Miembro';
 
-            lineas.push(nombre + ': ' + textarea.value.trim());
+            lineas.push(nombre);
         });
 
         excusaAsistenciaInput.value = lineas.join('\n');
