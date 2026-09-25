@@ -40,6 +40,10 @@ public class ComisionController extends HttpServlet {
 
     private static final int TAMANO_PAGINA = 20;
 
+    /** Umbral (en %) de excusas de asistencia de un miembro en una comisión a partir del
+     * cual se resalta la fila correspondiente en la búsqueda por DNI. */
+    private static final double UMBRAL_EXCUSA_ASISTENCIA_ALERTA = 50.0;
+
     private ComisionDAO comisionDAO;
     private ComisionMiembroDAO comisionMiembroDAO;
     private MiembroDAO miembroDAO;
@@ -384,6 +388,7 @@ public class ComisionController extends HttpServlet {
         Miembro miembro = miembroDAO.findByDni(dni);
         List<ComisionMiembro> comisiones = null;
         Map<String, List<HistorialCargo>> historialPorComision = new java.util.HashMap<>();
+        Map<String, Double> porcentajeExcusaPorComision = new java.util.HashMap<>();
 
         if (miembro != null) {
             comisiones = comisionMiembroDAO.findByMiembroId(miembro.getId());
@@ -391,9 +396,16 @@ public class ComisionController extends HttpServlet {
                 HistorialCargoDAO historialDAO = new HistorialCargoDAO();
                 Map<Long, List<HistorialCargo>> historialAgrupado = historialDAO.getHistorialAgrupadoPorMiembro(miembro.getId());
                 for (ComisionMiembro cm : comisiones) {
+                    Long comisionId = cm.getComision().getId();
                     historialPorComision.put(
-                            cm.getComision().getId().toString(),
-                            historialAgrupado.getOrDefault(cm.getComision().getId(), new ArrayList<>()));
+                            comisionId.toString(),
+                            historialAgrupado.getOrDefault(comisionId, new ArrayList<>()));
+
+                    // Porcentaje de actas de esta comisión en las que el miembro consta
+                    // como EXCUSA (ausencia justificada), usado para resaltar la fila
+                    // cuando el miembro acumula muchas excusas de asistencia.
+                    double porcentajeExcusa = actaDAO.calcularPorcentajeExcusaAsistencia(comisionId, miembro.getId());
+                    porcentajeExcusaPorComision.put(comisionId.toString(), porcentajeExcusa);
                 }
             }
         }
@@ -401,6 +413,8 @@ public class ComisionController extends HttpServlet {
         request.setAttribute("comisiones", comisiones);
         request.setAttribute("dniBuscado", dni);
         request.setAttribute("historialPorComision", historialPorComision);
+        request.setAttribute("porcentajeExcusaPorComision", porcentajeExcusaPorComision);
+        request.setAttribute("umbralExcusaAsistenciaAlerta", UMBRAL_EXCUSA_ASISTENCIA_ALERTA);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/comisiones/buscarPorDni.jsp");
         dispatcher.forward(request, response);
     }
