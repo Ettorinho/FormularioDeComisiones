@@ -76,11 +76,11 @@
                         Estadísticas de Asistencia.
                         Se distinguen 3 estados excluyentes entre sí (asistencia.estadoAsistencia):
                           - ASISTIO    -> contadorAsistieron
-                          - EXCUSA     -> contadorExcusaAsistencia (NO cuenta como "No Asistieron")
+                          - EXCUSA     -> contadorConJustificacion (ausencia justificada y confirmada)
                           - NO_ASISTIO -> contadorNoAsistieron (sin justificar)
-                        Antes "Excusa asistencia" se contaba también dentro de "No Asistieron"
-                        (isAsistio() == false), inflando ese contador y esa lista con miembros
-                        que sí habían justificado su ausencia.
+                        El porcentaje de asistencia considera tanto ASISTIO como EXCUSA como
+                        asistencia "efectiva" (una excusa de asistencia no debe penalizar el
+                        porcentaje igual que una ausencia sin justificar).
                     -->
                     <c:set var="contadorAsistieron" value="0"/>
                     <c:set var="contadorNoAsistieron" value="0"/>
@@ -99,11 +99,16 @@
                         </c:choose>
                     </c:forEach>
 
-                    <!-- Cálculo del porcentaje de asistencia -->
+                    <!--
+                        Cálculo del porcentaje de asistencia.
+                        Numerador: ASISTIO + EXCUSA (la excusa de asistencia cuenta como
+                        asistencia efectiva a efectos de este porcentaje).
+                        Denominador: total de miembros registrados en el acta.
+                    -->
                     <c:set var="totalMiembrosActa" value="${contadorAsistieron + contadorNoAsistieron + contadorConJustificacion}"/>
                     <c:choose>
                         <c:when test="${totalMiembrosActa > 0}">
-                            <c:set var="porcentajeAsistencia" value="${(contadorAsistieron * 100.0) / totalMiembrosActa}"/>
+                            <c:set var="porcentajeAsistencia" value="${((contadorAsistieron + contadorConJustificacion) * 100.0) / totalMiembrosActa}"/>
                         </c:when>
                         <c:otherwise>
                             <c:set var="porcentajeAsistencia" value="0"/>
