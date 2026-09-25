@@ -99,27 +99,27 @@
                         </c:otherwise>
                     </c:choose>
 
-                    <div class="row row-cols-2 row-cols-md-4 g-3 mb-3 no-print">
+                    <div class="row row-cols-1 g-3 mb-3 no-print">
                         <div class="col">
-                            <div class="stats-box h-100">
+                            <div class="stats-box">
                                 <h3>${contadorAsistieron + contadorNoAsistieron}</h3>
                                 <p>Total Miembros</p>
                             </div>
                         </div>
                         <div class="col">
-                            <div class="stats-box stats-box-green h-100">
+                            <div class="stats-box stats-box-green">
                                 <h3>${contadorAsistieron}</h3>
                                 <p>Asistieron</p>
                             </div>
                         </div>
                         <div class="col">
-                            <div class="stats-box stats-box-red h-100">
+                            <div class="stats-box stats-box-red">
                                 <h3>${contadorNoAsistieron}</h3>
                                 <p>No Asistieron</p>
                             </div>
                         </div>
                         <div class="col">
-                            <div class="stats-box stats-box-yellow h-100">
+                            <div class="stats-box stats-box-yellow">
                                 <h3>${contadorConJustificacion}</h3>
                                 <p>Excusa Asistencia</p>
                             </div>
