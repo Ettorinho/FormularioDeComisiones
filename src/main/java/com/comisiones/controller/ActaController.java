@@ -277,7 +277,7 @@ public class ActaController extends HttpServlet {
         }
         
         // Preparar datos de asistencia
-        Map<Long, Boolean> asistencias = new HashMap<>();
+        Map<Long, String> estadosAsistencia = new HashMap<>();
         Map<Long, String> justificaciones = new HashMap<>();
         
         for (String miembroIdStr : miembroIds) {
@@ -288,11 +288,19 @@ public class ActaController extends HttpServlet {
             }
             String asistenciaParam = request.getParameter("asistencia_" + miembroId);
             String justificacion = request.getParameter("justificacion_" + miembroId);
-            
-            boolean asistio = "ASISTIO".equals(asistenciaParam);
-            
-            asistencias.put(miembroId, asistio);
-            if (!asistio && justificacion != null && !justificacion.trim().isEmpty()) {
+
+            String estado = normalizarEstadoAsistencia(asistenciaParam);
+
+            // La opción "Excusa asistencia" exige justificación en servidor,
+            // independientemente de la validación ya realizada en el cliente.
+            if (AsistenciaActa.ESTADO_EXCUSA.equals(estado) && (justificacion == null || justificacion.trim().isEmpty())) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                        "Debe indicar la justificación de los miembros marcados como 'Excusa asistencia'");
+                return;
+            }
+
+            estadosAsistencia.put(miembroId, estado);
+            if (AsistenciaActa.ESTADO_EXCUSA.equals(estado) && justificacion != null && !justificacion.trim().isEmpty()) {
                 justificaciones.put(miembroId, justificacion.trim());
             } else {
                 justificaciones.put(miembroId, null);
@@ -300,7 +308,7 @@ public class ActaController extends HttpServlet {
         }
         
         // Guardar con transacción
-        Long actaId = actaDAO.saveActaConAsistencias(acta, asistencias, justificaciones);
+        Long actaId = actaDAO.saveActaConAsistencias(acta, estadosAsistencia, justificaciones);
         
         if (actaId == null) {
             AppLogger.error("No se pudo guardar el acta", null);
@@ -316,6 +324,21 @@ public class ActaController extends HttpServlet {
         
         // Redirigir a la vista del acta
         response.sendRedirect(request.getContextPath() + "/actas/view?id=" + actaId);
+    }
+
+    /**
+     * Normaliza el valor recibido del radio "asistencia_{miembroId}" a uno de
+     * los 3 estados soportados (ASISTIO | EXCUSA | NO_ASISTIO). Cualquier
+     * valor no reconocido o ausente se trata como NO_ASISTIO por seguridad.
+     */
+    private String normalizarEstadoAsistencia(String asistenciaParam) {
+        if (AsistenciaActa.ESTADO_ASISTIO.equals(asistenciaParam)) {
+            return AsistenciaActa.ESTADO_ASISTIO;
+        }
+        if (AsistenciaActa.ESTADO_EXCUSA.equals(asistenciaParam)) {
+            return AsistenciaActa.ESTADO_EXCUSA;
+        }
+        return AsistenciaActa.ESTADO_NO_ASISTIO;
     }
 
     
