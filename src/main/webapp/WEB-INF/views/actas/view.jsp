@@ -99,29 +99,29 @@
                         </c:otherwise>
                     </c:choose>
 
-                    <div class="row mb-3 no-print">
-                        <div class="col-md-3">
-                            <div class="stats-box">
+                    <div class="row row-cols-2 row-cols-md-4 g-3 mb-3 no-print">
+                        <div class="col">
+                            <div class="stats-box h-100">
                                 <h3>${contadorAsistieron + contadorNoAsistieron}</h3>
                                 <p>Total Miembros</p>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="stats-box stats-box-green">
+                        <div class="col">
+                            <div class="stats-box stats-box-green h-100">
                                 <h3>${contadorAsistieron}</h3>
                                 <p>Asistieron</p>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="stats-box stats-box-red">
+                        <div class="col">
+                            <div class="stats-box stats-box-red h-100">
                                 <h3>${contadorNoAsistieron}</h3>
                                 <p>No Asistieron</p>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="stats-box stats-box-yellow">
+                        <div class="col">
+                            <div class="stats-box stats-box-yellow h-100">
                                 <h3>${contadorConJustificacion}</h3>
-                                <p>Con Justificación</p>
+                                <p>Excusa Asistencia</p>
                             </div>
                         </div>
                     </div>
