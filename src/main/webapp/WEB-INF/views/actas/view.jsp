@@ -72,24 +72,35 @@
                         </div>
                     </div>
 
-                    <!-- Estadísticas de Asistencia -->
+                    <!--
+                        Estadísticas de Asistencia.
+                        Se distinguen 3 estados excluyentes entre sí (asistencia.estadoAsistencia):
+                          - ASISTIO    -> contadorAsistieron
+                          - EXCUSA     -> contadorExcusaAsistencia (NO cuenta como "No Asistieron")
+                          - NO_ASISTIO -> contadorNoAsistieron (sin justificar)
+                        Antes "Excusa asistencia" se contaba también dentro de "No Asistieron"
+                        (isAsistio() == false), inflando ese contador y esa lista con miembros
+                        que sí habían justificado su ausencia.
+                    -->
                     <c:set var="contadorAsistieron" value="0"/>
                     <c:set var="contadorNoAsistieron" value="0"/>
                     <c:set var="contadorConJustificacion" value="0"/>
                     <c:forEach var="asistencia" items="${asistencias}">
-                        <c:if test="${asistencia.asistio}">
-                            <c:set var="contadorAsistieron" value="${contadorAsistieron + 1}"/>
-                        </c:if>
-                        <c:if test="${!asistencia.asistio}">
-                            <c:set var="contadorNoAsistieron" value="${contadorNoAsistieron + 1}"/>
-                            <c:if test="${not empty asistencia.justificacion}">
+                        <c:choose>
+                            <c:when test="${asistencia.asistio}">
+                                <c:set var="contadorAsistieron" value="${contadorAsistieron + 1}"/>
+                            </c:when>
+                            <c:when test="${asistencia.excusa}">
                                 <c:set var="contadorConJustificacion" value="${contadorConJustificacion + 1}"/>
-                            </c:if>
-                        </c:if>
+                            </c:when>
+                            <c:otherwise>
+                                <c:set var="contadorNoAsistieron" value="${contadorNoAsistieron + 1}"/>
+                            </c:otherwise>
+                        </c:choose>
                     </c:forEach>
 
                     <!-- Cálculo del porcentaje de asistencia -->
-                    <c:set var="totalMiembrosActa" value="${contadorAsistieron + contadorNoAsistieron}"/>
+                    <c:set var="totalMiembrosActa" value="${contadorAsistieron + contadorNoAsistieron + contadorConJustificacion}"/>
                     <c:choose>
                         <c:when test="${totalMiembrosActa > 0}">
                             <c:set var="porcentajeAsistencia" value="${(contadorAsistieron * 100.0) / totalMiembrosActa}"/>
@@ -102,7 +113,7 @@
                     <div class="row row-cols-1 g-3 mb-3 no-print">
                         <div class="col">
                             <div class="stats-box">
-                                <h3>${contadorAsistieron + contadorNoAsistieron}</h3>
+                                <h3>${totalMiembrosActa}</h3>
                                 <p>Total Miembros</p>
                             </div>
                         </div>
@@ -150,7 +161,7 @@
                             <i class="bi bi-person-check"></i> Registro de Asistencia
                         </h5>
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <h6 class="text-success">
                                     <i class="bi bi-check-circle"></i> Asistieron (${contadorAsistieron})
                                 </h6>
@@ -176,23 +187,23 @@
                                     </c:if>
                                 </ul>
                             </div>
-                            <div class="col-md-6">
-                                <h6 class="text-danger">
-                                    <i class="bi bi-x-circle"></i> No Asistieron (${contadorNoAsistieron})
+                            <div class="col-md-4">
+                                <h6 class="text-warning">
+                                    <i class="bi bi-person-x"></i> Excusa Asistencia (${contadorConJustificacion})
                                 </h6>
                                 <ul class="asistencia-lista">
-                                    <c:set var="hayAusentes" value="false"/>
+                                    <c:set var="hayExcusas" value="false"/>
                                     <c:forEach var="asistencia" items="${asistencias}">
-                                        <c:if test="${!asistencia.asistio}">
-                                            <c:set var="hayAusentes" value="true"/>
+                                        <c:if test="${asistencia.excusa}">
+                                            <c:set var="hayExcusas" value="true"/>
                                             <li class="no-asistio">
-                                                <i class="bi bi-person text-danger"></i>
+                                                <i class="bi bi-person text-warning"></i>
                                                 <strong><c:out value="${asistencia.miembro.nombreApellidos}"/></strong>
                                                 <br>
                                                 <small class="text-muted ms-3">
                                                     <i class="bi bi-card-text"></i> <c:out value="${asistencia.miembro.dniNif}"/>
                                                 </small>
-                                                
+
                                                 <!-- MOSTRAR JUSTIFICACIÓN -->
                                                 <c:if test="${not empty asistencia.justificacion}">
                                                     <div class="justificacion-box">
@@ -204,13 +215,39 @@
                                                         </div>
                                                     </div>
                                                 </c:if>
-                                                
+
+                                            </li>
+                                        </c:if>
+                                    </c:forEach>
+                                    <c:if test="${!hayExcusas}">
+                                        <li class="text-muted fst-italic">
+                                            <i class="bi bi-info-circle"></i> Ningún miembro justificó su ausencia
+                                        </li>
+                                    </c:if>
+                                </ul>
+                            </div>
+                            <div class="col-md-4">
+                                <h6 class="text-danger">
+                                    <i class="bi bi-x-circle"></i> No Asistieron (${contadorNoAsistieron})
+                                </h6>
+                                <ul class="asistencia-lista">
+                                    <c:set var="hayAusentes" value="false"/>
+                                    <c:forEach var="asistencia" items="${asistencias}">
+                                        <c:if test="${asistencia.noAsistio}">
+                                            <c:set var="hayAusentes" value="true"/>
+                                            <li class="no-asistio">
+                                                <i class="bi bi-person text-danger"></i>
+                                                <strong><c:out value="${asistencia.miembro.nombreApellidos}"/></strong>
+                                                <br>
+                                                <small class="text-muted ms-3">
+                                                    <i class="bi bi-card-text"></i> <c:out value="${asistencia.miembro.dniNif}"/>
+                                                </small>
                                             </li>
                                         </c:if>
                                     </c:forEach>
                                     <c:if test="${!hayAusentes}">
                                         <li class="text-muted fst-italic">
-                                            <i class="bi bi-info-circle"></i> Todos los miembros asistieron
+                                            <i class="bi bi-info-circle"></i> Todos los miembros asistieron o justificaron su ausencia
                                         </li>
                                     </c:if>
                                 </ul>
