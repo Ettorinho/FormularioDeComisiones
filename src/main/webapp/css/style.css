@@ -95,12 +95,20 @@ body {
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
+/*
+ * Tarjetas de estadísticas del acta (Total Miembros, Asistieron, No
+ * Asistieron, Excusa Asistencia, Porcentaje de Asistencia). Todas comparten
+ * el mismo estilo base (gradiente, esquinas redondeadas, tipografía) para que
+ * las 4 tarjetas superiores se vean visualmente consistentes con la tarjeta
+ * de "Porcentaje de Asistencia" (stats-box-blue).
+ */
 .stats-box {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 1rem;
     border-radius: 8px;
     text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
 .stats-box h3 {
@@ -116,6 +124,7 @@ body {
 .stats-box-green  { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
 .stats-box-red    { background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%); }
 .stats-box-yellow { background: linear-gradient(135deg, #ffc107 0%, #ff8800 100%); }
+.stats-box-blue   { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
 
 /* ========================================
    Formulario de Comisiones (form.jsp)
