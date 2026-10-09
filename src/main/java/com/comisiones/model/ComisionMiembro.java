@@ -16,7 +16,8 @@ public class ComisionMiembro implements Serializable {
         SECRETARIO("Secretario"),
         INVESTIGADOR_PRINCIPAL("Investigador Principal"),
         INVESTIGADOR_COLABORADOR("Investigador Colaborador"),
-        FIRMANTE("Firmante");
+        FIRMANTE("Firmante"),
+        PONENTE("Ponente");
 
         private final String descripcion;
 
