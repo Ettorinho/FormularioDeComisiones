@@ -7,6 +7,13 @@
 -- registrar en ellas miembros con el nuevo cargo "PONENTE" (además de los
 -- cargos ya existentes: REFERENTE, RESPONSABLE, PRESIDENTE, PARTICIPANTE,
 -- SECRETARIO, INVESTIGADOR_PRINCIPAL, INVESTIGADOR_COLABORADOR, FIRMANTE).
+--
+-- IMPORTANTE: PostgreSQL exige que un valor de ENUM añadido con
+-- "ALTER TYPE ... ADD VALUE" esté COMMITEADO antes de poder usarse (p. ej.
+-- en un CHECK constraint). Como Flyway ejecuta cada migración en una única
+-- transacción, esta migración se limita EXCLUSIVAMENTE a añadir los nuevos
+-- valores a los ENUMs. La actualización de los CHECK constraints que los
+-- referencian se hace en la migración V24, en una transacción posterior.
 -- ========================================
 
 -- 1. Añadir el nuevo valor al ENUM tipo_type (idempotente)
@@ -34,29 +41,6 @@ BEGIN
     END IF;
 END
 $$;
-
--- 3. Actualizar CHECK constraints en comision_miembro_historial_cargos
--- Nota: ALTER TYPE ... ADD VALUE no puede usarse en la misma transacción que lo consuma,
--- pero Flyway gestiona las transacciones automáticamente; no se debe insertar COMMIT manual.
-ALTER TABLE comision_miembro_historial_cargos
-    DROP CONSTRAINT IF EXISTS check_cargo_nuevo;
-
-ALTER TABLE comision_miembro_historial_cargos
-    ADD CONSTRAINT check_cargo_nuevo
-    CHECK (cargo_nuevo IN (
-        'REFERENTE', 'RESPONSABLE', 'PRESIDENTE', 'PARTICIPANTE',
-        'SECRETARIO', 'INVESTIGADOR_PRINCIPAL', 'INVESTIGADOR_COLABORADOR', 'FIRMANTE', 'PONENTE'
-    ));
-
-ALTER TABLE comision_miembro_historial_cargos
-    DROP CONSTRAINT IF EXISTS check_cargo_anterior;
-
-ALTER TABLE comision_miembro_historial_cargos
-    ADD CONSTRAINT check_cargo_anterior
-    CHECK (cargo_anterior IS NULL OR cargo_anterior IN (
-        'REFERENTE', 'RESPONSABLE', 'PRESIDENTE', 'PARTICIPANTE',
-        'SECRETARIO', 'INVESTIGADOR_PRINCIPAL', 'INVESTIGADOR_COLABORADOR', 'FIRMANTE', 'PONENTE'
-    ));
 
 -- Actualizar comentarios de los tipos ENUM
 COMMENT ON TYPE tipo_type IS 'Tipos de comisión: COMISION, GRUPO_TRABAJO, GRUPO_MEJORA, FORMACION_TALLER_SESION';
