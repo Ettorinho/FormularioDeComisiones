@@ -32,7 +32,8 @@ public class Comision implements Serializable {
     public enum Tipo {
         COMISION("Comisión"),
         GRUPO_TRABAJO("Grupo de Trabajo"),
-        GRUPO_MEJORA("Grupo de Mejora");
+        GRUPO_MEJORA("Grupo de Mejora"),
+        FORMACION_TALLER_SESION("Formación/Taller/Sesión");
         
         private String descripcion;
         
