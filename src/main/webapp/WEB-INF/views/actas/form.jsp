@@ -1,8 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<c:set var="pageTitle" value="Nueva Acta de Reunión" />
-<c:set var="headerClass" value="no-print" />
-<%@ include file="/WEB-INF/views/common/header.jspf" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<c:set var="pageTitle" value="Nueva Acta de Reunión"/>
+<c:set var="headerClass" value="no-print"/>
+<%@ include file="/WEB-INF/views/common/header.jspf"%>
 
 <div class="container mt-4 mb-5">
     <nav aria-label="breadcrumb" class="no-print">
@@ -25,7 +25,7 @@
                 </div>
             </c:if>
             <form id="formActa" method="post" action="${pageContext.request.contextPath}/actas/save" enctype="multipart/form-data">
-                <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                <input type="hidden" name="csrfToken" value="${csrfToken}"/>
 
                 <!-- Encabezado estilo documento oficial: logo | ACTA DE REUNIÓN + comisión | código/revisión -->
                 <div class="border rounded mb-4 overflow-hidden acta-doc-header">
@@ -70,10 +70,10 @@
                                 <c:when test="${not empty comisionPreseleccionada}">
                                     <c:forEach var="comision" items="${comisiones}">
                                         <c:if test="${comisionPreseleccionada == comision.id}">
-                                            <input type="text" class="form-control" value="<c:out value='${comision.nombre}'/>" disabled />
+                                            <input type="text" class="form-control" value="<c:out value='${comision.nombre}'/>" disabled/>
                                         </c:if>
                                     </c:forEach>
-                                    <input type="hidden" id="comisionId" name="comisionId" value="${comisionPreseleccionada}" />
+                                    <input type="hidden" id="comisionId" name="comisionId" value="${comisionPreseleccionada}"/>
                                 </c:when>
                                 <c:otherwise>
                                     <select class="form-select" id="comisionId" name="comisionId" required>
@@ -181,7 +181,7 @@
                     <label for="pdfFile" class="form-label fw-bold">
                         <i class="bi bi-file-pdf text-danger"></i> Adjuntar documento PDF (opcional)
                     </label>
-                    <input class="form-control" type="file" id="pdfFile" name="pdfFile" accept="application/pdf" />
+                    <input class="form-control" type="file" id="pdfFile" name="pdfFile" accept="application/pdf"/>
                     <div class="form-text">Tamaño máximo: 5MB. Solo archivos PDF (.pdf)</div>
                     <div id="pdfInfo" class="mt-2" style="display: none;"></div>
                 </div>
