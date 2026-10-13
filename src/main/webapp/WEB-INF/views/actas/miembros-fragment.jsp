@@ -49,28 +49,28 @@
                                 </small>
                             </td>
                             <td class="text-center">
-                                <input type="radio" 
-                                       class="form-check-input" 
-                                       id="radio_asistio_${loop.index}" 
-                                       name="asistencia_${miembro.id}" 
+                                <input type="radio"
+                                       class="form-check-input"
+                                       id="radio_asistio_${loop.index}"
+                                       name="asistencia_${miembro.id}"
                                        value="ASISTIO"
                                        data-index="${loop.index}"
                                        onchange="toggleJustificacion(${loop.index})" />
                             </td>
                             <td class="text-center">
-                                <input type="radio" 
-                                       class="form-check-input" 
-                                       id="radio_excusa_${loop.index}" 
-                                       name="asistencia_${miembro.id}" 
+                                <input type="radio"
+                                       class="form-check-input"
+                                       id="radio_excusa_${loop.index}"
+                                       name="asistencia_${miembro.id}"
                                        value="EXCUSA"
                                        data-index="${loop.index}"
                                        onchange="toggleJustificacion(${loop.index})" />
                             </td>
                             <td class="text-center">
-                                <input type="radio" 
-                                       class="form-check-input" 
-                                       id="radio_no_asistio_${loop.index}" 
-                                       name="asistencia_${miembro.id}" 
+                                <input type="radio"
+                                       class="form-check-input"
+                                       id="radio_no_asistio_${loop.index}"
+                                       name="asistencia_${miembro.id}"
                                        value="NO_ASISTIO"
                                        data-index="${loop.index}"
                                        onchange="toggleJustificacion(${loop.index})" />

@@ -124,14 +124,14 @@ CREATE TABLE comision_miembro_historial_cargos (
     usuario_modificacion VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(100) DEFAULT 'SYSTEM',
-    
+
     -- Referencia a la tabla con clave compuesta
-    FOREIGN KEY (comision_id, miembro_id) 
-        REFERENCES comision_miembros(comision_id, miembro_id) 
+    FOREIGN KEY (comision_id, miembro_id)
+        REFERENCES comision_miembros(comision_id, miembro_id)
         ON DELETE CASCADE,
-    
+
     -- Validar que el cargo cambió realmente
-    CONSTRAINT check_cargo_diferente 
+    CONSTRAINT check_cargo_diferente
         CHECK (cargo_anterior IS NULL OR cargo_anterior != cargo_nuevo)
 );
 
@@ -148,13 +148,13 @@ CREATE INDEX idx_comisiones_tipo ON comisiones (tipo);
 CREATE INDEX idx_miembros_dni ON miembros (dni_nif);
 
 -- Índices para historial de cargos
-CREATE INDEX idx_historial_cargos_comision_miembro 
+CREATE INDEX idx_historial_cargos_comision_miembro
     ON comision_miembro_historial_cargos(comision_id, miembro_id);
 
-CREATE INDEX idx_historial_cargos_fecha 
+CREATE INDEX idx_historial_cargos_fecha
     ON comision_miembro_historial_cargos(fecha_cambio DESC);
 
-CREATE INDEX idx_historial_cargos_usuario 
+CREATE INDEX idx_historial_cargos_usuario
     ON comision_miembro_historial_cargos(usuario_modificacion);
 
 -- ========================================

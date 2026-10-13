@@ -10,7 +10,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 public class Miembro implements Serializable {
-    
+
     private Long id;
 
     @NotBlank(message = "El nombre y apellidos son obligatorios")
@@ -26,15 +26,15 @@ public class Miembro implements Serializable {
     @Email(message = "Email inválido")
     private String email;
     private Set<ComisionMiembro> comisiones = new HashSet<>();
-    
+
     public Miembro() {}
-    
+
     public Miembro(String nombreApellidos, String dniNif, String email) {
         this.nombreApellidos = nombreApellidos;
         this.dniNif = dniNif;
         this.email = email;
     }
-    
+
     // Getters y setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

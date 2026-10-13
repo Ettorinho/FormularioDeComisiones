@@ -7,22 +7,22 @@
 
     <div class="container mt-4">
         <h2 class="mb-4">📋 Formulario de Comisiones / Grupos</h2>
-        
+
         <c:if test="${not empty error}">
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <strong>Error: </strong> <c:out value="${error}"/>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         </c:if>
-        
+
         <form action="${pageContext.request.contextPath}/comisiones" method="post" id="formComision">
             <input type="hidden" name="csrfToken" value="${csrfToken}" />
-            
+
             <!-- Sección 1: Selección de Área y Tipo -->
             <div class="card card-custom">
                 <div class="card-body">
                     <h5 class="section-header">1. Clasificación</h5>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="area" class="form-label fw-bold">Área *</label>
@@ -33,7 +33,7 @@
                                 </c:forEach>
                             </select>
                         </div>
-                        
+
                         <div class="col-md-6 mb-3 hidden" id="divTipo">
                             <label for="tipo" class="form-label fw-bold">Tipo *</label>
                             <select class="form-select" id="tipo" name="tipo">
@@ -46,12 +46,12 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Sección 2: Seleccionar existente o crear nueva -->
             <div class="card card-custom hidden" id="divSeleccion">
                 <div class="card-body">
                     <h5 class="section-header">2. Opción</h5>
-                    
+
                     <div class="mb-3">
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="opcionCreacion" id="opcionExistente" value="existente" checked />
@@ -66,7 +66,7 @@
                             </label>
                         </div>
                     </div>
-                    
+
                     <!-- Seleccionar existente -->
                     <div id="divExistentes">
                         <label for="comisionExistente" class="form-label">Seleccione una opción</label>
@@ -75,13 +75,13 @@
                         </select>
                         <small class="text-muted">Seleccione para agregar nuevos miembros</small>
                     </div>
-                    
+
                     <!-- Formulario para crear nueva -->
                     <div id="divNueva" class="hidden">
                         <div class="row">
                             <div class="col-md-12 mb-3">
                                 <label for="nombre" class="form-label">Nombre *</label>
-                                <input type="text" class="form-control" id="nombre" name="nombre" 
+                                <input type="text" class="form-control" id="nombre" name="nombre"
                                        placeholder="Ej: Comisión de Calidad Asistencial" />
                             </div>
                         </div>
@@ -98,17 +98,17 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Sección 3: Agregar Miembros -->
             <div class="card card-custom hidden" id="divMiembros">
                 <div class="card-body">
                     <h5 class="section-header">3. Miembros</h5>
-                    
+
                     <!-- Búsqueda por DNI -->
                     <div class="row mb-4">
                         <div class="col-md-9">
                             <label for="dniBusqueda" class="form-label fw-bold">Buscar en LDAP por DNI</label>
-                            <input type="text" class="form-control" id="dniBusqueda" 
+                            <input type="text" class="form-control" id="dniBusqueda"
                                    placeholder="Ej: 12345678A" maxlength="10" />
                         </div>
                         <div class="col-md-3 d-flex align-items-end">
@@ -117,7 +117,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <!-- Resultado LDAP -->
                     <div id="resultadoLDAP" class="alert alert-success hidden" role="alert">
                         <h6 class="alert-heading">✅ Usuario encontrado en LDAP</h6>
@@ -141,20 +141,20 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <hr>
-                    
+
                     <!-- Agregar manualmente -->
                     <h6 class="mb-3">O agregar manualmente</h6>
                     <div class="row">
                         <div class="col-md-3 mb-2">
                             <label for="miembroDNI" class="form-label">DNI</label>
-                            <input type="text" class="form-control" id="miembroDNI" 
+                            <input type="text" class="form-control" id="miembroDNI"
                                    placeholder="12345678A" maxlength="10" />
                         </div>
                         <div class="col-md-4 mb-2">
                             <label for="miembroNombre" class="form-label">Nombre y Apellidos</label>
-                            <input type="text" class="form-control" id="miembroNombre" 
+                            <input type="text" class="form-control" id="miembroNombre"
                                    placeholder="Juan Pérez García" />
                         </div>
                         <div class="col-md-3 mb-2">
@@ -171,9 +171,9 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <hr>
-                    
+
                     <!-- Tabla de miembros -->
                     <h6 class="mb-3">Miembros agregados</h6>
                     <div class="table-responsive">
@@ -193,12 +193,12 @@
                             </tbody>
                         </table>
                     </div>
-                    
+
                     <!-- Campo oculto JSON -->
                     <input type="hidden" id="miembrosJSON" name="miembrosJSON" value="[]">
                 </div>
             </div>
-            
+
             <!-- Botones de acción -->
             <div class="mt-4 mb-5">
                 <button type="submit" class="btn btn-success btn-lg" id="btnGuardar">

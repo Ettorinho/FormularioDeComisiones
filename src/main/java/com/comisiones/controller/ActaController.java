@@ -39,11 +39,11 @@ import java.util.*;
     fileSizeThreshold = (int) AppConstants.FILE_SIZE_THRESHOLD
 )
 public class ActaController extends HttpServlet {
-    
+
     private ActaDAO actaDAO;
     private ComisionDAO comisionDAO;
     private MiembroDAO miembroDAO;
-    
+
     @Override
     public void init() throws ServletException {
         super.init();
@@ -57,7 +57,7 @@ public class ActaController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String pathInfo = request.getPathInfo();
-        
+
         try {
             if (pathInfo == null || pathInfo.equals("/") || pathInfo.equals("/new")) {
                 showForm(request, response);
@@ -80,12 +80,12 @@ public class ActaController extends HttpServlet {
             throw new ServletException(e);
         }
     }
-    
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String pathInfo = request.getPathInfo();
-        
+
         try {
             if (pathInfo != null && pathInfo.equals("/save")) {
                 saveActa(request, response);
@@ -96,7 +96,7 @@ public class ActaController extends HttpServlet {
             throw new ServletException(e);
         }
     }
-    
+
     private void showForm(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
 
@@ -118,40 +118,40 @@ public class ActaController extends HttpServlet {
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/actas/form.jsp");
         dispatcher.forward(request, response);
     }
-    
+
     private void loadMiembrosComision(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
-        
+
         AppLogger.debug("loadMiembrosComision iniciado");
-        
+
         String comisionIdParam = request.getParameter("comisionId");
-        
+
         if (comisionIdParam == null || comisionIdParam.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-        
+
         Long comisionId = ServletHelper.parseIdSafely(comisionIdParam);
         if (comisionId == null) {
             ServletHelper.sendBadRequest(response, "ID de comisión no válido: " + comisionIdParam);
             return;
         }
         List<Miembro> miembros = miembroDAO.findMiembrosActivosByComisionId(comisionId);
-        
+
         AppLogger.debug("Miembros cargados: " + (miembros != null ? miembros.size() : 0));
-        
+
         request.setAttribute("miembros", miembros);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/actas/miembros-fragment.jsp");
         dispatcher.forward(request, response);
     }
-    
+
     private void saveActa(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
-        
+
         request.setCharacterEncoding("UTF-8");
-        
+
         AppLogger.debug("Guardando acta");
-        
+
         // Obtener parámetros principales
         String comisionIdStr = request.getParameter("comisionId");
         String fechaReunionStr = request.getParameter("fechaReunion");
@@ -163,22 +163,22 @@ public class ActaController extends HttpServlet {
         String tipoReunionOtrosDetalle = normalizeText(request.getParameter("tipoReunionOtrosDetalle"));
         String ordenDia = normalizeText(request.getParameter("ordenDia"));
         String excusaAsistencia = normalizeText(request.getParameter("excusaAsistencia"));
-        
+
         // Procesar archivo PDF
         Part pdfPart = null;
         String pdfNombre = null;
         byte[] pdfContenido = null;
         String pdfTipoMime = null;
-        
+
         try {
             pdfPart = request.getPart("pdfFile");
-            
+
             if (pdfPart != null && pdfPart.getSize() > 0) {
                 pdfNombre = getFileName(pdfPart);
                 pdfTipoMime = pdfPart.getContentType();
-                
+
                 AppLogger.debug("Archivo PDF detectado: " + pdfNombre);
-                
+
                 // Validar que sea PDF
                 if (pdfTipoMime != null && pdfTipoMime.equals(AppConstants.PDF_MIME_TYPE)) {
                     // Validar tamaño
@@ -201,22 +201,22 @@ public class ActaController extends HttpServlet {
         } catch (Exception e) {
             AppLogger.error("Error al procesar PDF", e);
         }
-        
+
         String[] miembroIds = request.getParameterValues("miembroId");
-        
+
         // Validar parámetros
         if (comisionIdStr == null || fechaReunionStr == null || miembroIds == null) {
             AppLogger.error(AppConstants.ERROR_MISSING_PARAMS, null);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, AppConstants.ERROR_MISSING_PARAMS);
             return;
         }
-        
+
         Long comisionId = ServletHelper.parseIdSafely(comisionIdStr);
         if (comisionId == null) {
             ServletHelper.sendBadRequest(response, "ID de comisión no válido: " + comisionIdStr);
             return;
         }
-        
+
         // Buscar comisión
         Comision comision = comisionDAO.findById(comisionId);
         if (comision == null) {
@@ -224,7 +224,7 @@ public class ActaController extends HttpServlet {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, AppConstants.ERROR_COMISION_NOT_FOUND);
             return;
         }
-        
+
         // Parsear fecha
         LocalDate fechaReunion;
         try {
@@ -248,7 +248,7 @@ public class ActaController extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "El tipo de reunión indicado no es válido");
             return;
         }
-        
+
         // Crear acta
         Acta acta = new Acta();
         acta.setComision(comision);
@@ -263,7 +263,7 @@ public class ActaController extends HttpServlet {
         acta.setOrdenDia(ordenDia);
         acta.setExcusaAsistencia(excusaAsistencia);
         acta.setFechaCreacion(LocalDateTime.now());
-        
+
         // Añadir PDF si existe
         acta.setPdfNombre(pdfNombre);
         acta.setPdfContenido(pdfContenido);
@@ -275,11 +275,11 @@ public class ActaController extends HttpServlet {
             showForm(request, response);
             return;
         }
-        
+
         // Preparar datos de asistencia
         Map<Long, String> estadosAsistencia = new HashMap<>();
         Map<Long, String> justificaciones = new HashMap<>();
-        
+
         for (String miembroIdStr : miembroIds) {
             Long miembroId = ServletHelper.parseIdSafely(miembroIdStr);
             if (miembroId == null) {
@@ -306,22 +306,22 @@ public class ActaController extends HttpServlet {
                 justificaciones.put(miembroId, null);
             }
         }
-        
+
         // Guardar con transacción
         Long actaId = actaDAO.saveActaConAsistencias(acta, estadosAsistencia, justificaciones);
-        
+
         if (actaId == null) {
             AppLogger.error("No se pudo guardar el acta", null);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al guardar el acta");
             return;
         }
-        
+
         AppLogger.info("Acta guardada con ID: " + actaId);
         AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
             "CREAR", "ACTA", actaId.toString(),
             "Creó el acta de la comisión " + comision.getNombre()
                 + " para la reunión del " + fechaReunionStr);
-        
+
         // Redirigir a la vista del acta
         response.sendRedirect(request.getContextPath() + "/actas/view?id=" + actaId);
     }
@@ -341,21 +341,21 @@ public class ActaController extends HttpServlet {
         return AsistenciaActa.ESTADO_NO_ASISTIO;
     }
 
-    
-    private void viewActa(HttpServletRequest request, HttpServletResponse response) 
+
+    private void viewActa(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
-        
+
         AppLogger.debug("View acta iniciado");
-        
+
         String idStr = request.getParameter("id");
-        
+
         if (idStr == null) {
             AppLogger.error("ID es null", null);
             request.setAttribute("error", "ID de acta no especificado");
             response.sendRedirect(request.getContextPath() + "/");
             return;
         }
-        
+
         Long id = ServletHelper.parseIdSafely(idStr);
         if (id == null) {
             AppLogger.error("ID de acta inválido: " + idStr, null);
@@ -363,124 +363,124 @@ public class ActaController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/");
             return;
         }
-        
+
         // Buscar acta
         Acta acta = actaDAO.findById(id);
-        
+
         if (acta == null) {
             AppLogger.error("Acta no encontrada con ID " + id, null);
             request.setAttribute("error", "Acta no encontrada");
             response.sendRedirect(request.getContextPath() + "/");
             return;
         }
-        
+
         AppLogger.debug("Acta encontrada: " + acta.getComision().getNombre());
-        
+
         // Buscar asistencias
         List<AsistenciaActa> asistencias = actaDAO.findAsistenciasByActaId(id);
-        
+
         AppLogger.debug("Asistencias encontradas: " + (asistencias != null ? asistencias.size() : 0));
-        
+
         // Calcular el número secuencial del acta dentro de su comisión
         // (en lugar de usar el ID global de la tabla actas, compartido por todas las comisiones)
         int numeroActaEnComision = actaDAO.findNumeroSecuencialEnComision(id, acta.getComision().getId());
-        
+
         // Establecer atributos
         request.setAttribute("acta", acta);
         request.setAttribute("asistencias", asistencias);
         request.setAttribute("numeroActaEnComision", numeroActaEnComision);
-        
+
         // Forward a la vista
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/actas/view.jsp");
         dispatcher.forward(request, response);
     }
-    
+
     /**
      * Descarga el PDF adjunto
      */
-    private void downloadPdf(HttpServletRequest request, HttpServletResponse response) 
+    private void downloadPdf(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException {
-        
+
         String idStr = request.getParameter("id");
         if (idStr == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID no especificado");
             return;
         }
-        
+
         Long actaId = ServletHelper.parseIdSafely(idStr);
         if (actaId == null) {
             ServletHelper.sendBadRequest(response, "ID de acta no válido: " + idStr);
             return;
         }
         Acta acta = actaDAO.findById(actaId);
-        
+
         if (acta == null || !acta.tienePdf()) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "PDF no encontrado");
             return;
         }
-        
+
         byte[] pdfContenido = actaDAO.getPdfContenido(actaId);
-        
+
         if (pdfContenido == null || pdfContenido.length == 0) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Contenido del PDF no disponible");
             return;
         }
-        
+
         response.setContentType(AppConstants.PDF_MIME_TYPE);
         response.setHeader("Content-Disposition", "attachment; filename=\"" + acta.getPdfNombre() + "\"");
         response.setContentLength(pdfContenido.length);
-        
+
         try (OutputStream out = response.getOutputStream()) {
             out.write(pdfContenido);
             out.flush();
         }
-        
+
         AppLogger.debug("PDF descargado: " + acta.getPdfNombre());
     }
-    
+
     /**
      * Visualiza el PDF en el navegador
      */
-    private void viewPdf(HttpServletRequest request, HttpServletResponse response) 
+    private void viewPdf(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException {
-        
+
         String idStr = request.getParameter("id");
         if (idStr == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID no especificado");
             return;
         }
-        
+
         Long actaId = ServletHelper.parseIdSafely(idStr);
         if (actaId == null) {
             ServletHelper.sendBadRequest(response, "ID de acta no válido: " + idStr);
             return;
         }
         Acta acta = actaDAO.findById(actaId);
-        
+
         if (acta == null || !acta.tienePdf()) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "PDF no encontrado");
             return;
         }
-        
+
         byte[] pdfContenido = actaDAO.getPdfContenido(actaId);
-        
+
         if (pdfContenido == null || pdfContenido.length == 0) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Contenido del PDF no disponible");
             return;
         }
-        
+
         response.setContentType(AppConstants.PDF_MIME_TYPE);
         response.setHeader("Content-Disposition", "inline; filename=\"" + acta.getPdfNombre() + "\"");
         response.setContentLength(pdfContenido.length);
-        
+
         try (OutputStream out = response.getOutputStream()) {
             out.write(pdfContenido);
             out.flush();
         }
-        
+
         AppLogger.debug("PDF visualizado: " + acta.getPdfNombre());
     }
-    
+
     /**
      * Método auxiliar para obtener el nombre del archivo desde el Part
      */
@@ -493,125 +493,125 @@ public class ActaController extends HttpServlet {
         }
         return null;
     }
-    
+
     /**
      * Genera y descarga un PDF con la información del acta
      */
     private void generatePdfActa(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException {
-        
+
         String idStr = request.getParameter("id");
         if (idStr == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID no especificado");
             return;
         }
-        
+
         Long actaId = ServletHelper.parseIdSafely(idStr);
         if (actaId == null) {
             ServletHelper.sendBadRequest(response, "ID de acta no válido: " + idStr);
             return;
         }
-        
+
         // Cargar acta
         Acta acta = actaDAO.findById(actaId);
         if (acta == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Acta no encontrada");
             return;
         }
-        
+
         // Cargar asistencias
         List<AsistenciaActa> asistencias = actaDAO.findAsistenciasByActaId(actaId);
-        
+
         AppLogger.debug("Generando PDF para acta ID: " + actaId);
-        
+
         // Calcular el número secuencial del acta dentro de su comisión
         int numeroActaEnComision = actaDAO.findNumeroSecuencialEnComision(actaId, acta.getComision().getId());
-        
+
         // Instanciar el servicio generador
         ActaGeneratorService generatorService = new ActaGeneratorService();
-        
+
         try {
             // Generar PDF
             byte[] pdfBytes = generatorService.generarPdf(acta, asistencias, numeroActaEnComision);
-            
+
             // Establecer headers HTTP
             response.setContentType(AppConstants.PDF_MIME_TYPE);
             response.setHeader("Content-Disposition", "attachment; filename=\"Acta_" + numeroActaEnComision + ".pdf\"");
             response.setContentLength(pdfBytes.length);
-            
+
             // Escribir bytes al OutputStream
             try (OutputStream out = response.getOutputStream()) {
                 out.write(pdfBytes);
                 out.flush();
             }
-            
+
             AppLogger.debug("PDF generado y descargado para acta ID: " + actaId);
             AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
                     "GENERAR", "ACTA_PDF", actaId.toString(),
                     "Generó PDF del acta ID: " + actaId + " (comisión: " + acta.getComision().getNombre() + ")");
-            
+
         } catch (IOException e) {
             AppLogger.error("Error al generar PDF para acta ID: " + actaId, e);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al generar el PDF");
         }
     }
-    
+
     /**
      * Genera y descarga un documento Word con la información del acta
      */
     private void generateWordActa(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException {
-        
+
         String idStr = request.getParameter("id");
         if (idStr == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID no especificado");
             return;
         }
-        
+
         Long actaId = ServletHelper.parseIdSafely(idStr);
         if (actaId == null) {
             ServletHelper.sendBadRequest(response, "ID de acta no válido: " + idStr);
             return;
         }
-        
+
         // Cargar acta
         Acta acta = actaDAO.findById(actaId);
         if (acta == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Acta no encontrada");
             return;
         }
-        
+
         // Cargar asistencias
         List<AsistenciaActa> asistencias = actaDAO.findAsistenciasByActaId(actaId);
-        
+
         AppLogger.debug("Generando Word para acta ID: " + actaId);
-        
+
         // Calcular el número secuencial del acta dentro de su comisión
         int numeroActaEnComision = actaDAO.findNumeroSecuencialEnComision(actaId, acta.getComision().getId());
-        
+
         // Instanciar el servicio generador
         ActaGeneratorService generatorService = new ActaGeneratorService();
-        
+
         try {
             // Generar Word
             byte[] wordBytes = generatorService.generarWord(acta, asistencias, numeroActaEnComision);
-            
+
             // Establecer headers HTTP
             response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
             response.setHeader("Content-Disposition", "attachment; filename=\"Acta_" + numeroActaEnComision + ".docx\"");
             response.setContentLength(wordBytes.length);
-            
+
             // Escribir bytes al OutputStream
             try (OutputStream out = response.getOutputStream()) {
                 out.write(wordBytes);
                 out.flush();
             }
-            
+
             AppLogger.debug("Word generado y descargado para acta ID: " + actaId);
             AuditoriaService.getInstance().registrar(request, ServletHelper.getUsuarioLogueado(request),
                     "GENERAR", "ACTA_WORD", actaId.toString(),
                     "Generó Word del acta ID: " + actaId + " (comisión: " + acta.getComision().getNombre() + ")");
-            
+
         } catch (IOException e) {
             AppLogger.error("Error al generar Word para acta ID: " + actaId, e);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al generar el documento Word");

@@ -17,19 +17,19 @@ public class AsistenciaActa {
     private String justificacion;
     private String cargoMiembro;
     private LocalDateTime fechaCreacion;
-    
+
     public AsistenciaActa() {
         this.fechaCreacion = LocalDateTime.now();
         this.estadoAsistencia = ESTADO_NO_ASISTIO;
     }
-    
+
     public AsistenciaActa(Acta acta, Miembro miembro, boolean asistio) {
         this.acta = acta;
         this.miembro = miembro;
         this.fechaCreacion = LocalDateTime.now();
         setAsistio(asistio);
     }
-    
+
     public AsistenciaActa(Acta acta, Miembro miembro, boolean asistio, String justificacion) {
         this.acta = acta;
         this.miembro = miembro;
@@ -45,36 +45,36 @@ public class AsistenciaActa {
         this.fechaCreacion = LocalDateTime.now();
         setEstadoAsistencia(estadoAsistencia);
     }
-    
+
     // Getters y Setters
     public Long getId() {
         return id;
     }
-    
+
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public Acta getActa() {
         return acta;
     }
-    
+
     public void setActa(Acta acta) {
         this.acta = acta;
     }
-    
+
     public Miembro getMiembro() {
         return miembro;
     }
-    
+
     public void setMiembro(Miembro miembro) {
         this.miembro = miembro;
     }
-    
+
     public boolean isAsistio() {
         return asistio;
     }
-    
+
     /**
      * Establece la asistencia mediante el booleano heredado.
      * Se mantiene por compatibilidad; internamente sincroniza el nuevo
@@ -116,11 +116,11 @@ public class AsistenciaActa {
     public boolean isNoAsistio() {
         return ESTADO_NO_ASISTIO.equals(estadoAsistencia);
     }
-    
+
     public String getJustificacion() {
         return justificacion;
     }
-    
+
     public void setJustificacion(String justificacion) {
         this.justificacion = justificacion;
     }
@@ -132,11 +132,11 @@ public class AsistenciaActa {
     public void setCargoMiembro(String cargoMiembro) {
         this.cargoMiembro = cargoMiembro;
     }
-    
+
     public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
     }
-    
+
     public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
     }

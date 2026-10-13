@@ -46,8 +46,8 @@ Almacena todos los cambios de cargo realizados.
 
 **Foreign Key:**
 ```sql
-FOREIGN KEY (comision_id, miembro_id) 
-    REFERENCES comision_miembros(comision_id, miembro_id) 
+FOREIGN KEY (comision_id, miembro_id)
+    REFERENCES comision_miembros(comision_id, miembro_id)
     ON DELETE CASCADE
 ```
 
@@ -110,8 +110,8 @@ NOTICE: ✅ Migración 002 completada exitosamente
 ### Cambiar cargo manualmente (SQL)
 
 ```sql
-UPDATE comision_miembros 
-SET cargo = 'PRESIDENTE' 
+UPDATE comision_miembros
+SET cargo = 'PRESIDENTE'
 WHERE comision_id = 123 AND miembro_id = 456;
 ```
 
@@ -120,7 +120,7 @@ El trigger registrará automáticamente el cambio en `comision_miembro_historial
 ### Consultar historial de un miembro
 
 ```sql
-SELECT 
+SELECT
     m.nombre_apellidos,
     c.nombre AS comision,
     h.cargo_anterior,
@@ -138,7 +138,7 @@ ORDER BY h.fecha_cambio DESC;
 ### Ver todos los cambios de una comisión
 
 ```sql
-SELECT 
+SELECT
     m.nombre_apellidos,
     h.cargo_anterior,
     h.cargo_nuevo,
@@ -153,12 +153,12 @@ ORDER BY h.fecha_cambio DESC;
 ### Ver historial de presidentes
 
 ```sql
-SELECT 
+SELECT
     m.nombre_apellidos,
     h.fecha_cambio AS fecha_nombramiento
 FROM comision_miembro_historial_cargos h
 JOIN miembros m ON h.miembro_id = m.id
-WHERE h.comision_id = 123 
+WHERE h.comision_id = 123
   AND h.cargo_nuevo = 'PRESIDENTE'
 ORDER BY h.fecha_cambio DESC;
 ```
@@ -235,22 +235,22 @@ NOTICE: ✅ Rollback 002 completado
 
 ```sql
 -- Preparar datos de prueba
-INSERT INTO comisiones (id, nombre, area, tipo, fecha_constitucion) 
+INSERT INTO comisiones (id, nombre, area, tipo, fecha_constitucion)
 VALUES (999, 'Comisión Test', 'DOCENCIA', 'PERMANENTE', '2024-01-01');
 
-INSERT INTO miembros (id, dni_nif, nombre_apellidos, correo_electronico) 
+INSERT INTO miembros (id, dni_nif, nombre_apellidos, correo_electronico)
 VALUES (999, '12345678A', 'Juan Test', 'juan@test.com');
 
-INSERT INTO comision_miembros (comision_id, miembro_id, cargo, fecha_incorporacion) 
+INSERT INTO comision_miembros (comision_id, miembro_id, cargo, fecha_incorporacion)
 VALUES (999, 999, 'PARTICIPANTE', '2024-01-01');
 
 -- Cambiar cargo
-UPDATE comision_miembros 
-SET cargo = 'PRESIDENTE' 
+UPDATE comision_miembros
+SET cargo = 'PRESIDENTE'
 WHERE comision_id = 999 AND miembro_id = 999;
 
 -- Verificar que se registró el cambio
-SELECT * FROM comision_miembro_historial_cargos 
+SELECT * FROM comision_miembro_historial_cargos
 WHERE comision_id = 999 AND miembro_id = 999;
 
 -- Resultado esperado: 1 registro con cargo_anterior='PARTICIPANTE', cargo_nuevo='PRESIDENTE'
@@ -264,8 +264,8 @@ UPDATE comision_miembros SET cargo = 'SECRETARIO' WHERE comision_id = 999 AND mi
 UPDATE comision_miembros SET cargo = 'PRESIDENTE' WHERE comision_id = 999 AND miembro_id = 999;
 
 -- Verificar historial completo
-SELECT cargo_anterior, cargo_nuevo, fecha_cambio 
-FROM comision_miembro_historial_cargos 
+SELECT cargo_anterior, cargo_nuevo, fecha_cambio
+FROM comision_miembro_historial_cargos
 WHERE comision_id = 999 AND miembro_id = 999
 ORDER BY fecha_cambio;
 
@@ -279,8 +279,8 @@ ORDER BY fecha_cambio;
 UPDATE comision_miembros SET cargo = 'PRESIDENTE' WHERE comision_id = 999 AND miembro_id = 999;
 
 -- Verificar que NO se registró
-SELECT COUNT(*) FROM comision_miembro_historial_cargos 
-WHERE comision_id = 999 AND miembro_id = 999 
+SELECT COUNT(*) FROM comision_miembro_historial_cargos
+WHERE comision_id = 999 AND miembro_id = 999
   AND cargo_anterior = 'PRESIDENTE' AND cargo_nuevo = 'PRESIDENTE';
 
 -- Resultado esperado: 0 registros

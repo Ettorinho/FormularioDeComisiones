@@ -13,7 +13,7 @@
         </div>
         <div class="card-body">
             <p><strong>Fecha de Constitución:</strong> <fmt:formatDate value="${comision.fechaConstitucion}" pattern="dd/MM/yyyy" /></p>
-            <p><strong>Fecha de Fin:</strong> 
+            <p><strong>Fecha de Fin:</strong>
                 <c:if test="${not empty comision.fechaFin}">
                     <fmt:formatDate value="${comision.fechaFin}" pattern="dd/MM/yyyy" />
                 </c:if>
@@ -48,7 +48,7 @@
                     </div>
                 </c:if>
             </div>
-            
+
             <c:if test="${empty miembros}">
                 <div class="alert alert-info">No hay miembros en esta comisión.</div>
             </c:if>
@@ -76,8 +76,8 @@
                                     <c:choose>
                                         <c:when test="${empty cm.fechaBaja}">
                                             <c:if test="${rolUsuario == 'ADMIN' || rolUsuario == 'GESTOR'}">
-                                                <a href="${pageContext.request.contextPath}/comisiones/cambiarCargo?comisionId=${comision.id}&miembroId=${cm.miembro.id}" 
-                                                   class="btn btn-warning btn-sm" 
+                                                <a href="${pageContext.request.contextPath}/comisiones/cambiarCargo?comisionId=${comision.id}&miembroId=${cm.miembro.id}"
+                                                   class="btn btn-warning btn-sm"
                                                    title="Cambiar cargo del miembro">
                                                     <i class="bi bi-arrow-left-right"></i> Cambiar Cargo
                                                 </a>

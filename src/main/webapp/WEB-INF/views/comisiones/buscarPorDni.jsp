@@ -1,4 +1,4 @@
-<%-- 
+<%--
     Document   : buscarPorDni
     Created on : 22 sept. 2025, 11:04:09
     Author     : hlisa-admin
@@ -14,7 +14,7 @@
 
 <div class="container mt-4">
     <h2>Buscar Miembro</h2>
-    
+
     <form action="${pageContext.request.contextPath}/comisiones/buscarPorDni" method="post" class="mb-4">
         <input type="hidden" name="csrfToken" value="${csrfToken}" />
         <div class="row g-3 align-items-end">
@@ -26,7 +26,7 @@
                 <button type="submit" class="btn btn-primary">🔍 Buscar</button>
             </div>
         </div>
-        
+
         <c:if test="${not empty dniBuscado && not empty comisiones}">
             <div class="mt-3">
                 <label class="form-label fw-bold">Filtrar por estado:</label>
@@ -45,7 +45,7 @@
             </div>
         </c:if>
     </form>
-    
+
     <c:if test="${not empty dniBuscado}">
         <c:choose>
             <c:when test="${empty miembro}">
@@ -55,7 +55,7 @@
                 <div class="card mb-4">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0">
-                            👤 <c:out value="${miembro.nombreApellidos}"/> 
+                            👤 <c:out value="${miembro.nombreApellidos}"/>
                             <span class="badge bg-light text-dark"><c:out value="${miembro.dniNif}"/></span>
                         </h5>
                         <c:if test="${not empty miembro.email}">
@@ -63,11 +63,11 @@
                         </c:if>
                     </div>
                 </div>
-                
+
                 <c:if test="${empty comisiones}">
                     <div class="alert alert-info">Este miembro no pertenece a ninguna comisión.</div>
                 </c:if>
-                
+
                 <c:if test="${not empty comisiones}">
                     <div class="card">
                         <div class="card-header">
@@ -93,7 +93,7 @@
                                     <c:forEach var="cm" items="${comisiones}">
                                         <c:set var="esActiva" value="${empty cm.comision. fechaFin || cm.comision.fechaFin > now}" />
                                         <c:set var="miembroActivo" value="${empty cm.fechaBaja}" />
-                                        
+
                                         <tr class="fila-comision" data-estado="${esActiva ? 'activa' : 'finalizada'}">
                                             <td>
                                                 <a href="#" class="text-decoration-none text-dark fw-bold toggle-historial"
@@ -168,7 +168,7 @@
                                                         <ul class="list-unstyled mt-1 mb-0">
                                                             <li><small>Incorporacion: <fmt:formatDate value="${cm.fechaIncorporacion}" pattern="dd/MM/yyyy" /></small></li>
                                                             <li>
-                                                                <small>Baja: 
+                                                                <small>Baja:
                                                                     <c:choose>
                                                                         <c:when test="${not empty cm.fechaBaja}">
                                                                             <fmt:formatDate value="${cm.fechaBaja}" pattern="dd/MM/yyyy" />
@@ -257,9 +257,9 @@
                         </div>
                         <div class="card-footer text-muted">
                             <small>
-                                <strong>Total: </strong> 
-                                <span id="totalComisiones">${comisiones.size()}</span> comisión(es) | 
-                                <span id="totalActivas" class="text-success">0</span> activa(s) | 
+                                <strong>Total: </strong>
+                                <span id="totalComisiones">${comisiones.size()}</span> comisión(es) |
+                                <span id="totalActivas" class="text-success">0</span> activa(s) |
                                 <span id="totalFinalizadas" class="text-secondary">0</span> finalizada(s) |
                                 <span id="totalVisibles">0</span> visible(s)
                             </small>
@@ -269,7 +269,7 @@
             </c:otherwise>
         </c:choose>
     </c:if>
-    
+
     <a href="${pageContext.request.contextPath}/comisiones" class="btn btn-secondary mt-3"><i class="bi bi-arrow-left"></i> Volver a Comisiones</a>
 </div>
 

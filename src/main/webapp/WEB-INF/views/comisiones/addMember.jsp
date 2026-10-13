@@ -12,15 +12,15 @@
                 <c:if test="${not empty error}">
                     <div class="alert alert-danger"><c:out value="${error}"/></div>
                 </c:if>
-                
+
                 <form id="addMemberForm" action="${pageContext.request.contextPath}/comisiones/addMember/${comision.id}" method="POST">
                     <input type="hidden" name="csrfToken" value="${csrfToken}" />
-                    
+
                     <div class="form-group mb-3">
                         <label for="dni">DNI/NIF *</label>
                         <div class="input-group">
-                            <input type="text" class="form-control" id="dni" name="dni" 
-                                   placeholder="12345678A" 
+                            <input type="text" class="form-control" id="dni" name="dni"
+                                   placeholder="12345678A"
                                    maxlength="9"
                                    required />
                             <button type="button" id="buscarDniBtn" class="btn btn-outline-secondary">
@@ -34,24 +34,24 @@
                         <div id="ldapMessage"></div>
                         <div id="debugInfo" class="debug-info"></div>
                     </div>
-                    
+
                     <div class="form-group mb-3">
                         <label for="nombreApellidos">Nombre y apellidos *</label>
-                        <input type="text" class="form-control" id="nombreApellidos" name="nombreApellidos" 
+                        <input type="text" class="form-control" id="nombreApellidos" name="nombreApellidos"
                                placeholder="Nombre completo" required />
                     </div>
-                    
+
                     <div class="form-group mb-3">
                         <label for="email">Correo electrónico *</label>
-                        <input type="email" class="form-control" id="email" name="email" 
+                        <input type="email" class="form-control" id="email" name="email"
                                placeholder="usuario@example.com" required />
                     </div>
-                    
+
                     <div class="form-group mb-3">
                         <label for="fechaIncorporacion">Fecha de incorporación *</label>
                         <input type="date" class="form-control" id="fechaIncorporacion" name="fechaIncorporacion" required />
                     </div>
-                    
+
                     <div class="form-group mb-3">
                         <label for="cargo">Cargo *</label>
                         <select class="form-control" id="cargo" name="cargo" required>
@@ -61,7 +61,7 @@
                             </c:forEach>
                         </select>
                     </div>
-                    
+
                     <div class="mt-4">
                         <button type="submit" class="btn btn-primary">
                             ✅ Añadir miembro

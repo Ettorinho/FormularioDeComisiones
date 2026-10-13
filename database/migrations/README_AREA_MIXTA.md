@@ -28,8 +28,8 @@ O desde pgAdmin:
 
 ```sql
 -- Ver todos los valores del enum area_type
-SELECT enumlabel 
-FROM pg_enum 
+SELECT enumlabel
+FROM pg_enum
 WHERE enumtypid = (SELECT oid FROM pg_type WHERE typname = 'area_type')
 ORDER BY enumlabel;
 ```

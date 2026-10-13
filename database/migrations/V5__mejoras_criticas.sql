@@ -59,12 +59,12 @@ ALTER SEQUENCE miembros_id_seq AS BIGINT;
 
 -- 3.1. AÑADIR CAMPOS DE AUDITORÍA FALTANTES
 -- Añadir campos de auditoría a comision_miembros
-ALTER TABLE comision_miembros 
+ALTER TABLE comision_miembros
 ADD COLUMN IF NOT EXISTS fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 ADD COLUMN IF NOT EXISTS fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 
 -- Añadir campo de modificación a asistencias_actas
-ALTER TABLE asistencias_actas 
+ALTER TABLE asistencias_actas
 ADD COLUMN IF NOT EXISTS fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 
 -- 3.2. FUNCIÓN PARA ACTUALIZAR fecha_modificacion AUTOMÁTICAMENTE
@@ -126,15 +126,15 @@ ALTER TABLE miembros ALTER COLUMN dni_nif TYPE VARCHAR(15);
 -- 4.2. VALIDACIÓN DE EMAIL
 -- Añade constraint para asegurar formato válido de email
 ALTER TABLE miembros DROP CONSTRAINT IF EXISTS check_email;
-ALTER TABLE miembros 
-ADD CONSTRAINT check_email 
+ALTER TABLE miembros
+ADD CONSTRAINT check_email
 CHECK (correo_electronico ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
 
 -- 4.3. VALIDACIÓN DE FECHA DE REUNIÓN (no puede ser futura)
 -- Previene fechas de reunión en el futuro
 ALTER TABLE actas DROP CONSTRAINT IF EXISTS check_fecha_reunion;
-ALTER TABLE actas 
-ADD CONSTRAINT check_fecha_reunion 
+ALTER TABLE actas
+ADD CONSTRAINT check_fecha_reunion
 CHECK (fecha_reunion <= CURRENT_DATE);
 
 -- ========================================
@@ -157,9 +157,9 @@ DECLARE
     trigger_count INTEGER;
 BEGIN
     SELECT COUNT(*) INTO trigger_count
-    FROM information_schema.triggers 
+    FROM information_schema.triggers
     WHERE trigger_name LIKE 'trigger_%_modificacion';
-    
+
     IF trigger_count = 5 THEN
         RAISE NOTICE '✓ Todos los triggers (%) creados correctamente', trigger_count;
     ELSE
@@ -168,16 +168,16 @@ BEGIN
 END $$;
 
 -- Listar triggers creados
-SELECT 
-    trigger_name, 
-    event_object_table, 
+SELECT
+    trigger_name,
+    event_object_table,
     action_timing || ' ' || event_manipulation AS cuando
-FROM information_schema.triggers 
+FROM information_schema.triggers
 WHERE trigger_name LIKE 'trigger_%_modificacion'
 ORDER BY event_object_table;
 
 -- Verificar constraints de validación
-SELECT 
+SELECT
     table_name,
     constraint_name,
     check_clause
