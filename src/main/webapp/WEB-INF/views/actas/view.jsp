@@ -31,9 +31,9 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <div class="card-body">
-                    
+
                     <div class="border rounded mb-4">
                         <div class="bg-light border-bottom px-3 py-2 fw-bold text-center">
                             ACTA DE REUNIÓN · <c:out value="${acta.comision.nombre}"/>
@@ -325,11 +325,11 @@
                                 <div class="card-body">
                                     <p class="card-text">Genera el acta automáticamente en el formato deseado:</p>
                                     <div class="btn-group" role="group">
-                                        <a href="${pageContext.request.contextPath}/actas/generate-pdf?id=${acta.id}" 
+                                        <a href="${pageContext.request.contextPath}/actas/generate-pdf?id=${acta.id}"
                                            class="btn btn-danger" title="Generar PDF">
                                             <i class="bi bi-file-pdf"></i> Generar PDF
                                         </a>
-                                        <a href="${pageContext.request.contextPath}/actas/generate-word?id=${acta.id}" 
+                                        <a href="${pageContext.request.contextPath}/actas/generate-word?id=${acta.id}"
                                            class="btn btn-primary" title="Generar Word">
                                             <i class="bi bi-file-word"></i> Generar Word
                                         </a>
@@ -362,12 +362,12 @@
                                             </div>
                                         </div>
                                         <div class="col-md-4 text-end">
-                                            <a href="${pageContext.request.contextPath}/actas/view-pdf?id=${acta.id}" 
-                                               class="btn btn-outline-primary btn-sm me-2" target="_blank" 
+                                            <a href="${pageContext.request.contextPath}/actas/view-pdf?id=${acta.id}"
+                                               class="btn btn-outline-primary btn-sm me-2" target="_blank"
                                                title="Abrir PDF en nueva pestaña">
                                                 <i class="bi bi-eye"></i> Ver
                                             </a>
-                                            <a href="${pageContext.request.contextPath}/actas/download-pdf?id=${acta.id}" 
+                                            <a href="${pageContext.request.contextPath}/actas/download-pdf?id=${acta.id}"
                                                class="btn btn-danger btn-sm" title="Descargar PDF">
                                                 <i class="bi bi-download"></i> Descargar
                                             </a>
@@ -379,7 +379,7 @@
                     </c:if>
 
                 </div>
-                
+
                 <div class="card-footer bg-light no-print">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -394,7 +394,7 @@
                 </div>
             </div>
         </c:if>
-        
+
     </div>
 
 <%@ include file="/WEB-INF/views/common/footer.jspf" %>

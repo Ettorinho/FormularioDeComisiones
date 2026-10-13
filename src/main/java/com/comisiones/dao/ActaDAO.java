@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ActaDAO {
-    
+
     /**
      * Guarda el acta y retorna el ID generado
      * @param conn Conexión existente (para transacciones)
@@ -24,7 +24,7 @@ public class ActaDAO {
                 "hora_inicio, hora_fin, duracion, tipo_reunion, tipo_reunion_otros_detalle,",
                 "orden_dia, excusa_asistencia, fecha_creacion, pdf_nombre, pdf_contenido, pdf_tipo_mime)",
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        
+
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setLong(1, acta.getComision().getId());
             stmt.setString(2, acta.getTitulo());
@@ -41,9 +41,9 @@ public class ActaDAO {
             stmt.setString(13, acta.getPdfNombre());
             stmt.setBytes(14, acta.getPdfContenido());
             stmt.setString(15, acta.getPdfTipoMime());
-            
+
             stmt.executeUpdate();
-            
+
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     return rs.getLong(1);
@@ -52,7 +52,7 @@ public class ActaDAO {
         }
         return null;
     }
-    
+
     /**
      * Guarda una asistencia usando una conexión existente.
      * @param estadoAsistencia ASISTIO | EXCUSA | NO_ASISTIO (ver AsistenciaActa)
@@ -62,9 +62,9 @@ public class ActaDAO {
         String sql = String.join(" ",
                 "INSERT INTO asistencias_actas (acta_id, miembro_id, asistio, estado_asistencia, justificacion, fecha_creacion)",
                 "VALUES (?, ?, ?, ?, ?, ?)");
-        
+
         boolean asistio = AsistenciaActa.ESTADO_ASISTIO.equals(estadoAsistencia);
-        
+
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setLong(1, actaId);
             stmt.setLong(2, miembroId);
@@ -72,9 +72,9 @@ public class ActaDAO {
             stmt.setString(4, estadoAsistencia);
             stmt.setString(5, justificacion);
             stmt.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
-            
+
             stmt.executeUpdate();
-            
+
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     return rs.getLong(1);
@@ -83,7 +83,7 @@ public class ActaDAO {
         }
         return null;
     }
-    
+
     /**
      * Guarda el acta con todas sus asistencias en una transacción atómica.
      * @param estadosAsistencia mapa miembroId -> estado (ASISTIO | EXCUSA | NO_ASISTIO)
@@ -131,7 +131,7 @@ public class ActaDAO {
             }
         }
     }
-    
+
     /**
      * Guarda una asistencia de acta.
      * Versión pública independiente para uso directo por callers externos.
@@ -140,31 +140,31 @@ public class ActaDAO {
      */
     public Long saveAsistencia(Long actaId, Long miembroId, String estadoAsistencia, String justificacion)
             throws SQLException {
-        
+
         String sql = String.join(" ",
                 "INSERT INTO asistencias_actas (acta_id, miembro_id, asistio, estado_asistencia, justificacion, fecha_creacion)",
                 "VALUES (?, ?, ?, ?, ?, ?)");
-        
+
         boolean asistio = AsistenciaActa.ESTADO_ASISTIO.equals(estadoAsistencia);
-        
+
         AppLogger.debug("Guardando asistencia para miembro ID: " + miembroId);
-        
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
+
             stmt.setLong(1, actaId);
             stmt.setLong(2, miembroId);
             stmt.setBoolean(3, asistio);
             stmt.setString(4, estadoAsistencia);
             stmt.setString(5, justificacion);
             stmt.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
-            
+
             int affectedRows = stmt.executeUpdate();
-            
+
             if (affectedRows == 0) {
                 throw new SQLException("No se pudo guardar la asistencia");
             }
-            
+
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     Long generatedId = generatedKeys.getLong(1);
@@ -179,7 +179,7 @@ public class ActaDAO {
             throw e;
         }
     }
-    
+
     /**
      * Busca un acta por ID (sin cargar el contenido del PDF para ahorrar memoria)
      */
@@ -193,10 +193,10 @@ public class ActaDAO {
                 "FROM actas a",
                 "INNER JOIN comisiones c ON a.comision_id = c.id",
                 "WHERE a.id = ?");
-        
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setLong(1, id);
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -214,25 +214,25 @@ public class ActaDAO {
                     acta.setOrdenDia(rs.getString("orden_dia"));
                     acta.setExcusaAsistencia(rs.getString("excusa_asistencia"));
                     acta.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
-                    
+
                     // Información del PDF (sin cargar el contenido)
                     acta.setPdfNombre(rs.getString("pdf_nombre"));
                     acta.setPdfTipoMime(rs.getString("pdf_tipo_mime"));
-                    
+
                     // Crear objeto Comision
                     Comision comision = new Comision();
                     comision.setId(rs.getLong("comision_id"));
                     comision.setNombre(rs.getString("comision_nombre"));
-                    
+
                     acta.setComision(comision);
-                    
+
                     return acta;
                 }
             }
         }
         return null;
     }
-    
+
     /**
      * Obtiene todas las actas de una comisión específica
      * @param comisionId ID de la comisión
@@ -324,10 +324,10 @@ public class ActaDAO {
      */
     public byte[] getPdfContenido(Long actaId) throws SQLException {
         String sql = "SELECT pdf_contenido FROM actas WHERE id = ?";
-        
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setLong(1, actaId);
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -338,13 +338,13 @@ public class ActaDAO {
         }
         return null;
     }
-    
+
     /**
      * Busca las asistencias de un acta
      */
     public List<AsistenciaActa> findAsistenciasByActaId(Long actaId) throws SQLException {
         List<AsistenciaActa> asistencias = new ArrayList<>();
-        
+
         String sql = String.join(" ",
                 "SELECT aa.id, aa.acta_id, aa.miembro_id, aa.asistio, aa.estado_asistencia, aa.justificacion, aa.fecha_creacion,",
                 "m.nombre_apellidos, m.dni_nif,",
@@ -359,10 +359,10 @@ public class ActaDAO {
                 "INNER JOIN miembros m ON aa.miembro_id = m.id",
                 "WHERE aa.acta_id = ?",
                 "ORDER BY m.nombre_apellidos");
-        
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setLong(1, actaId);
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -372,7 +372,7 @@ public class ActaDAO {
                     miembro.setId(rs.getLong("miembro_id"));
                     miembro.setNombreApellidos(rs.getString("nombre_apellidos"));
                     miembro.setDniNif(rs.getString("dni_nif"));
-                    
+
                     // Crear objeto AsistenciaActa
                     AsistenciaActa asistencia = new AsistenciaActa();
                     asistencia.setId(rs.getLong("id"));
@@ -387,12 +387,12 @@ public class ActaDAO {
                     asistencia.setJustificacion(rs.getString("justificacion"));
                     asistencia.setCargoMiembro(rs.getString("cargo"));
                     asistencia.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
-                    
+
                     asistencias.add(asistencia);
                 }
             }
         }
-        
+
         return asistencias;
     }
 

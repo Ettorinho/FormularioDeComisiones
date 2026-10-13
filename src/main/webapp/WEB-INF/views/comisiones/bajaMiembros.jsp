@@ -38,8 +38,8 @@
                                 <td>
                                     <form action="${pageContext.request.contextPath}/comisiones/bajaMiembro/${comision.id}/${cm.miembro.id}" method="post" class="form-inline-action">
                                         <input type="hidden" name="csrfToken" value="${csrfToken}" />
-                                        <input type="date" name="fechaBaja" 
-                                               value="<fmt:formatDate value='${now}' pattern='yyyy-MM-dd'/>" 
+                                        <input type="date" name="fechaBaja"
+                                               value="<fmt:formatDate value='${now}' pattern='yyyy-MM-dd'/>"
                                                max="<fmt:formatDate value='${now}' pattern='yyyy-MM-dd'/>" required />
                                         <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que quieres dar de baja a este miembro?');">Dar de baja</button>
                                     </form>

@@ -51,7 +51,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-COMMENT ON FUNCTION registrar_cambio_cargo() IS 
+COMMENT ON FUNCTION registrar_cambio_cargo() IS
     'Registra automáticamente cambios de cargo en el historial. '
     'Lee el usuario AD desde la variable de sesión app.usuario_modificacion '
     'establecida por la aplicación web antes de cada UPDATE.';
@@ -62,14 +62,14 @@ COMMENT ON FUNCTION registrar_cambio_cargo() IS
 DO $$
 BEGIN
     IF EXISTS (
-        SELECT 1 FROM pg_proc 
+        SELECT 1 FROM pg_proc
         WHERE proname = 'registrar_cambio_cargo'
     ) THEN
         RAISE NOTICE '✅ Función registrar_cambio_cargo actualizada correctamente';
     ELSE
         RAISE EXCEPTION '❌ Error: La función registrar_cambio_cargo no existe';
     END IF;
-    
+
     RAISE NOTICE '✅ Migración 003 completada exitosamente';
     RAISE NOTICE 'ℹ️  Recuerda ejecutar este script en la base de datos de producción';
     RAISE NOTICE 'ℹ️  Los cambios de cargo anteriores NO se modifican (solo afecta a futuros cambios)';

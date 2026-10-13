@@ -10,27 +10,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ComisionDAO {
-    
+
     public void save(Comision comision) throws SQLException {
         AppLogger.debug("ComisionDAO.save: " + comision.getNombre());
         String sql = "INSERT INTO comisiones (nombre, area, tipo, fecha_constitucion, fecha_fin) VALUES (?, CAST(? AS area_type), CAST(? AS tipo_type), ?, ?)";
-        
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
+
             stmt.setString(1, comision.getNombre());
             stmt.setString(2, comision.getArea().name());
             stmt.setString(3, comision.getTipo().name());
             stmt.setDate(4, new java.sql.Date(comision.getFechaConstitucion().getTime()));
-            
+
             if (comision.getFechaFin() != null) {
                 stmt.setDate(5, new java.sql.Date(comision.getFechaFin().getTime()));
             } else {
                 stmt.setNull(5, java.sql.Types.DATE);
             }
-            
+
             stmt.executeUpdate();
-            
+
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     comision.setId(generatedKeys.getLong(1));
@@ -38,10 +38,10 @@ public class ComisionDAO {
             }
         }
     }
-    
+
     public Comision findById(Long id) throws SQLException {
         String sql = "SELECT * FROM comisiones WHERE id = ?";
-        try (Connection conn = DBUtil.getConnection(); 
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -52,11 +52,11 @@ public class ComisionDAO {
         }
         return null;
     }
-    
+
     public List<Comision> findAll() throws SQLException {
         List<Comision> comisiones = new ArrayList<>();
         String sql = "SELECT * FROM comisiones ORDER BY area, tipo, nombre";
-        try (Connection conn = DBUtil.getConnection(); 
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
@@ -94,17 +94,17 @@ public class ComisionDAO {
         }
         return 0L;
     }
-    
+
     // ⭐ NUEVO:  Buscar por área y tipo
     public List<Comision> findByAreaAndTipo(Area area, Tipo tipo) throws SQLException {
         List<Comision> comisiones = new ArrayList<>();
         String sql = "SELECT * FROM comisiones WHERE area = CAST(? AS area_type) AND tipo = CAST(? AS tipo_type) ORDER BY nombre";
-        
-        try (Connection conn = DBUtil.getConnection(); 
+
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, area.name());
             stmt.setString(2, tipo.name());
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     comisiones.add(extractComisionFromResultSet(rs));
@@ -113,11 +113,11 @@ public class ComisionDAO {
         }
         return comisiones;
     }
-    
+
     public List<Comision> findByNombreLike(String nombre) throws SQLException {
         List<Comision> comisiones = new ArrayList<>();
         String sql = "SELECT * FROM comisiones WHERE LOWER(nombre) LIKE LOWER(?) ORDER BY nombre";
-        try (Connection conn = DBUtil.getConnection(); 
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, "%" + nombre + "%");
             try (ResultSet rs = stmt.executeQuery()) {
@@ -128,10 +128,10 @@ public class ComisionDAO {
         }
         return comisiones;
     }
-    
+
     public boolean exists(String nombre, Area area, Tipo tipo) throws SQLException {
         String sql = "SELECT COUNT(*) FROM comisiones WHERE nombre = ? AND area = CAST(? AS area_type) AND tipo = CAST(? AS tipo_type)";
-        try (Connection conn = DBUtil.getConnection(); 
+        try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, nombre);
             stmt.setString(2, area.name());
@@ -144,27 +144,27 @@ public class ComisionDAO {
         }
         return false;
     }
-    
+
     private Comision extractComisionFromResultSet(ResultSet rs) throws SQLException {
         Comision comision = new Comision();
         comision.setId(rs.getLong("id"));
         comision.setNombre(rs.getString("nombre"));
-        
+
         // Convertir String del DB a Enum
         String areaStr = rs.getString("area");
         if (areaStr != null) {
             comision.setArea(Area.valueOf(areaStr));
         }
-        
+
         String tipoStr = rs.getString("tipo");
         if (tipoStr != null) {
             comision.setTipo(Tipo.valueOf(tipoStr));
         }
-        
+
         comision.setFechaConstitucion(rs.getDate("fecha_constitucion"));
         comision.setFechaFin(rs.getDate("fecha_fin"));
         comision.setFechaCreacion(rs.getTimestamp("fecha_creacion"));
-        
+
         return comision;
     }
 }

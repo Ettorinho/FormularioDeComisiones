@@ -8,19 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MiembroDAO {
-    
+
     public void save(Miembro miembro) throws SQLException {
         String sql = "INSERT INTO miembros (nombre_apellidos, dni_nif, correo_electronico) VALUES (?, ?, ?)";
-        
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
+
             stmt.setString(1, miembro.getNombreApellidos());
             stmt.setString(2, miembro.getDniNif());
             stmt.setString(3, miembro.getEmail());
-            
+
             stmt.executeUpdate();
-            
+
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     miembro.setId(generatedKeys.getLong(1));
@@ -28,7 +28,7 @@ public class MiembroDAO {
             }
         }
     }
-    
+
     public Miembro findById(Long id) throws SQLException {
         String sql = "SELECT * FROM miembros WHERE id = ?";
         try (Connection conn = DBUtil.getConnection();
@@ -42,7 +42,7 @@ public class MiembroDAO {
         }
         return null;
     }
-    
+
     public Miembro findByDni(String dniNif) throws SQLException {
         String sql = "SELECT * FROM miembros WHERE dni_nif = ?";
         try (Connection conn = DBUtil.getConnection();
@@ -56,7 +56,7 @@ public class MiembroDAO {
         }
         return null;
     }
-    
+
     public List<Miembro> findAll() throws SQLException {
         List<Miembro> miembros = new ArrayList<>();
         String sql = "SELECT * FROM miembros ORDER BY nombre_apellidos";
@@ -69,7 +69,7 @@ public class MiembroDAO {
         }
         return miembros;
     }
-    
+
     /**
      * Busca todos los miembros activos (sin fecha de baja) de una comisión.
      * Usar para listados de asistencia en actas, donde solo deben aparecer miembros activos.
@@ -108,32 +108,32 @@ public class MiembroDAO {
      */
     public List<Miembro> findMiembrosByComisionId(Long comisionId) throws SQLException {
         List<Miembro> miembros = new ArrayList<>();
-        
+
         String sql = String.join(" ",
                 "SELECT m.id, m.nombre_apellidos, m.dni_nif, m.correo_electronico",
                 "FROM miembros m",
                 "INNER JOIN comision_miembros cm ON m.id = cm.miembro_id",
                 "WHERE cm.comision_id = ?",
                 "ORDER BY m.nombre_apellidos");
-        
+
         AppLogger.debug("Buscando miembros de comisión ID: " + comisionId);
-        
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setLong(1, comisionId);
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     miembros.add(extractMiembroFromResultSet(rs));
                 }
             }
         }
-        
+
         AppLogger.debug("Miembros encontrados: " + miembros.size());
         return miembros;
     }
-    
+
     private Miembro extractMiembroFromResultSet(ResultSet rs) throws SQLException {
         Miembro miembro = new Miembro();
         miembro.setId(rs.getLong("id"));

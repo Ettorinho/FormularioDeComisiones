@@ -15,7 +15,7 @@ import java.util.Map;
  * Helper para operaciones comunes en servlets
  */
 public class ServletHelper {
-    
+
     /**
      * Parsea un String a Long de forma segura
      * @param value El valor a parsear
@@ -25,7 +25,7 @@ public class ServletHelper {
         if (value == null || value.trim().isEmpty()) {
             return null;
         }
-        
+
         try {
             // Limpiar el valor de caracteres no numéricos
             String cleaned = value.replaceAll("[^\\d]", "");
@@ -93,7 +93,7 @@ public class ServletHelper {
     public static void sendBadRequest(HttpServletResponse response, String message) throws IOException {
         sendJsonError(response, HttpServletResponse.SC_BAD_REQUEST, message);
     }
-    
+
     /**
      * Envía un error 500 Internal Server Error con un mensaje JSON
      */
@@ -113,7 +113,7 @@ public class ServletHelper {
         request.setAttribute("error", message);
         request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
     }
-    
+
     /**
      * Escapa caracteres especiales en JSON
      */

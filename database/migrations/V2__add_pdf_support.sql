@@ -3,13 +3,13 @@
 -- ========================================
 
 -- 1. Añadir columnas para PDF en la tabla actas
-ALTER TABLE actas 
+ALTER TABLE actas
 ADD COLUMN IF NOT EXISTS pdf_nombre VARCHAR(255),
 ADD COLUMN IF NOT EXISTS pdf_contenido BYTEA,
 ADD COLUMN IF NOT EXISTS pdf_tipo_mime VARCHAR(100);
 
 -- 2. Verificar estructura actualizada
-SELECT 
+SELECT
     column_name,
     data_type,
     character_maximum_length,
@@ -19,7 +19,7 @@ WHERE table_name = 'actas'
 ORDER BY ordinal_position;
 
 -- 3. Ver actas con PDF (para testing después)
-SELECT 
+SELECT
     id,
     comision_id,
     fecha_reunion,

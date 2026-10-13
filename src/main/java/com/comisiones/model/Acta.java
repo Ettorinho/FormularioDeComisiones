@@ -25,76 +25,76 @@ public class Acta {
 
     @Size(max = 20000, message = "El resumen de la reunión no puede superar 20000 caracteres")
     private String observaciones;
-    
+
     @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "La hora de inicio debe tener formato HH:mm")
     private String horaInicio;
-    
+
     @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "La hora de fin debe tener formato HH:mm")
     private String horaFin;
-    
+
     @Size(max = 100, message = "La duración no puede superar 100 caracteres")
     private String duracion;
-    
+
     @Size(max = 20, message = "El tipo de reunión no puede superar 20 caracteres")
     private String tipoReunion;
-    
+
     @Size(max = 1000, message = "El detalle de 'Otros' no puede superar 1000 caracteres")
     private String tipoReunionOtrosDetalle;
-    
+
     @Size(max = 10000, message = "El orden del día no puede superar 10000 caracteres")
     private String ordenDia;
-    
+
     @Size(max = 4000, message = "La excusa de asistencia no puede superar 4000 caracteres")
     private String excusaAsistencia;
 
     private LocalDateTime fechaCreacion;
-    
+
     // Campos para PDF adjunto
     private String pdfNombre;
     private byte[] pdfContenido;
     private String pdfTipoMime;
-    
+
     // Constructores
     public Acta() {
     }
-    
+
     // Getters y Setters
     public Long getId() {
         return id;
     }
-    
+
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public String getTitulo() {
         return titulo;
     }
-    
+
     public void setTitulo(String titulo) {
         this.titulo = titulo;
     }
-    
+
     public Comision getComision() {
         return comision;
     }
-    
+
     public void setComision(Comision comision) {
         this.comision = comision;
     }
-    
+
     public LocalDate getFechaReunion() {
         return fechaReunion;
     }
-    
+
     public void setFechaReunion(LocalDate fechaReunion) {
         this.fechaReunion = fechaReunion;
     }
-    
+
     public String getObservaciones() {
         return observaciones;
     }
-    
+
     public void setObservaciones(String observaciones) {
         this.observaciones = observaciones;
     }
@@ -154,40 +154,40 @@ public class Acta {
     public void setExcusaAsistencia(String excusaAsistencia) {
         this.excusaAsistencia = excusaAsistencia;
     }
-    
+
     public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
     }
-    
+
     public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
     }
-    
+
     // Getters y Setters para PDF
     public String getPdfNombre() {
         return pdfNombre;
     }
-    
+
     public void setPdfNombre(String pdfNombre) {
         this.pdfNombre = pdfNombre;
     }
-    
+
     public byte[] getPdfContenido() {
         return pdfContenido;
     }
-    
+
     public void setPdfContenido(byte[] pdfContenido) {
         this.pdfContenido = pdfContenido;
     }
-    
+
     public String getPdfTipoMime() {
         return pdfTipoMime;
     }
-    
+
     public void setPdfTipoMime(String pdfTipoMime) {
         this.pdfTipoMime = pdfTipoMime;
     }
-    
+
     // Método auxiliar para verificar si tiene PDF adjunto
     public boolean tienePdf() {
         return pdfNombre != null && !pdfNombre.isEmpty();

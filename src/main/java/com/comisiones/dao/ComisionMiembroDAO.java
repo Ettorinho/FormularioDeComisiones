@@ -17,22 +17,22 @@ public class ComisionMiembroDAO {
 
     public void save(ComisionMiembro comisionMiembro) throws SQLException {
         String sql = "INSERT INTO comision_miembros (comision_id, miembro_id, cargo, fecha_incorporacion) VALUES (?, ?, CAST(? AS cargo_type), ?)";
-        
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setLong(1, comisionMiembro.getComision().getId());
             stmt.setLong(2, comisionMiembro.getMiembro().getId());
             stmt.setString(3, comisionMiembro.getCargo().name());
             stmt.setDate(4, new java.sql.Date(comisionMiembro.getFechaIncorporacion().getTime()));
-            
+
             stmt.executeUpdate();
-            
+
             // ⭐ NO hay RETURN_GENERATED_KEYS porque no hay columna id autogenerada
             // La tabla usa clave primaria compuesta (comision_id, miembro_id)
         }
     }
-    
+
     public List<ComisionMiembro> findByComisionId(Long comisionId) throws SQLException {
         List<ComisionMiembro> lista = new ArrayList<>();
         // ⭐ SIN cm.id - solo seleccionar las columnas que existen
@@ -46,12 +46,12 @@ public class ComisionMiembroDAO {
                 "INNER JOIN comisiones c ON cm.comision_id = c.id",
                 "WHERE cm.comision_id = ?",
                 "ORDER BY cm.cargo, m.nombre_apellidos");
-        
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setLong(1, comisionId);
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     lista.add(extractComisionMiembroFromResultSet(rs));
@@ -60,7 +60,7 @@ public class ComisionMiembroDAO {
         }
         return lista;
     }
-    
+
     public List<ComisionMiembro> findByMiembroId(Long miembroId) throws SQLException {
         List<ComisionMiembro> lista = new ArrayList<>();
         // ⭐ SIN cm.id
@@ -74,12 +74,12 @@ public class ComisionMiembroDAO {
                 "INNER JOIN comisiones c ON cm.comision_id = c.id",
                 "WHERE cm.miembro_id = ?",
                 "ORDER BY c.nombre");
-        
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setLong(1, miembroId);
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     lista.add(extractComisionMiembroFromResultSet(rs));
@@ -132,34 +132,34 @@ public class ComisionMiembroDAO {
 
         return miembrosPorComision;
     }
-    
+
     public void darDeBaja(Long comisionId, Long miembroId, java.sql.Date fechaBaja) throws SQLException {
         String sql = "UPDATE comision_miembros SET fecha_baja = ? WHERE comision_id = ? AND miembro_id = ?";
-        
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setDate(1, fechaBaja);
             stmt.setLong(2, comisionId);
             stmt.setLong(3, miembroId);
-            
+
             int rowsAffected = stmt.executeUpdate();
             AppLogger.debug("darDeBaja - Filas afectadas: " + rowsAffected);
         }
     }
-    
+
     /**
      * Verifica si un miembro ya está asignado a una comisión específica (activo)
      */
     public boolean existeEnComision(Long comisionId, Long miembroId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM comision_miembros WHERE comision_id = ? AND miembro_id = ? AND fecha_baja IS NULL";
-        
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setLong(1, comisionId);
             stmt.setLong(2, miembroId);
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     int count = rs.getInt(1);
@@ -170,19 +170,19 @@ public class ComisionMiembroDAO {
         }
         return false;
     }
-    
+
     /**
      * Obtiene todas las comisiones a las que pertenece un miembro (actualmente activo)
      */
     public List<Long> getComisionesByMiembroId(Long miembroId) throws SQLException {
         List<Long> comisionesIds = new ArrayList<>();
         String sql = "SELECT comision_id FROM comision_miembros WHERE miembro_id = ? AND fecha_baja IS NULL";
-        
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setLong(1, miembroId);
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     comisionesIds.add(rs.getLong("comision_id"));
@@ -191,18 +191,18 @@ public class ComisionMiembroDAO {
         }
         return comisionesIds;
     }
-    
+
     /**
      * Cuenta cuántas comisiones activas tiene un miembro
      */
     public int contarComisionesActivas(Long miembroId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM comision_miembros WHERE miembro_id = ? AND fecha_baja IS NULL";
-        
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setLong(1, miembroId);
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1);
@@ -211,19 +211,19 @@ public class ComisionMiembroDAO {
         }
         return 0;
     }
-    
+
     private ComisionMiembro extractComisionMiembroFromResultSet(ResultSet rs) throws SQLException {
         ComisionMiembro cm = new ComisionMiembro();
-        
+
         // ⭐ NO setear ID - la tabla no tiene columna id
         // La relación se identifica únicamente por (comision_id, miembro_id)
-        
+
         // Miembro
         Miembro miembro = new Miembro();
         miembro.setId(rs.getLong("miembro_id"));
         miembro.setDniNif(rs.getString("dni_nif"));
         miembro.setNombreApellidos(rs.getString("nombre_apellidos"));
-        
+
         // Correo electrónico
         try {
             String correo = rs.getString("correo_electronico");
@@ -232,14 +232,14 @@ public class ComisionMiembroDAO {
             AppLogger.debug("Campo 'correo_electronico' no disponible en el ResultSet: " + e.getMessage());
             miembro.setEmail(null);
         }
-        
+
         cm.setMiembro(miembro);
-        
+
         // Comisión
         Comision comision = new Comision();
         comision.setId(rs.getLong("comision_id"));
         comision.setNombre(rs.getString("comision_nombre"));
-        
+
         // Área (opcional, solo en algunas queries)
         try {
             String areaStr = rs.getString("area");
@@ -249,7 +249,7 @@ public class ComisionMiembroDAO {
         } catch (SQLException e) {
             AppLogger.debug("Campo 'area' no disponible en el ResultSet: " + e.getMessage());
         }
-        
+
         // Tipo (opcional, solo en algunas queries)
         try {
             String tipoStr = rs.getString("tipo");
@@ -259,7 +259,7 @@ public class ComisionMiembroDAO {
         } catch (SQLException e) {
             AppLogger.debug("Campo 'tipo' no disponible en el ResultSet: " + e.getMessage());
         }
-        
+
         // Fecha constitución (opcional)
         try {
             Date fechaConst = rs.getDate("fecha_constitucion");
@@ -269,7 +269,7 @@ public class ComisionMiembroDAO {
         } catch (SQLException e) {
             AppLogger.debug("Campo 'fecha_constitucion' no disponible en el ResultSet: " + e.getMessage());
         }
-        
+
         // Fecha fin (opcional)
         try {
             Date fechaFin = rs.getDate("fecha_fin");
@@ -279,25 +279,25 @@ public class ComisionMiembroDAO {
         } catch (SQLException e) {
             AppLogger.debug("Campo 'fecha_fin' no disponible en el ResultSet: " + e.getMessage());
         }
-        
+
         cm.setComision(comision);
-        
+
         // Cargo
         String cargoStr = rs.getString("cargo");
         if (cargoStr != null) {
             cm.setCargo(ComisionMiembro.Cargo.valueOf(cargoStr));
         }
-        
+
         // Fechas de incorporación y baja
         cm.setFechaIncorporacion(rs.getDate("fecha_incorporacion"));
         cm.setFechaBaja(rs.getDate("fecha_baja"));
-        
+
         return cm;
     }
-    
+
     /**
      * Buscar un ComisionMiembro por clave compuesta (comision_id, miembro_id).
-     * 
+     *
      * @param comisionId ID de la comisión
      * @param miembroId ID del miembro
      * @return ComisionMiembro encontrado, o null si no existe
@@ -312,13 +312,13 @@ public class ComisionMiembroDAO {
                 "INNER JOIN miembros m ON cm.miembro_id = m.id",
                 "INNER JOIN comisiones c ON cm.comision_id = c.id",
                 "WHERE cm.comision_id = ? AND cm.miembro_id = ?");
-        
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setLong(1, comisionId);
             stmt.setLong(2, miembroId);
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return extractComisionMiembroFromResultSet(rs);
@@ -327,7 +327,7 @@ public class ComisionMiembroDAO {
         }
         return null;
     }
-    
+
     /**
      * Cambia el cargo de un miembro en una comisión, registrando el usuario AD en el historial.
      * Usa set_config(..., true) (equivalente a SET LOCAL) para que el trigger de PostgreSQL

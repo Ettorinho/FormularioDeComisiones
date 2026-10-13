@@ -112,9 +112,9 @@ DECLARE
     trigger_count INTEGER;
 BEGIN
     SELECT COUNT(*) INTO trigger_count
-    FROM information_schema.triggers 
+    FROM information_schema.triggers
     WHERE trigger_name LIKE 'trigger_%_modificacion';
-    
+
     IF trigger_count = 0 THEN
         RAISE NOTICE '✓ Todos los triggers eliminados correctamente';
     ELSE
@@ -131,7 +131,7 @@ BEGIN
     FROM information_schema.check_constraints
     WHERE constraint_schema = 'public'
       AND constraint_name IN ('check_cargo', 'check_email', 'check_fecha_reunion');
-    
+
     IF constraint_count = 0 THEN
         RAISE NOTICE '✓ Todos los constraints de validación eliminados';
     ELSE

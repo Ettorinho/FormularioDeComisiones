@@ -11,15 +11,15 @@ ALTER TYPE area_type ADD VALUE IF NOT EXISTS 'MIXTA';
 DO $$
 BEGIN
     IF EXISTS (
-        SELECT 1 FROM pg_enum 
-        WHERE enumlabel = 'MIXTA' 
+        SELECT 1 FROM pg_enum
+        WHERE enumlabel = 'MIXTA'
         AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'area_type')
     ) THEN
         RAISE NOTICE '✅ Área MIXTA agregada correctamente';
     ELSE
         RAISE EXCEPTION '❌ Error: No se pudo agregar MIXTA al enum area_type';
     END IF;
-    
+
     RAISE NOTICE '✅ Migración 003 completada exitosamente';
 END $$;
 

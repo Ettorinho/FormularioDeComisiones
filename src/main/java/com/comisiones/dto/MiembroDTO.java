@@ -48,7 +48,7 @@ public class MiembroDTO {
     }
 
     public boolean isValid() {
-        return dni != null && !dni.trim().isEmpty() 
+        return dni != null && !dni.trim().isEmpty()
             && nombre != null && !nombre.trim().isEmpty();
     }
 

@@ -21,7 +21,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     </c:if>
-    
+
     <c:if test="${not empty error}">
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="bi bi-exclamation-triangle-fill"></i> <c:out value="${error}"/>
@@ -43,14 +43,14 @@
                 </div>
                 <div class="col-md-6">
                     <p><strong>Comisión:</strong> <c:out value="${comisionMiembro.comision.nombre}"/></p>
-                    <p><strong>Cargo Actual:</strong> 
+                    <p><strong>Cargo Actual:</strong>
                         <span class="badge cargo-${comisionMiembro.cargo} badge-cargo"><c:out value="${comisionMiembro.cargo.descripcion}"/></span>
                     </p>
-                    <p><strong>Fecha de Incorporación:</strong> 
+                    <p><strong>Fecha de Incorporación:</strong>
                         <fmt:formatDate value="${comisionMiembro.fechaIncorporacion}" pattern="dd/MM/yyyy" />
                     </p>
                     <c:if test="${not empty comisionMiembro.fechaBaja}">
-                        <p><strong>Fecha de Baja:</strong> 
+                        <p><strong>Fecha de Baja:</strong>
                             <span class="badge bg-secondary">
                                 <fmt:formatDate value="${comisionMiembro.fechaBaja}" pattern="dd/MM/yyyy" />
                             </span>
@@ -72,7 +72,7 @@
                     <input type="hidden" name="csrfToken" value="${csrfToken}" />
                     <input type="hidden" name="comisionId" value="${comisionMiembro.comision.id}">
                     <input type="hidden" name="miembroId" value="${comisionMiembro.miembro.id}">
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="nuevoCargo" class="form-label">Nuevo Cargo <span class="text-danger">*</span></label>
@@ -86,17 +86,17 @@
                             </select>
                             <div class="form-text">El cargo actual (<c:out value="${comisionMiembro.cargo.descripcion}"/>) está deshabilitado.</div>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <label for="motivo" class="form-label">Motivo del cambio</label>
-                            <textarea class="form-control" id="motivo" name="motivo" rows="3" 
+                            <textarea class="form-control" id="motivo" name="motivo" rows="3"
                                       placeholder="Ej: Votado en asamblea, Finalización de mandato, Promoción..."></textarea>
                             <div class="form-text">Opcional, pero recomendado para trazabilidad.</div>
                         </div>
                     </div>
-                    
+
                     <div class="d-flex justify-content-between">
-                        <a href="${pageContext.request.contextPath}/comisiones/view/${comisionMiembro.comision.id}" 
+                        <a href="${pageContext.request.contextPath}/comisiones/view/${comisionMiembro.comision.id}"
                            class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Cancelar
                         </a>
@@ -115,7 +115,7 @@
             <i class="bi bi-exclamation-triangle-fill"></i>
             <strong>Miembro dado de baja.</strong> No se puede cambiar el cargo de un miembro que ya está dado de baja.
         </div>
-        <a href="${pageContext.request.contextPath}/comisiones/view/${comisionMiembro.comision.id}" 
+        <a href="${pageContext.request.contextPath}/comisiones/view/${comisionMiembro.comision.id}"
            class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Volver a la comisión
         </a>
@@ -132,7 +132,7 @@
                     <i class="bi bi-info-circle"></i> No hay cambios de cargo registrados para este miembro.
                 </div>
             </c:if>
-            
+
             <c:if test="${not empty historial}">
                 <div class="table-responsive">
                     <table class="table table-striped table-hover">
@@ -150,7 +150,7 @@
                             <c:forEach var="cambio" items="${historial}">
                                 <tr>
                                     <td>
-                                        <fmt:formatDate value="${cambio.fechaCambio}" 
+                                        <fmt:formatDate value="${cambio.fechaCambio}"
                                                        pattern="dd/MM/yyyy HH:mm:ss" />
                                     </td>
                                     <td>

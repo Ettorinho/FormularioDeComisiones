@@ -17,11 +17,11 @@ BEGIN
     SELECT COUNT(*) INTO count_mixta
     FROM comisiones
     WHERE area = 'MIXTA'::area_type;
-    
+
     IF count_mixta > 0 THEN
         RAISE EXCEPTION '❌ No se puede eliminar MIXTA: hay % comisiones usándola. Reasigne esas filas antes de recrear area_type sin MIXTA.', count_mixta;
     END IF;
-    
+
     RAISE NOTICE '⚠️ Para continuar debe recrear manualmente area_type sin MIXTA y volver a enlazar las columnas afectadas.';
     RAISE NOTICE '⚠️ No ejecute esta operación directamente en producción sin ventana de mantenimiento y backup validado.';
     RAISE NOTICE '⚠️ Paso sugerido: preparar primero un script manual de recreación del ENUM y probarlo en staging.';

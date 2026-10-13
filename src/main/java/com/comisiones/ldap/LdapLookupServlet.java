@@ -77,7 +77,7 @@ public class LdapLookupServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String dni = request.getParameter("dni");
@@ -93,7 +93,7 @@ public class LdapLookupServlet extends HttpServlet {
 
         // Normalizar DNI (convertir a mayúsculas y quitar espacios)
         dni = dni.trim().toUpperCase();
-        
+
         log("🔍 Búsqueda LDAP solicitada para DNI: " + dni);
 
         try {
@@ -140,16 +140,16 @@ public class LdapLookupServlet extends HttpServlet {
         Hashtable<String, String> env = new Hashtable<>();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         env.put(Context.PROVIDER_URL, ldapUrl);
-        
+
         // Configuración de autenticación
         env.put(Context.SECURITY_AUTHENTICATION, "simple");
         env.put(Context.SECURITY_PRINCIPAL, bindDn);
         env.put(Context.SECURITY_CREDENTIALS, bindPassword);
-        
+
         // Timeouts
         env.put("com.sun.jndi.ldap.connect.timeout", "5000");
         env.put("com.sun.jndi.ldap.read.timeout", "5000");
-        
+
         // Pool de conexiones LDAP
         env.put("com.sun.jndi.ldap.connect.pool", "true");
         env.put("com.sun.jndi.ldap.connect.pool.maxsize", "10");
@@ -157,29 +157,29 @@ public class LdapLookupServlet extends HttpServlet {
         env.put("com.sun.jndi.ldap.connect. pool.timeout", "300000");
 
         log("   Conectando a LDAP: " + ldapUrl);
-        
+
         DirContext ctx = null;
-        
+
         try {
             ctx = new InitialDirContext(env);
             log("   ✅ Conexión LDAP establecida");
 
             // Filtro para Active Directory
             String filter = "(&(objectClass=user)(objectCategory=person)(" + dniAttr + "=" + escapeLDAPSearchFilter(dni) + "))";
-            
+
             SearchControls sc = new SearchControls();
             sc.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            sc.setReturningAttributes(new String[] { 
-                "cn", "givenName", "sn", "displayName", 
+            sc.setReturningAttributes(new String[] {
+                "cn", "givenName", "sn", "displayName",
                 "mail", "telephoneNumber", "mobile",
-                "employeeNumber", "employeeID", 
+                "employeeNumber", "employeeID",
                 "sAMAccountName", "userPrincipalName",
                 "department", "title", "physicalDeliveryOfficeName"
             });
 
             log("   Filtro: " + filter);
             log("   Base DN: " + baseDn);
-            
+
             NamingEnumeration<SearchResult> results = null;
             try {
                 results = ctx.search(baseDn, filter, sc);
@@ -238,7 +238,7 @@ public class LdapLookupServlet extends HttpServlet {
             throw ne;
         } finally {
             if (ctx != null) {
-                try { 
+                try {
                     ctx.close();
                     log("   Conexión LDAP cerrada");
                 } catch(Exception e) {
