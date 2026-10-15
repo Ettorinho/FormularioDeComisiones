@@ -21,6 +21,11 @@
                         <i class="bi bi-search"></i> Buscar
                     </button>
                 </div>
+                <div class="col-auto">
+                    <button type="button" id="btnLimpiarBusquedaComision" class="btn btn-outline-secondary">
+                        🧹 Limpiar
+                    </button>
+                </div>
             </div>
         </form>
 
@@ -76,4 +81,16 @@
         </a>
     </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var btnLimpiar = document.getElementById('btnLimpiarBusquedaComision');
+        var campoNombre = document.getElementById('nombre');
+        if (btnLimpiar && campoNombre) {
+            btnLimpiar.addEventListener('click', function () {
+                campoNombre.value = '';
+                campoNombre.focus();
+            });
+        }
+    });
+</script>
 <%@ include file="/WEB-INF/views/common/footer.jspf" %>
