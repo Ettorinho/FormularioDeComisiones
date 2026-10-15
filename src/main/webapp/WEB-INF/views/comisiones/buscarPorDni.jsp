@@ -15,7 +15,7 @@
 <div class="container mt-4">
     <h2>Buscar Miembro</h2>
 
-    <form action="${pageContext.request.contextPath}/comisiones/buscarPorDni" method="post" class="mb-4">
+    <form action="${pageContext.request.contextPath}/comisiones/buscarPorDni" method="post" class="mb-4" id="formBuscarPorDni">
         <input type="hidden" name="csrfToken" value="${csrfToken}" />
         <div class="row g-3 align-items-end">
             <div class="col-auto">
@@ -24,6 +24,9 @@
             </div>
             <div class="col-auto">
                 <button type="submit" class="btn btn-primary">🔍 Buscar</button>
+            </div>
+            <div class="col-auto">
+                <button type="button" id="btnLimpiarBusqueda" class="btn btn-outline-secondary">🧹 Limpiar</button>
             </div>
         </div>
 
@@ -300,5 +303,17 @@
     <a href="${pageContext.request.contextPath}/comisiones" class="btn btn-secondary mt-3"><i class="bi bi-arrow-left"></i> Volver a Comisiones</a>
 </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var btnLimpiar = document.getElementById('btnLimpiarBusqueda');
+        var campoBusqueda = document.getElementById('busqueda');
+        if (btnLimpiar && campoBusqueda) {
+            btnLimpiar.addEventListener('click', function () {
+                campoBusqueda.value = '';
+                campoBusqueda.focus();
+            });
+        }
+    });
+</script>
 <script src="${pageContext.request.contextPath}/resources/js/comisiones.js"></script>
 <%@ include file="/WEB-INF/views/common/footer.jspf" %>
