@@ -384,8 +384,25 @@ public class ComisionController extends HttpServlet {
 
     private void buscarComisionesPorDni(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException {
-        String dni = request.getParameter("dni");
-        Miembro miembro = miembroDAO.findByDni(dni);
+        String busqueda = request.getParameter("busqueda");
+        boolean dniExacto = busqueda == null;
+        if (dniExacto) {
+            busqueda = request.getParameter("dni");
+        }
+        busqueda = busqueda == null ? "" : busqueda.trim();
+        Miembro miembro = null;
+        if (!busqueda.isEmpty()) {
+            if (dniExacto || busqueda.matches("(?i)([0-9]{8}[a-z]|[a-z][0-9]{7}[a-z])")) {
+                miembro = miembroDAO.findByDni(busqueda);
+            } else {
+                List<Miembro> miembros = miembroDAO.findByNombreLike(busqueda);
+                if (miembros.size() == 1) {
+                    miembro = miembros.get(0);
+                } else if (miembros.size() > 1) {
+                    request.setAttribute("miembrosEncontrados", miembros);
+                }
+            }
+        }
         List<ComisionMiembro> comisiones = null;
         Map<String, List<HistorialCargo>> historialPorComision = new java.util.HashMap<>();
         Map<String, Double> porcentajeExcusaPorComision = new java.util.HashMap<>();
@@ -411,7 +428,7 @@ public class ComisionController extends HttpServlet {
         }
         request.setAttribute("miembro", miembro);
         request.setAttribute("comisiones", comisiones);
-        request.setAttribute("dniBuscado", dni);
+        request.setAttribute("busquedaBuscada", busqueda);
         request.setAttribute("historialPorComision", historialPorComision);
         request.setAttribute("porcentajeExcusaPorComision", porcentajeExcusaPorComision);
         request.setAttribute("umbralExcusaAsistenciaAlerta", UMBRAL_EXCUSA_ASISTENCIA_ALERTA);

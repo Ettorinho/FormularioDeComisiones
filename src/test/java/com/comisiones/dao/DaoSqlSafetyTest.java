@@ -1,6 +1,7 @@
 package com.comisiones.dao;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,6 +13,17 @@ import org.junit.jupiter.api.Test;
 public class DaoSqlSafetyTest {
 
     private static final Path DAO_DIRECTORY = Path.of("src/main/java/com/comisiones/dao");
+
+    @Test
+    void memberNameSearchUsesCaseInsensitiveOrderedParameterizedSql() throws IOException {
+        String source = Files.readString(DAO_DIRECTORY.resolve("MiembroDAO.java"));
+        String method = source.substring(source.indexOf("public List<Miembro> findByNombreLike"),
+                source.indexOf("public List<Miembro> findAll"));
+        assertTrue(method.contains("nombre_apellidos ILIKE ? ORDER BY nombre_apellidos"));
+        assertTrue(method.contains("stmt.setString(1, \"%\" + texto + \"%\")"));
+        assertTrue(method.contains("try (ResultSet rs = stmt.executeQuery())"));
+        assertTrue(method.contains("miembros.add(extractMiembroFromResultSet(rs))"));
+    }
 
     @Test
     void daoClassesDoNotUseCreateStatement() throws IOException {

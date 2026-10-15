@@ -9,7 +9,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <jsp:useBean id="now" class="java.util.Date" />
-<c:set var="pageTitle" value="Buscar Comisiones por DNI" />
+<c:set var="pageTitle" value="Buscar Miembro" />
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
 <div class="container mt-4">
@@ -19,15 +19,15 @@
         <input type="hidden" name="csrfToken" value="${csrfToken}" />
         <div class="row g-3 align-items-end">
             <div class="col-auto">
-                <label for="dni" class="form-label">DNI del miembro</label>
-                <input type="text" name="dni" id="dni" class="form-control" placeholder="Introduce DNI" required value="<c:out value='${dniBuscado != null ? dniBuscado : ""}'/>" />
+                <label for="busqueda" class="form-label">DNI/NIF o nombre y apellidos del miembro</label>
+                <input type="text" name="busqueda" id="busqueda" class="form-control" placeholder="Introduce DNI/NIF o nombre y apellidos" required value="<c:out value='${busquedaBuscada != null ? busquedaBuscada : ""}'/>" />
             </div>
             <div class="col-auto">
                 <button type="submit" class="btn btn-primary">🔍 Buscar</button>
             </div>
         </div>
 
-        <c:if test="${not empty dniBuscado && not empty comisiones}">
+        <c:if test="${not empty miembro && not empty comisiones}">
             <div class="mt-3">
                 <label class="form-label fw-bold">Filtrar por estado:</label>
                 <div class="form-check form-check-inline">
@@ -46,10 +46,37 @@
         </c:if>
     </form>
 
-    <c:if test="${not empty dniBuscado}">
+    <c:if test="${not empty busquedaBuscada}">
         <c:choose>
+            <c:when test="${not empty miembrosEncontrados}">
+                <div class="alert alert-info">Se encontraron varios miembros. Selecciona uno para ver su ficha.</div>
+                <table class="table table-striped table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nombre y apellidos</th>
+                            <th>DNI/NIF</th>
+                            <th>Detalle</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:forEach var="candidato" items="${miembrosEncontrados}">
+                            <tr>
+                                <td><c:out value="${candidato.nombreApellidos}"/></td>
+                                <td><c:out value="${candidato.dniNif}"/></td>
+                                <td>
+                                    <form action="${pageContext.request.contextPath}/comisiones/buscarPorDni" method="post">
+                                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                        <input type="hidden" name="dni" value="<c:out value='${candidato.dniNif}'/>" />
+                                        <button type="submit" class="btn btn-primary btn-sm">Ver</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </tbody>
+                </table>
+            </c:when>
             <c:when test="${empty miembro}">
-                <div class="alert alert-warning">No se encontró ningún miembro con ese DNI.</div>
+                <div class="alert alert-warning">No se encontró ningún miembro con ese DNI/NIF o nombre y apellidos.</div>
             </c:when>
             <c:otherwise>
                 <div class="card mb-4">

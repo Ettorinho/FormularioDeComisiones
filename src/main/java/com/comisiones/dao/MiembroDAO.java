@@ -57,6 +57,21 @@ public class MiembroDAO {
         return null;
     }
 
+    public List<Miembro> findByNombreLike(String texto) throws SQLException {
+        List<Miembro> miembros = new ArrayList<>();
+        String sql = "SELECT * FROM miembros WHERE nombre_apellidos ILIKE ? ORDER BY nombre_apellidos";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, "%" + texto + "%");
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    miembros.add(extractMiembroFromResultSet(rs));
+                }
+            }
+        }
+        return miembros;
+    }
+
     public List<Miembro> findAll() throws SQLException {
         List<Miembro> miembros = new ArrayList<>();
         String sql = "SELECT * FROM miembros ORDER BY nombre_apellidos";
