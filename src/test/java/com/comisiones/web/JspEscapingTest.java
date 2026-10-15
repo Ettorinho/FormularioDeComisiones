@@ -11,6 +11,24 @@ import org.junit.jupiter.api.Test;
 class JspEscapingTest {
 
     @Test
+    void memberSearchEscapesCandidatesAndPreservesCsrfAndFilters() throws IOException {
+        String view = Files.readString(resolve("/src/main/webapp/WEB-INF/views/comisiones/buscarPorDni.jsp"));
+        assertTrue(view.contains("name=\"busqueda\""));
+        assertTrue(view.contains("<c:out value='${busquedaBuscada"));
+        assertTrue(view.contains("<c:out value=\"${candidato.nombreApellidos}\"/>"));
+        assertTrue(view.contains("<c:out value=\"${candidato.dniNif}\"/>"));
+        assertTrue(view.contains("name=\"dni\" value=\"<c:out value='${candidato.dniNif}'/>\""));
+        assertTrue(view.contains("No se encontró ningún miembro con ese DNI/NIF o nombre y apellidos."));
+        assertTrue(view.contains("id=\"mostrarActivas\""));
+        assertTrue(view.contains("id=\"mostrarFinalizadas\""));
+        for (String form : view.split("<form ")) {
+            if (form.contains("method=\"post\"")) {
+                assertTrue(form.substring(0, form.indexOf("</form>")).contains("name=\"csrfToken\""));
+            }
+        }
+    }
+
+    @Test
     void jspViewsEscapePreviouslyRawUserControlledExpressions() throws IOException {
         assertContains("/src/main/webapp/WEB-INF/views/common/header.jspf", "<c:out value=\"${sessionScope.usuarioLogueado.nombreCompleto}\"/>");
         assertContains("/src/main/webapp/index.jsp", "/WEB-INF/views/common/header.jspf");
